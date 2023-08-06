@@ -1,5 +1,16 @@
 # Stage 02
 
+```ad-abstract
++ Load/retrieve data and executable files from/to your host (Unix) system into the XSM disk.
++ Explain the disk data structures of the XFS file system - INODE table, disk free list and root file.
++ Find out the data blocks into which a data/executable file is stored in the XSM disk by examining the INODE table and root file.
+```
+
+```ad-attention
+- Quickly go through the [Filesystem (eXpFS) Specification](https://exposnitc.github.io/expos-docs/os-spec/expfs/) and [XFS-Interface Specification](https://exposnitc.github.io/expos-docs/support-tools/xfs-interface/) (interface between the UNIX System and eXpFS). Do not spent more than 30 minutes!
+```
+
+---
 ## 1. Run the XFS Interface
 ```bash
 cd $HOME/myexpos/xfs-interface
@@ -65,7 +76,6 @@ df --> check them
 ```
 
 ---
-
 # Misc
 ## Find the length of file
 ```python
