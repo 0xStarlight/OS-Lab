@@ -64,7 +64,36 @@ rm sample.dat
 df --> check them
 ```
 
+---
 
+# Misc
+## Find the length of file
+```python3
+file_path = input('Enter file path: ')
+#file_path = "/home/kali/myexpos/test/testing.dat"
+chunk_size=15
+count = 0
+tmp = 0
+try:
+	with open(file_path,'r') as file:
+		current_line = ''
+		for line in file:
+			for char in line:
+				tmp += 1
+				if(tmp ==15 and char != '\n'):
+					count +=1
+					tmp = 0
+				elif (char == '\n'):
+					tmp = 0
+					count +=1
+
+		print(f"count : {count}")
+
+except FileNotFoundError:
+	print("File Not Found")
+except IOError:
+	print("Cant read the file")
+```
 
 
 

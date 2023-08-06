@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Stage-02/Stage-02.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -123,8 +123,8 @@
   },
   "active": "0a817a054bfa8138",
   "lastOpenFiles": [
-    "README.md",
     "Stage-02/Stage-02.md",
+    "README.md",
     "Untitled.md",
     "Stage-03",
     "Stage-02",
