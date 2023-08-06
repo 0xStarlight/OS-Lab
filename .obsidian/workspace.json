@@ -123,6 +123,7 @@
   },
   "active": "0a817a054bfa8138",
   "lastOpenFiles": [
+    "README.md",
     "Stage-02/Stage-02.md",
     "Untitled.md",
     "Stage-03",
@@ -152,7 +153,6 @@
     "1-Sector7-Beginners/9-Payload-Injection/9.2-Notepad-Code-Injection.md",
     "1-Sector7-Beginners/9-Payload-Injection/9.1-Code-Injection.md",
     "2-THM-WindowsInternals/7-Interacting-with-Windows-Internals.md",
-    "2-THM-WindowsInternals/6-Portable-Executable-Format.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
