@@ -20,10 +20,17 @@ _The steps to do this are explained in detail below._
 
 1) Create the assembly program to print "HELLO_WORLD". The assembly code to print "HELLO_WORLD" :
 
-```asm
+```nasm
 MOV R0, "HELLO_WORLD"
 MOV R16, R0
 PORT P1, R16
+OUT
+HALT
+```
+
+```nasm
+MOV R0, "HELLO_WORLD"
+PORT P1, R0
 OUT
 HALT
 ```
@@ -72,6 +79,67 @@ No. This is because after the execution of the ROM Code, IP points to _512_ wh
 # Assignment
 > Write an assembly program to print numbers from 1 to 20 and run it as the OS Startup code.
 
-```asm
+```nasm
+check:
+mov R0, 20
+mov R1, 1
 
+print_numbers:
+port P1, R1
+OUT
+inr R1
+dcr R0
+JZ R0,exit
+JMP print_numbers
+
+exit:
+HALT
 ```
+
++ Load the file
+```bash
+~/myexpos/xfs-interface> ./xfs-interface
+Unix-XFS Interace Version 2.0. 
+Type "help" for getting a list of commands.
+# load --os /home/kali/myexpos/spl/spl_progs/print_one_to_twenty.xsm
+# exit
+```
+
++ Run the machine
+```bash
+~/myexpos/xsm> ./xsm
+1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+Machine is halting.
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
