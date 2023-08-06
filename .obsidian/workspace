@@ -1,0 +1,111 @@
+{
+  "main": {
+    "id": "514626c6e57b7723",
+    "type": "split",
+    "children": [
+      {
+        "id": "54415dc99d687112",
+        "type": "leaf",
+        "state": {
+          "type": "markdown",
+          "state": {
+            "file": "2-THM-WindowsInternals/7-Interacting-with-Windows-Internals.md",
+            "mode": "preview",
+            "source": false
+          }
+        }
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "4011c4662ffce31b",
+    "type": "split",
+    "children": [
+      {
+        "id": "bf2605de909bee78",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "1e81aa38dd3a4b24",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {}
+            }
+          },
+          {
+            "id": "7ee12920e3b83b20",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "privious",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 250
+  },
+  "right": {
+    "id": "afd71aab01540dc3",
+    "type": "split",
+    "children": [
+      {
+        "id": "e4625c9e12661525",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9d9c209a373b1825",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "2-THM-WindowsInternals/7-Interacting-with-Windows-Internals.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              }
+            }
+          },
+          {
+            "id": "19a506c787505f9e",
+            "type": "leaf",
+            "state": {
+              "type": "calendar",
+              "state": {}
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 244
+  },
+  "active": "54415dc99d687112",
+  "lastOpenFiles": [
+    "2-THM-WindowsInternals/6-Portable-Executable-Format.md",
+    "2-THM-WindowsInternals/5-Dynamic-Link-Libraries.md",
+    "2-THM-WindowsInternals/4-Virtual-Memory.md",
+    "2-THM-WindowsInternals/3-Threads.md",
+    "2-THM-WindowsInternals/2-Processes.md",
+    "2-THM-WindowsInternals/1-Introduction.md",
+    "1-Sector7-Beginners/10-Combination-Project/10-Combination-Project.md",
+    "1-Sector7-Beginners/9-Payload-Injection/9.5-Hiding-Console.md",
+    "1-Sector7-Beginners/9-Payload-Injection/9.4-Notepad-DLL-Injection.md",
+    "1-Sector7-Beginners/9-Payload-Injection/9.3-DLL-Injection.md"
+  ]
+}
