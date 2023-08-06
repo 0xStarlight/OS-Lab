@@ -131,6 +131,13 @@ Type "help" for getting a list of commands.
 Machine is halting.
 ```
 
+---
+
+# Resources
+
+1. https://exposnitc.github.io/expos-docs/arch-spec/machine-organization/
+2. https://exposnitc.github.io/expos-docs/tutorials/xsm-instruction-cycle/
+3. https://exposnitc.github.io/expos-docs/arch-spec/instruction-set/
 
 
 

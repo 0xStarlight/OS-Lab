@@ -11,12 +11,8 @@
             "id": "0a817a054bfa8138",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-03/Bootstrap-Loader.md",
-                "mode": "preview",
-                "source": false
-              }
+              "type": "empty",
+              "state": {}
             }
           }
         ]
@@ -85,7 +81,6 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-03/Bootstrap-Loader.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -123,8 +118,14 @@
   },
   "active": "0a817a054bfa8138",
   "lastOpenFiles": [
-    "Stage-02/Stage-02.md",
     "Stage-03/Bootstrap-Loader.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
+    "Stage-04",
+    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
+    "Stage-00/Read-Doc.md",
+    "Stage-00",
+    "Stage-02/Stage-02.md",
     "Stage-03",
     "Stage-02/Understanding-the-Filesystem.md",
     "README.md",
@@ -149,10 +150,6 @@
     "1-Sector7-Beginners/4-Gen-PE-File/4-Generating-PE-file.md",
     "1-Sector7-Beginners/2-PE-Primer/2-PE-Primer.md",
     "1-Sector7-Beginners/10-Combination-Project/10-Combination-Project.md",
-    "1-Sector7-Beginners/9-Payload-Injection/9.5-Hiding-Console.md",
-    "1-Sector7-Beginners/9-Payload-Injection/9.4-Notepad-DLL-Injection.md",
-    "1-Sector7-Beginners/9-Payload-Injection/9.3-DLL-Injection.md",
-    "1-Sector7-Beginners/9-Payload-Injection/9.2-Notepad-Code-Injection.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]

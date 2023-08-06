@@ -60,7 +60,7 @@ Copy the contents of Root File (from Block 5 of XFS disk) to a UNIX file $HOME/m
 ## Answer
 ```
 copy 5 5 $HOME/myexpos/test/out.txt
-```
+[[1-Bootstrap-Loader]]```
 
 ---
 
