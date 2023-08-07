@@ -11,8 +11,12 @@
             "id": "0a817a054bfa8138",
             "type": "leaf",
             "state": {
-              "type": "empty",
-              "state": {}
+              "type": "markdown",
+              "state": {
+                "file": "Stage-04/1-Learning-the-SPL-Language.md",
+                "mode": "preview",
+                "source": false
+              }
             }
           }
         ]
@@ -81,6 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Stage-04/1-Learning-the-SPL-Language.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -116,7 +121,7 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "0a817a054bfa8138",
+  "active": "19a506c787505f9e",
   "lastOpenFiles": [
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
