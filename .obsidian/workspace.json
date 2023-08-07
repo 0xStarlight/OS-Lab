@@ -8,18 +8,35 @@
         "type": "tabs",
         "children": [
           {
+            "id": "1b8d9036cbe10061",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-04/2-SPL-Syntax.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
             "id": "0a817a054bfa8138",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
+
                 "file": "Stage-04/1-Learning-the-SPL-Language.md",
+
+                "file": "Stage-04/3-Practice-SPL.md",
+
                 "mode": "preview",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -85,7 +102,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-04/1-Learning-the-SPL-Language.md",
+
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -123,8 +140,10 @@
   },
   "active": "19a506c787505f9e",
   "lastOpenFiles": [
-    "Stage-03/Bootstrap-Loader.md",
+    "Stage-04/2-SPL-Syntax.md",
+    "Stage-04/3-Practice-SPL.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
+    "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
     "Stage-03/1-Bootstrap-Loader.md",
     "Stage-02/1-Understanding-the-Filesystem.md",
@@ -153,8 +172,6 @@
     "1-Sector7-Beginners/1-Introduction/1-Introduction.md",
     "1-Sector7-Beginners/5-Payload-Storage/5-Payload-Storage.md",
     "1-Sector7-Beginners/4-Gen-PE-File/4-Generating-PE-file.md",
-    "1-Sector7-Beginners/2-PE-Primer/2-PE-Primer.md",
-    "1-Sector7-Beginners/10-Combination-Project/10-Combination-Project.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
