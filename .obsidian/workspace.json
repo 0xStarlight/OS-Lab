@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-04/3-Practice-SPL.md",
+                "file": "Stage-04/1-Learning-the-SPL-Language.md",
                 "mode": "source",
                 "source": false
               }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-04/3-Practice-SPL.md",
+                "file": "Stage-04/1-Learning-the-SPL-Language.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -123,9 +123,9 @@
   },
   "active": "0a817a054bfa8138",
   "lastOpenFiles": [
-    "Stage-04/1-Learning-the-SPL-Language.md",
-    "Stage-04/2-SPL-Syntax.md",
     "Stage-04/3-Practice-SPL.md",
+    "Stage-04/2-SPL-Syntax.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-03/1-Bootstrap-Loader.md",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
