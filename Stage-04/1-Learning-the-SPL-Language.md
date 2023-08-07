@@ -61,6 +61,30 @@ The machine will halt after printing all odd numbers from 1 to 20.
 Machine is halting
 ```
 
+# Steps
+```bash
+~/myexpos/spl> ./spl /home/kali/myexpos/spl/spl_progs/oddnos.psl
+
+ ~/myexpos/xfs-interface> ./xfs-interface
+Unix-XFS Interace Version 2.0. 
+Type "help" for getting a list of commands.
+# load --os /home/kali/myexpos/spl/spl_progs/oddnos.xsm
+# exit
+
+~/myexpos/xsm> ./xsm
+1
+3
+5
+7
+9
+11
+13
+15
+17
+19
+Machine is halting.
+```
+
 ---
 
 # Assignment 1
@@ -69,6 +93,20 @@ Machine is halting
 Write the spl program to print sum of squares of the first 20 natural numbers. Load it using xfs interface and run the in the machine.
 ```
 
+```python
+alias counter R0;
+alias sum R1;
+alias tmp R2;
+counter = 0;
+sum = 0;
+tmp = 1;
+while(counter <= 20) do
+	tmp = counter * counter;	
+	sum = sum + tmp;
+	counter = counter + 1;
+endwhile;
+print sum;
+```
 
 ---
 

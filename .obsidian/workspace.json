@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-04/1-Learning-the-SPL-Language.md",
-                "mode": "preview",
+                "file": "Stage-04/3-Practice-SPL.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -85,7 +85,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-04/1-Learning-the-SPL-Language.md",
+                "file": "Stage-04/3-Practice-SPL.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -121,12 +121,14 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "19a506c787505f9e",
+  "active": "0a817a054bfa8138",
   "lastOpenFiles": [
-    "Stage-03/Bootstrap-Loader.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
-    "Stage-04",
+    "Stage-04/2-SPL-Syntax.md",
+    "Stage-04/3-Practice-SPL.md",
     "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-03/Bootstrap-Loader.md",
+    "Stage-04",
     "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-00/Read-Doc.md",
     "Stage-00",
@@ -153,8 +155,6 @@
     "1-Sector7-Beginners/1-Introduction/1-Introduction.md",
     "1-Sector7-Beginners/5-Payload-Storage/5-Payload-Storage.md",
     "1-Sector7-Beginners/4-Gen-PE-File/4-Generating-PE-file.md",
-    "1-Sector7-Beginners/2-PE-Primer/2-PE-Primer.md",
-    "1-Sector7-Beginners/10-Combination-Project/10-Combination-Project.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]

@@ -131,6 +131,16 @@ Type "help" for getting a list of commands.
 Machine is halting.
 ```
 
+## Using Spl
+```python
+alias counter R0;
+counter = 0;
+while(counter <= 20) do
+  print counter;
+  counter = counter + 1;
+endwhile;
+```
+
 ---
 
 # Resources
