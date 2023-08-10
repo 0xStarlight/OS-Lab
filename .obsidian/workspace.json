@@ -8,18 +8,6 @@
         "type": "tabs",
         "children": [
           {
-            "id": "1b8d9036cbe10061",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-04/3-Practice-SPL.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "0a817a054bfa8138",
             "type": "leaf",
             "state": {
@@ -32,13 +20,25 @@
             }
           },
           {
-            "id": "20714bc67626bc32",
+            "id": "8bb3088730f59228",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-04/1-Learning-the-SPL-Language.md",
-                "mode": "source",
+                "file": "Stage-02/1-Understanding-the-Filesystem.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "fe9499e140474e0d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-03/1-Bootstrap-Loader.md",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-05/1-XSM-Debugging.md",
+                "file": "Stage-02/1-Understanding-the-Filesystem.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -146,18 +146,18 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "0a817a054bfa8138",
+  "active": "8bb3088730f59228",
   "lastOpenFiles": [
-    "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-05/1-XSM-Debugging.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-05",
-    "Stage-04/3-Practice-SPL.md",
-    "Stage-00/Read-Doc.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/2-SPL-Syntax.md",
+    "Stage-04/3-Practice-SPL.md",
+    "Stage-05",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
-    "Stage-02/1-Understanding-the-Filesystem.md",
+    "Stage-00/Read-Doc.md",
     "Stage-00",
     "Stage-02/Stage-02.md",
     "Stage-03",

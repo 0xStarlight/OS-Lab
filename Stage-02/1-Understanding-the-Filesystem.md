@@ -56,11 +56,10 @@ The fdisk command converts the raw disk into the filesystem format recognised by
 title: Assignment 1
 Copy the contents of Root File (from Block 5 of XFS disk) to a UNIX file $HOME/myexpos/root_file.txt and verify that an entry for sample.dat is made in it also.
 ```
-
 ## Answer
 ```
 copy 5 5 $HOME/myexpos/test/out.txt
-[[1-Bootstrap-Loader]]```
+```
 
 ---
 

@@ -63,7 +63,7 @@ Machine is halting
 
 # Steps
 ```bash
-~/myexpos/spl> ./spl /home/kali/myexpos/spl/spl_progs/oddnos.psl
+~/myexpos/spl> ./spl /home/kali/myexpos/spl/spl_progs/oddnos.spl
 
  ~/myexpos/xfs-interface> ./xfs-interface
 Unix-XFS Interace Version 2.0. 
