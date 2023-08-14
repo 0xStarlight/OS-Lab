@@ -285,7 +285,7 @@ ireturn;
 # Assignment
 
 ```ad-question
-something
+Change virtual memory model such that code occupies logical pages 4 and 5 and the stack lies in logical page 8. You will have to modify the user program as well as the os startup code.
 ```
 
 ```nasm
