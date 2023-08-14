@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-02/1-Understanding-the-Filesystem.md",
+                "file": "Stage-03/2-XSM-Practice.md",
                 "mode": "preview",
                 "source": false
               }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-02/1-Understanding-the-Filesystem.md",
+                "file": "Stage-03/2-XSM-Practice.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -148,12 +148,13 @@
   },
   "active": "8bb3088730f59228",
   "lastOpenFiles": [
+    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-03/2-XSM-Practice.md",
+    "Stage-04/3-Practice-SPL.md",
     "Stage-05/1-XSM-Debugging.md",
     "Stage-02/1-Understanding-the-Filesystem.md",
-    "Stage-03/1-Bootstrap-Loader.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/2-SPL-Syntax.md",
-    "Stage-04/3-Practice-SPL.md",
     "Stage-05",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
@@ -180,7 +181,6 @@
     "1-Sector7-Beginners/5-Payload-Storage/5.1-PS-data.md",
     "1-Sector7-Beginners/3-PE-Bear/3-PE-Bear.md",
     "1-Sector7-Beginners/1-Introduction/1-Introduction.md",
-    "1-Sector7-Beginners/5-Payload-Storage/5-Payload-Storage.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
