@@ -244,6 +244,83 @@ cd $HOME/myexpos/xsm/
 
 4) View the contents of `R1` at each step.
 
+```nasm
+// load init program
+loadi(65,7);
+loadi(66,8);
+
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
+
+// load exception handler
+loadi(2,15);
+loadi(3,16);
+
+// setting page table base reg
+PTBR = PAGE_TABLE_BASE;
+PTLR = 3;
+
+// breakpoint
+breakpoint;
+
+// setting page table for init , phy pg no and auxiliary info
+[PTBR+0] = 65;
+[PTBR+1] = "0100";
+[PTBR+2] = 66;
+[PTBR+3] = "0100";
+[PTBR+4] = 76;
+[PTBR+5] = "0110";
+
+// setting IP to 0 and pointing the SP to the top of the stack
+[76*512] = 0;
+SP = 2*512;
+
+// return
+ireturn;
+```
+
+---
+
+# Assignment
+
+```ad-question
+something
+```
+
+```nasm
+// load init program
+loadi(65,7);
+loadi(66,8);
+
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
+
+// load exception handler
+loadi(2,15);
+loadi(3,16);
+
+// setting page table base reg
+PTBR = PAGE_TABLE_BASE;
+PTLR = 8
+
+
+// setting page table for init , phy pg no and auxiliary info
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+14] = 76;
+[PTBR+15] = "0110";
+
+// setting SP to the top of the stack
+[76*512] = 1536;
+SP = 7*512;
+
+// return
+ireturn;
+```
 
 
 

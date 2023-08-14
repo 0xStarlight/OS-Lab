@@ -8,7 +8,7 @@
         "type": "tabs",
         "children": [
           {
-            "id": "ed1bf57e98f24c73",
+            "id": "0a817a054bfa8138",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -20,30 +20,43 @@
             }
           },
           {
-            "id": "5931b0eef6e9c9cd",
+            "id": "8bb3088730f59228",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-06/2-Unprivileged-Mode-Tutorial.md",
+                "file": "Stage-06/1-Running-a-user-program.md",
                 "mode": "preview",
                 "source": false
               }
             }
           },
           {
-            "id": "fe6a4e90c792bdf3",
+            "id": "6401c32cd6c57f33",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-06/3-Practice-XSM.md",
+                "file": "Stage-04/2-SPL-Syntax.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "fe9499e140474e0d",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-03/1-Bootstrap-Loader.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -145,35 +158,33 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "ed1bf57e98f24c73",
+  "active": "8bb3088730f59228",
   "lastOpenFiles": [
-    "Stage-06/2-Unprivileged-Mode-Tutorial.md",
-    "Stage-06/3-Practice-XSM.md",
-    "Stage-06/1-Running-a-user-program.md",
-    "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-03/2-XSM-Practice.md",
-    "~Attachments/bootrom.png",
-    "~Attachments/Pasted image 20230814023818 - Copy.png",
-    "~Attachments/Pasted image 20230814023818.png",
+    "Stage-04/2-SPL-Syntax.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/3-Practice-SPL.md",
-    "Stage-02/1-Understanding-the-Filesystem.md",
-    "Questions.md",
+    "Stage-06/1-Running-a-user-program.md",
+    "Stage-06/3-Practice-XSM.md",
+    "Stage-06/2-Unprivileged-Mode-Tutorial.md",
+    "Stage-03/2-XSM-Practice.md",
+    "Stage-03/1-Bootstrap-Loader.md",
     "Stage-05/1-XSM-Debugging.md",
+    "~Attachments/bootrom.png",
+    "~Attachments",
     "Stage-06",
+    "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-05",
-    "Stage-00/Read-Doc.md",
-    "Stage-04/2-SPL-Syntax.md",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
+    "Stage-00/Read-Doc.md",
     "Stage-00",
     "Stage-02/Stage-02.md",
     "Stage-03",
     "Stage-02/Understanding-the-Filesystem.md",
     "README.md",
+    "Untitled.md",
     "Stage-02",
     "Stage-01",
-    "~Attachments",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",
