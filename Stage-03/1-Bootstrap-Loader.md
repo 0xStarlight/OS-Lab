@@ -78,6 +78,7 @@ No. This is because after the execution of the ROM Code, IP points to _512_ wh
 
 # Assignment
 > Write an assembly program to print numbers from 1 to 20 and run it as the OS Startup code.
+> This is a bootstrap code
 
 ```nasm
 check:

@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-05/1-XSM-Debugging.md",
+                "file": "Stage-06/1-Running-a-user-program.md",
                 "mode": "preview",
                 "source": false
               }
@@ -25,7 +25,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-03/2-XSM-Practice.md",
+                "file": "Stage-06/3-Practice-XSM.md",
                 "mode": "preview",
                 "source": false
               }
@@ -110,7 +110,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-03/2-XSM-Practice.md",
+                "file": "Stage-06/3-Practice-XSM.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -148,10 +148,16 @@
   },
   "active": "8bb3088730f59228",
   "lastOpenFiles": [
-    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-06/1-Running-a-user-program.md",
+    "Stage-06/3-Practice-XSM.md",
+    "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-03/2-XSM-Practice.md",
-    "Stage-04/3-Practice-SPL.md",
+    "Stage-03/1-Bootstrap-Loader.md",
     "Stage-05/1-XSM-Debugging.md",
+    "~Attachments/bootrom.png",
+    "~Attachments",
+    "Stage-06",
+    "Stage-04/3-Practice-SPL.md",
     "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/2-SPL-Syntax.md",
@@ -167,7 +173,6 @@
     "Untitled.md",
     "Stage-02",
     "Stage-01",
-    "~Attachments",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",
@@ -178,9 +183,6 @@
     "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6-Payload-Encoding-Encryption.md",
     "1-Sector7-Beginners/5-Payload-Storage/5.3-PS-text.md",
     "1-Sector7-Beginners/5-Payload-Storage/5.2-PS-rscs.md",
-    "1-Sector7-Beginners/5-Payload-Storage/5.1-PS-data.md",
-    "1-Sector7-Beginners/3-PE-Bear/3-PE-Bear.md",
-    "1-Sector7-Beginners/1-Introduction/1-Introduction.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
