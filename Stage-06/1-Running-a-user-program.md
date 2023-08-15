@@ -366,9 +366,36 @@ page 4 --> ptbr + (4*2)
     2066  INT 10
 ```
 
++ Loading all the files
+```bash
+./xfs-interface
+Unix-XFS Interace Version 2.0. 
+Type "help" for getting a list of commands.
+# load --init /home/kali/myexpos/expl/expl_progs/addr_squares_assign.xsm
+# load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+# load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+# load --os /home/kali/myexpos/spl/spl_progs/os_startup_assign.xsm
+```
 
+$$ OR $$
+```bash
+./xfs-interface < ../test/load.dat
+Unix-XFS Interace Version 2.0. 
+Type "help" for getting a list of commands.
+# load --init /home/kali/myexpos/expl/expl_progs/addr_squares_assign.xsm
+# load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+# load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+# load --os /home/kali/myexpos/spl/spl_progs/os_startup_assign.xsm
+# exit
+```
 
-
+```bash
+$> cat ../test/load.dat
+load --init /home/kali/myexpos/expl/expl_progs/addr_squares_assign.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --os /home/kali/myexpos/spl/spl_progs/os_startup_assign.xsm
+```
 
 
 
