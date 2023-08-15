@@ -121,7 +121,9 @@ Since we have only one user process for now, we will write the interrupt 10 hand
 
 1) Create a file haltprog.spl with a single halt statement.
 
-`halt;`
+```nasm
+halt;
+```
 
 2) Compile the program
 
@@ -150,19 +152,22 @@ In this stage, we will write the OS startup code to load the init program and se
 1) Load the INIT program from the disk to the memory. In the memory, init program is stored in pages 65-66. The blocks 7-8 from disk is to be loaded to the memory pages 65-66 by the OS startup Code. (See [Memory Organization and Disk Organization](https://exposnitc.github.io/expos-docs/os-implementation/)).
 
 ```nasm
-loadi(65,7); loadi(66,8);
+loadi(65,7); 
+loadi(66,8);
 ```
 
 Load the INT10 module from the disk to the memory.
 
 ```nasm
-loadi(22,35); loadi(23,36);
+loadi(22,35); 
+loadi(23,36);
 ```
 
 Load the exception handler routine from the disk to the memory.
 
 ```nasm
-loadi(2, 15); loadi(3, 16);
+loadi(2, 15); 
+loadi(3, 16);
 ```
 
 Note the use of the `loadi` instruction for loading a disk block to a memory page. The loadi instruction will suspend the execution of the XSM machine till the disk to memory transfer is completed. XSM will execute the next instruction after the transfer is complete. (In later stages you will use the load instruction that can help to speed up execution).
@@ -288,6 +293,7 @@ ireturn;
 Change virtual memory model such that code occupies logical pages 4 and 5 and the stack lies in logical page 8. You will have to modify the user program as well as the os startup code.
 ```
 
++ OS Startup Code
 ```nasm
 // load init program
 loadi(65,7);
@@ -303,7 +309,7 @@ loadi(3,16);
 
 // setting page table base reg
 PTBR = PAGE_TABLE_BASE;
-PTLR = 8
+PTLR = 9
 
 
 // setting page table for init , phy pg no and auxiliary info
@@ -311,20 +317,54 @@ PTLR = 8
 [PTBR+9] = "0100";
 [PTBR+10] = 66;
 [PTBR+11] = "0100";
-[PTBR+14] = 76;
-[PTBR+15] = "0110";
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
 
 // setting SP to the top of the stack
-[76*512] = 1536;
-SP = 7*512;
+[76*512] = 2048;
+SP = 8*512;
 
 // return
 ireturn;
 ```
 
++ Multiply code
+```nasm
+MOV R0, 1 
+MOV R2, 5
+GE R2, R0
+JZ R2, 2066
+MOV R1, R0
+MUL R1, R0
+BRKP
+ADD R0, 1
+JMP 2050
+INT 10
+```
 
+```ad-note
+page 1 --> ptbr + (1*2)
 
+page 2 --> ptbr + (2*2)
 
+page 3 --> ptbr + (3*2)
+
+page 4 --> ptbr + (4*2)
+```
+
+```ad-tip
+
+    2048   MOV R0, 1 
+    2050   MOV R2, 5
+    2052   GE R2, R0
+    2054   JZ R2, 2066
+    2056   MOV R1, R0
+    2058  MUL R1, R0
+    2060  BRKP
+    2062  ADD R0, 1
+    2064  JMP 2050
+    2066  INT 10
+```
 
 
 
