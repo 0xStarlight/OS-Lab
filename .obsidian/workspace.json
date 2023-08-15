@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-06/1-Running-a-user-program.md",
-                "mode": "preview",
+                "file": "Stage-07/ABI-and-XEXE-Format.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-06/1-Running-a-user-program.md",
+                "file": "Stage-07/ABI-and-XEXE-Format.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -147,9 +147,11 @@
   },
   "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
+    "Stage-06/1-Running-a-user-program.md",
+    "Stage-07/ABI-and-XEXE-Format.md",
+    "Stage-07",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-06/3-Practice-XSM.md",
-    "Stage-06/1-Running-a-user-program.md",
     "Stage-03/1-Bootstrap-Loader.md",
     "Stage-03/2-XSM-Practice.md",
     "~Attachments/bootrom.png",
@@ -183,7 +185,6 @@
     "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6.1-PE-EE-B64.md",
     "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6-Payload-Encoding-Encryption.md",
     "1-Sector7-Beginners/5-Payload-Storage/5.3-PS-text.md",
-    "1-Sector7-Beginners/5-Payload-Storage/5.2-PS-rscs.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]

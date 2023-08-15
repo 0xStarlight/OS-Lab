@@ -397,7 +397,14 @@ load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
 load --os /home/kali/myexpos/spl/spl_progs/os_startup_assign.xsm
 ```
 
+---
 
+# Resources
+
+1. https://exposnitc.github.io/expos-docs/os-implementation/
+2. https://exposnitc.github.io/expos-docs/arch-spec/paging-hardware/
+3. https://exposnitc.github.io/expos-docs/support-tools/constants/
+4. https://exposnitc.github.io/expos-docs/support-tools/constants/
 
 
 
