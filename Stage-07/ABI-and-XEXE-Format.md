@@ -41,6 +41,26 @@ The INIT program complying to ABI is given below. The code is given in bold and 
 2074  INT 10
 ```
 
+```nasm
+0
+2056
+0
+0
+0
+0
+0
+0
+MOV R0, 1 
+MOV R2, 5
+GE R2, R0
+JZ R2, 2074
+MOV R1, R0
+MUL R1, R0
+BRKP
+ADD R0, 1
+JMP 2058
+INT 10
+```
 #### Modifications to OS Startup Code[¶](https://exposnitc.github.io/expos-docs/roadmap/stage-07/#modifications-to-os-startup-code "Permanent link")
 
 1) Load Library Code from disk to memory
@@ -132,6 +152,98 @@ SP = 8*512;
 2. Load the modified user program.
 3. Run the machine in debug mode.
 
+## OS Startup code
+```nasm
+// load the library code
+loadi(63, 13);
+loadi(64, 14);
+
+// load init program
+loadi(65,7);
+loadi(66,8);
+
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
+
+// load exception handler
+loadi(2,15);
+loadi(3,16);
+
+// setting page table base reg
+PTBR = PAGE_TABLE_BASE;
+PTLR = 10;
+
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[PTBR+4] = 78;
+[PTBR+5] = "0110";
+[PTBR+6] = 79;
+[PTBR+7] = "0110";
+
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
+
+SP = 8*512;
+[76*512] = [65 * 512 + 1];
+
+// return
+ireturn;
+```
+
+## User Program
+```nasm
+0
+2056
+0
+0
+0
+0
+0
+0
+MOV R0, 1 
+MOV R2, 5
+GE R2, R0
+JZ R2, 2074
+MOV R1, R0
+MUL R1, R0
+BRKP
+ADD R0, 1
+JMP 2058
+INT 10
+```
+
+## Load it
+```bash
+$> cat load07.dat 
+load --library ../expl/library.lib
+load --init /home/kali/myexpos/expl/expl_progs/addr_squares_stage_07.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --os /home/kali/myexpos/spl/spl_progs/os_startup_stage_07.xsm
+exit 
+
+$> ./xfs-interface < ../test/load07_assign.dat
+```
+
 ---
 
 # Assignment
@@ -140,12 +252,124 @@ SP = 8*512;
 Change the user program to compute cubes of the first five numbers.
 ```
 
+## OS Startup Code
+```nasm
+// load the library code
+loadi(63, 13);
+loadi(64, 14);
 
+// load init program
+loadi(65,7);
+loadi(66,8);
 
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
 
+// load exception handler
+loadi(2,15);
+loadi(3,16);
 
+// setting page table base reg
+PTBR = PAGE_TABLE_BASE;
+PTLR = 10;
 
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
 
+//Heap
+[PTBR+4] = 78;
+[PTBR+5] = "0110";
+[PTBR+6] = 79;
+[PTBR+7] = "0110";
+
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
+
+SP = 8*512;
+[76*512] = [65 * 512 + 1];
+
+// return
+ireturn;
+```
+
+## User Program
+```nasm
+0
+2056
+0
+0
+0
+0
+0
+0
+MOV R0, 1 
+MOV R2, 5
+GE R2, R0
+JZ R2, 2076
+MOV R1, R0
+MUL R1, R0
+MUL R1, R0
+BRKP
+ADD R0, 1
+JMP 2058
+INT 10
+```
+
+## User Program Breakdown
+```nasm
+
+2048  0
+2049  2056
+2050  0
+2051  0
+2052  0
+2053  0
+2054  0
+2055  0
+2056  MOV R0, 1
+2058  MOV R2, 5
+2060  GE R2, R0
+2062  JZ R2, 2076
+2064  MOV R1, R0
+2066  MUL R1, R0
+2068  MUL R1, R0
+2070  BRKP
+2072  ADD R0, 1
+2074  JMP 2058
+2076  INT 10
+```
+
+# Load the code
+```bash
+$> cat load07_assign.dat                                   
+load --library ../expl/library.lib
+load --init /home/kali/myexpos/expl/expl_progs/cube_stage_07.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --os /home/kali/myexpos/spl/spl_progs/os_startup_stage_07.xsm
+exit 
+
+$> ./xfs-interface < ../test/load07_assign.dat
+```
+
+![[Pasted image 20230815214758.png]]
 
 
 
