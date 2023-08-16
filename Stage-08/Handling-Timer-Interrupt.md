@@ -78,18 +78,124 @@ cd $HOME/myexpos/xsm
 ./xsm --timer 2
 ```
 
+---
 
+> File : sample_timer.xsm
+```nasm
+print "TIMER";
+ireturn;
+```
 
+> File: os_startup_08.spl
+```nasm
+// ./spl ./spl_progs/os_startup_08.spl
+// load the library code
+loadi(63, 13);
+loadi(64, 14);
 
+// load timer inturrupt
+loadi(4, 17);
+loadi(5, 18);
 
+// load init program
+loadi(65,7);
+loadi(66,8);
 
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
 
+// load exception handler
+loadi(2,15);
+loadi(3,16);
 
+// setting page table base reg
+PTBR = PAGE_TABLE_BASE;
+PTLR = 10;
 
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
 
+//Heap
+[PTBR+4] = 78;
+[PTBR+5] = "0110";
+[PTBR+6] = 79;
+[PTBR+7] = "0110";
 
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
 
+//Stack
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
 
+SP = 8*512;
+[76*512] = [65 * 512 + 1];
+
+// return
+ireturn;
+```
+
+> File: cube_stage_07.xsm
+```nasm
+0
+2056
+0
+0
+0
+0
+0
+0
+MOV R0, 1 
+MOV R2, 5
+GE R2, R0
+JZ R2, 2076
+MOV R1, R0
+MUL R1, R0
+MUL R1, R0
+BRKP
+ADD R0, 1
+JMP 2058
+INT 10
+```
+
+> File: haltprog.spl
+```nasm
+// ./spl ./spl_progs/halt.spl
+halt;
+```
+
+> File: Load_08.dat
+```bash
+load --library ../expl/library.lib
+load --init /home/kali/myexpos/expl/expl_progs/cube_stage_07.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --int=timer /home/kali/myexpos/spl/spl_progs/sample_timer.xsm
+load --os /home/kali/myexpos/spl/spl_progs/os_startup_08.xsm
+exit
+```
+
+## Execute and run the timer
+
+```bash
+$> ./xfs-interface < ../test/load08.dat
+$> ./xsm --timer 2 
+```
+
+![[Pasted image 20230817014616.png]]
 
 
 
