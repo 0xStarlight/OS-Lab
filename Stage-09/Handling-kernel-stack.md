@@ -112,6 +112,10 @@ print "TIMER";
 
 restore; 
 SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 ireturn;
 ```
 
@@ -234,6 +238,11 @@ $> ./xsm --timer 2
 
 ---
 
+# Assignment
+
+```ad-question
+Print the process id of currently executing process in timer interrupt before returning to user mode. You can look up this value from the System Status Table.
+```
 
 ### Change to be made
 > File: sample_timer_09.spl
