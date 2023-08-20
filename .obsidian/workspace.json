@@ -13,8 +13,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-06/1-Running-a-user-program.md",
-                "mode": "preview",
+                "file": "Stage-09/Handling-kernel-stack.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -109,7 +109,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-06/1-Running-a-user-program.md",
+                "file": "Stage-09/Handling-kernel-stack.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -147,9 +147,11 @@
   },
   "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
+    "Stage-06/1-Running-a-user-program.md",
+    "Stage-09/Handling-kernel-stack.md",
+    "Stage-09",
     "Stage-08/Handling-Timer-Interrupt.md",
     "Stage-07/ABI-and-XEXE-Format.md",
-    "Stage-06/1-Running-a-user-program.md",
     "Stage-06/3-Practice-XSM.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "~Attachments/Pasted image 20230817014616.png",
@@ -179,7 +181,6 @@
     "README.md",
     "Stage-02",
     "Stage-01",
-    "~Attachments",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",

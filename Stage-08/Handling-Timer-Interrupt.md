@@ -197,6 +197,11 @@ $> ./xsm --timer 2
 
 ![[Pasted image 20230817014616.png]]
 
+---
+
+# Resources
+1. https://exposnitc.github.io/expos-docs/os-implementation/
+2. 
 
 
 
