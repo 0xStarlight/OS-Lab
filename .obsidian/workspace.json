@@ -8,37 +8,25 @@
         "type": "tabs",
         "children": [
           {
-            "id": "ed1bf57e98f24c73",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-08/Handling-Timer-Interrupt.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "5931b0eef6e9c9cd",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-07/ABI-and-XEXE-Format.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "fe6a4e90c792bdf3",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-06/3-Practice-XSM.md",
-                "mode": "preview",
+                "file": "Stage-09/Handling-kernel-stack.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "7f7c75788a93fb48",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-08/Handling-Timer-Interrupt.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -109,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-08/Handling-Timer-Interrupt.md",
+                "file": "Stage-09/Handling-kernel-stack.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -145,19 +133,22 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "ed1bf57e98f24c73",
+  "active": "fe6a4e90c792bdf3",
   "lastOpenFiles": [
-    "Stage-07/ABI-and-XEXE-Format.md",
     "Stage-08/Handling-Timer-Interrupt.md",
-    "~Attachments/Pasted image 20230817014616.png",
+    "Stage-09/Handling-kernel-stack.md",
+    "Stage-09",
+    "Stage-07/ABI-and-XEXE-Format.md",
     "Stage-06/1-Running-a-user-program.md",
+    "~Attachments/Pasted image 20230817014616.png",
     "Stage-08",
+    "Stage-00/Read-Doc.md",
+    "Stage-03/1-Bootstrap-Loader.md",
     "~Attachments/Pasted image 20230815214758.png",
+    "Stage-03/2-XSM-Practice.md",
     "Stage-06/3-Practice-XSM.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-07",
-    "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-03/2-XSM-Practice.md",
     "~Attachments/bootrom.png",
     "~Attachments/Pasted image 20230814023818 - Copy.png",
     "~Attachments/Pasted image 20230814023818.png",
@@ -168,7 +159,6 @@
     "Stage-05/1-XSM-Debugging.md",
     "Stage-06",
     "Stage-05",
-    "Stage-00/Read-Doc.md",
     "Stage-04/2-SPL-Syntax.md",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
@@ -179,7 +169,6 @@
     "README.md",
     "Stage-02",
     "Stage-01",
-    "~Attachments",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",
