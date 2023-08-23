@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-09/Handling-kernel-stack.md",
+                "file": "Stage-10/Console-output.md",
                 "mode": "preview",
                 "source": false
               }
@@ -97,7 +97,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-09/Handling-kernel-stack.md",
+                "file": "Stage-10/Console-output.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -135,8 +135,12 @@
   },
   "active": "fe6a4e90c792bdf3",
   "lastOpenFiles": [
+    "~Attachments/Pasted image 20230823164044.png",
+    "~Attachments/Pasted image 20230823164033.png",
     "Stage-08/Handling-Timer-Interrupt.md",
+    "Stage-10/Console-output.md",
     "Stage-09/Handling-kernel-stack.md",
+    "Stage-10",
     "Stage-09",
     "Stage-07/ABI-and-XEXE-Format.md",
     "Stage-06/1-Running-a-user-program.md",
@@ -168,14 +172,11 @@
     "Stage-02/Understanding-the-Filesystem.md",
     "README.md",
     "Stage-02",
-    "Stage-01",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7-Functon-Call-Obfuscation.md",
     "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6.3-PP-EE-AES.md",
-    "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6.2-PP-EE-XOR.md",
-    "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6.1-PE-EE-B64.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
