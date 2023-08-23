@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Stage-09/Handling-kernel-stack.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -147,8 +147,9 @@
   },
   "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
-    "Stage-06/1-Running-a-user-program.md",
+    "Stage-00/Read-Doc.md",
     "Stage-09/Handling-kernel-stack.md",
+    "Stage-06/1-Running-a-user-program.md",
     "Stage-09",
     "Stage-08/Handling-Timer-Interrupt.md",
     "Stage-07/ABI-and-XEXE-Format.md",
@@ -170,7 +171,6 @@
     "Stage-05/1-XSM-Debugging.md",
     "Stage-06",
     "Stage-05",
-    "Stage-00/Read-Doc.md",
     "Stage-04/2-SPL-Syntax.md",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
