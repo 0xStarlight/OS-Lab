@@ -13,7 +13,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-10/Console-output.md",
+                "file": "Stage-11/Introduction-to-ExpL.md",
                 "mode": "preview",
                 "source": false
               }
@@ -79,7 +79,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-10/Console-output.md",
+                "file": "Stage-09/Handling-kernel-stack.md",
                 "mode": "preview",
                 "source": false
               }
@@ -97,8 +97,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -164,7 +163,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-10/Console-output.md",
+                "file": "Stage-11/Introduction-to-ExpL.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -205,6 +204,10 @@
   "lastOpenFiles": [
     "Stage-09/Handling-kernel-stack.md",
     "Stage-10/Console-output.md",
+    "Stage-11/Introduction-to-ExpL.md",
+    "Stage-11",
+    "Stage-10/2-Process-Table.md",
+    "Stage-10/1-Console-output.md",
     "Stage-06/1-Running-a-user-program.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-06/3-Practice-XSM.md",
@@ -239,12 +242,9 @@
     "Stage-03",
     "Stage-02/Understanding-the-Filesystem.md",
     "README.md",
-    "Stage-02",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
     "1-Sector7-Beginners/8-Backdooring-PE-Files/8-Backdooring-PE-Files.md",
     "1-Sector7-Beginners/7-Func-Cal-Obfuc/7.1-Virtual-Protect-Obfuscation.md",
-    "1-Sector7-Beginners/7-Func-Cal-Obfuc/7-Functon-Call-Obfuscation.md",
-    "1-Sector7-Beginners/6-Payload-Encoding-Encryption/6.3-PP-EE-AES.md",
     "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
     "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
   ]
