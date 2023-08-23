@@ -164,7 +164,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-09/Handling-kernel-stack.md",
+                "file": "Stage-10/Console-output.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -201,13 +201,13 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "28e8e6758392d852",
+  "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
+    "Stage-09/Handling-kernel-stack.md",
     "Stage-10/Console-output.md",
     "Stage-06/1-Running-a-user-program.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-06/3-Practice-XSM.md",
-    "Stage-09/Handling-kernel-stack.md",
     "Stage-07/ABI-and-XEXE-Format.md",
     "~Attachments/Pasted image 20230823164044.png",
     "~Attachments/Pasted image 20230823164033.png",
