@@ -109,6 +109,7 @@ SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
 backup;
 
 print "TIMER";
+print [PROCESS_TABLE + 1];
 
 restore; 
 SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
@@ -234,6 +235,11 @@ $> ./xsm --timer 2
 
 ---
 
+# Assignment
+
+```ad-question
+Print the process id of currently executing process in timer interrupt before returning to user mode. You can look up this value from the System Status Table.
+```
 
 ### Change to be made
 > File: sample_timer_09.spl
@@ -255,7 +261,12 @@ SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
 ireturn;
 ```
 
+---
 
+# Resources
+1. https://exposnitc.github.io/expos-docs/os-design/process-table/
+2. https://exposnitc.github.io/expos-docs/os-design/mem-ds/#system-status-table
+3. https://exposnitc.github.io/expos-docs/os-design/process-table/#user-area
 
 
 
