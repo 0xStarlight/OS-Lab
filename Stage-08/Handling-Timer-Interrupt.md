@@ -13,11 +13,11 @@ Read and understand the [XSM tutorial on Interrupts and Exception handling](htt
 
 1. Which physical memory location will contain the physical page number to which return address will be stored by the machine before transferring control to the timer interrupt handler?
 
-A) The stack pointer has the physical page number to return after iret. So, 29696 + (5001/512) = 29714
+A) The stack pointer has the physical page number to return after iret. So, 29696 + 2*(5001/512) = 29714
 
 2. Suppose further that the memory location 29714 contains value 35. What will be the physical memory address to which the XSM machine will copy the value of the next instruction to be executed?
 
-A) Value = 35 * 512 + (5001 % 512 ) = 18313
+A) Value = 35 * 512 + (5001 % 512) = 18313
 
 3. What will be the value stored into the location 18313 by the machine?
 
