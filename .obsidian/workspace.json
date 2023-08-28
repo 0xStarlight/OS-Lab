@@ -13,8 +13,20 @@
             "state": {
               "type": "markdown",
               "state": {
+                "file": "00-Compile-Script/0-Auto-Compile.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "25be3f1041de9aaf",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
                 "file": "Stage-12/Introduction-to-Multiprogramming.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -31,24 +43,13 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       },
       {
         "id": "e6bd1f821a7e8787",
         "type": "tabs",
         "children": [
-          {
-            "id": "25be3f1041de9aaf",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-11/Introduction-to-ExpL.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
           {
             "id": "2feabeea5705655a",
             "type": "leaf",
@@ -127,7 +128,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-11/Introduction-to-ExpL.md",
+                "file": "Stage-12/Introduction-to-Multiprogramming.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -166,8 +167,15 @@
   },
   "active": "25be3f1041de9aaf",
   "lastOpenFiles": [
-    "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-10/1-Console-output.md",
+    "Stage-12/Introduction-to-Multiprogramming.md",
+    "00-Compile-Script/0-Auto-Compile.md",
+    "~Attachments/Pasted image 20230828222937.png",
+    "~Attachments/image_2023-08-28_14-48-05 1.png",
+    "~Attachments/image_2023-08-28_14-48-05.png",
+    "00-Compile-Script",
+    "~Attachments/Pasted image 20230828222408.png",
+    "~Attachments/Pasted image 20230828222048.png",
     "Stage-11/Introduction-to-ExpL.md",
     "Stage-06/3-Practice-XSM.md",
     "Stage-06/1-Running-a-user-program.md",
@@ -193,8 +201,6 @@
     "Stage-03/1-Bootstrap-Loader.md",
     "Stage-03/2-XSM-Practice.md",
     "~Attachments/bootrom.png",
-    "~Attachments/Pasted image 20230814023818 - Copy.png",
-    "~Attachments/Pasted image 20230814023818.png",
     "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/3-Practice-SPL.md",
     "Stage-02/1-Understanding-the-Filesystem.md",
@@ -204,12 +210,7 @@
     "Stage-04/2-SPL-Syntax.md",
     "Stage-03/Bootstrap-Loader.md",
     "Stage-04",
-    "Stage-00",
     "Stage-02/Stage-02.md",
-    "Stage-02/Understanding-the-Filesystem.md",
-    "README.md",
-    "1-Sector7-Beginners/8-Backdooring-PE-Files/8.1-Backdooring-Putty.md",
-    "1-Sector7-Beginners/2-PE-Primer/2.1-Portable_Executable_32_bit_Structure.svg",
-    "1-Sector7-Beginners/2-PE-Primer/2.2-pe101.png"
+    "Stage-02/Understanding-the-Filesystem.md"
   ]
 }

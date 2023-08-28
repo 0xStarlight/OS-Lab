@@ -223,70 +223,60 @@ The main purpose of the idle process is to run as a background process in an inf
 ```
 
 ---
-# Stage 12 Code
+
+# Assignment 1
+```ad-question
+Load a program to print numbers from 1-100 as the INIT program, and modify IDLE to print numbers from 101-200. (You will have to link the library to address space of IDLE for the Write function call to work.)
+```
+
 
 > File: os_startup_12.spl
 ```nasm
-// ./spl ./spl_progs/os_startup_09.spl
-
-// load the idle code
-loadi(69,11);
-loadi(70,12);
-
-// load the library code
-loadi(63, 13);
-loadi(64, 14);
-
-// load int 7
-loadi(16,29);
-loadi(17,30);
-
-// load timer inturrupt
-loadi(4, 17);
-loadi(5, 18);
-
-// load init program
+// Loading init program "our code"
 loadi(65,7);
 loadi(66,8);
 
-// load int 10 program
+// loading init 10 module
 loadi(22,35);
 loadi(23,36);
 
-// load exception handler
-loadi(2,15);
-loadi(3,16);
+// loading exception handler routine
+loadi(2, 15);
+loadi(3, 16);
 
-// setting page table base reg
+// Timer interupt loading
+loadi(4, 17);
+loadi(5, 18);
 
-// IDLE PROGRAM
-PTBR = PAGE_TABLE_BASE + 20;
-PTLR = 10;
+// loading library code
+loadi(63,13);
+loadi(64,14);
 
-// setting user area page
-// 11th --> User Area Page Number
-[PROCESS_TABLE + 11] = 80;
+// Loading int 7 to disk
+loadi(16,29);
+loadi(17,30);
 
-// 1st --> PID Flag
-[PROCESS_TABLE + 1] = 0;
+// Loading idle code from disk to memory
+loadi(69,11);
+loadi(70,12);
 
-// PID in system status table
-// 1st --> PID Flag
-[SYSTEM_STATUS_TABLE + 1] = 0;
+// Setting the page table for idle process
+PTBR=PAGE_TABLE_BASE; 
+PTLR=10; 
 
-//Library
-[PTBR+0] = -1;
-[PTBR+1] = "0000";
-[PTBR+2] = -1;
-[PTBR+3] = "0000";
+// Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
 
-//Heap
+// Heap
 [PTBR+4] = -1;
 [PTBR+5] = "0000";
 [PTBR+6] = -1;
 [PTBR+7] = "0000";
 
-//Code
+// Code
 [PTBR+8] = 69;
 [PTBR+9] = "0100";
 [PTBR+10] = 70;
@@ -296,32 +286,290 @@ PTLR = 10;
 [PTBR+14] = -1;
 [PTBR+15] = "0000";
 
-//Stack
+// Stack
 [PTBR+16] = 81;
 [PTBR+17] = "0110";
 [PTBR+18] = -1;
 [PTBR+19] = "0000";
 
-SP = 8*512;
-[76*512] = [65 * 512 + 1];
+// Setting up page table for init process
+PTBR=PTBR+20;
 
-// return
+// library
+[PTBR+0]=63;
+[PTBR+1]="0100";
+[PTBR+2]=64;
+[PTBR+3]="0100";
+
+// heap
+[PTBR+4]=78;
+[PTBR+5]="0110";
+[PTBR+6]=79;
+[PTBR+7]="0110";
+
+// code
+[PTBR+8]=65;
+[PTBR+9]="0100";
+[PTBR+10]=66;
+[PTBR+11]="0100";
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+// stack
+[PTBR+16]=76;
+[PTBR+17]="0110";
+[PTBR+18]=77;
+[PTBR+19]="0110";
+
+// process table idle
+alias PCT R5;
+PCT = PROCESS_TABLE;
+
+//idle
+[PCT + 0*16 + 1] = 0;
+[PCT + 0*16 + 4] = CREATED;
+[PCT + 0*16 + 11] = 82;
+[PCT + 0*16 + 12] = 0;
+[PCT + 0*16 + 13] = 8*512;
+[PCT + 0*16 + 14] = PTBR-20;
+[PCT + 0*16 + 15] = 10;
+[81*512] =[69*512 + 1];
+
+//init
+[PCT + 1*16 + 1] = 1;
+[PCT + 1*16 + 4] = RUNNING;
+[PCT + 1*16 + 11] = 80;
+[PCT + 1*16 + 12] = 0;
+[PCT + 1*16 + 13] = 8*512;
+[PCT + 1*16 + 14] = PTBR;
+[PCT + 1*16 + 15] = 10;
+[76*512]=[65*512 + 1];
+
+[SYSTEM_STATUS_TABLE + 1]  = 1;
+SP=8*512;
 ireturn;
 ```
 
----
+>File: Sample_int7.spl
+```nasm
+// to indicate what we gonna execute
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 5;
 
-# Assignment 1
-```ad-question
-Load a program to print numbers from 1-100 as the INIT program, and modify IDLE to print numbers from 101-200. (You will have to link the library to address space of IDLE for the Write function call to work.)
+// storing user SP
+alias userSP R0;
+userSP = SP;
+
+// Switching user stack to kernal stack
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11]*512 - 1;
+backup;
+
+alias physicalPageNum R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileDescriptor R4;
+fileDescriptor=[fileDescPhysicalAddr];
+
+if (fileDescriptor != -2)
+then
+     alias physicalAddrRetVal R5;
+     physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+     [physicalAddrRetVal] = -1;
+else
+     alias word R5;
+word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+	print word;
+	// Setting return value 0 if we succeed
+	alias physicalAddrRetVal R6;
+	physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+	[physicalAddrRetVal] = 0;
+endif;
+
+restore;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+ireturn;
 ```
 
----
+>File: Sample_timer.spl
+```nasm
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 11]*512 - 1;
 
+backup;
+
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+// print "Current PID: ";
+// print currentPID;
+
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+
+[process_table_entry + 4] = READY;
+
+alias newPID R2;
+if(currentPID == 0) then
+    newPID = 1;
+else
+    newPID = 0;
+endif;
+
+alias new_process_table R3;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if([new_process_table + 4] == CREATED) then
+    [new_process_table + 4] = RUNNING;
+    SP = [new_process_table + 13];
+    ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+
+restore;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+```
+
+>File: prog1.expl
+```c
+int main()
+{
+decl
+    int temp,num;
+enddecl
+begin
+    num=1;
+    while ( num <= 50 ) do
+         temp = exposcall ( "Write" , -2, num );
+         num = num + 1;
+    endwhile;
+    return 0;
+end
+}
+```
+
+> File: prog2.expl
+```c
+int main()
+{
+decl
+    int temp,num;
+enddecl
+begin
+    num=101;
+    while ( num <= 200 ) do
+         temp = exposcall ( "Write" , -2, num );
+         num = num + 1;
+    endwhile;
+    return 0;
+end
+}
+```
+
+> File: Load_12.dat
+```bash
+load --library ../expl/library.lib
+load --idle /home/kali/myexpos/expl/expl_progs/stage12/prog1.xsm
+load --init /home/kali/myexpos/expl/expl_progs/stage12/prog2.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --int=7 /home/kali/myexpos/spl/spl_progs/stage12/sample_int7.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/haltprog.xsm
+load --int=timer /home/kali/myexpos/spl/spl_progs/stage12/sample_timer.xsm
+load --os /home/kali/myexpos/spl/spl_progs/stage12/os_startup_12.xsm
+exit
+```
+## Executing 
+
+![[Pasted image 20230828222048.png]]
+
+
+---
 # Assignment 2
 ```ad-question
 Set two **breakpoints** (see [SPL breakpoint instruction](https://exposnitc.github.io/expos-docs/support-tools/spl/)) in the timer interrupt routine, the first one immediately upon entering the timer routine and the second one just before return from the timer routine. Dump the process table entry and page table entries of current process (see [XSM debugger](https://exposnitc.github.io/expos-docs/support-tools/xsm-simulator/) for various printing options).
 ```
+
+> File: Mod_Sample_timer.spl
+```nasm
+breakpoint;
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]*16) + 11]*512 - 1;
+
+backup;
+
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+
+[process_table_entry + 4] = READY;
+
+alias newPID R2;
+if(currentPID == 0) then
+    newPID = 1;
+else
+    newPID = 0;
+endif;
+
+alias new_process_table R3;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if([new_process_table + 4] == CREATED) then
+    [new_process_table + 4] = RUNNING;
+    SP = [new_process_table + 13];
+    ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+
+restore;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+breakpoint;
+ireturn;
+```
+
+## Executing 
+
+```bash
+$> ./xsm --debug --timer 1009
+$> pcb
+$> c
+$> pcb
+$> pt
+```
+
+![[Pasted image 20230828222408.png]]
+
 
 
 
