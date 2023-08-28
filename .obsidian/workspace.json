@@ -14,7 +14,7 @@
               "type": "markdown",
               "state": {
                 "file": "Stage-12/Introduction-to-Multiprogramming.md",
-                "mode": "source",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -31,8 +31,7 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       },
       {
         "id": "e6bd1f821a7e8787",
@@ -44,7 +43,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-09/Handling-kernel-stack.md",
+                "file": "Stage-12/Introduction-to-Multiprogramming.md",
                 "mode": "preview",
                 "source": false
               }
@@ -61,9 +60,21 @@
                 "source": false
               }
             }
+          },
+          {
+            "id": "071cabfef32a5975",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-11/Introduction-to-ExpL.md",
+                "mode": "source",
+                "source": false
+              }
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -113,7 +124,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5
+    "width": 234.5,
+    "collapsed": true
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -129,7 +141,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-10/2-Process-Table.md",
+                "file": "Stage-12/Introduction-to-Multiprogramming.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -166,18 +178,18 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "49f8403c5b72e3af",
+  "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
-    "Stage-10/1-Console-output.md",
-    "Stage-12/Introduction-to-Multiprogramming.md",
-    "Stage-05/1-XSM-Debugging.md",
     "Stage-11/Introduction-to-ExpL.md",
+    "Stage-10/2-Process-Table.md",
+    "Stage-12/Introduction-to-Multiprogramming.md",
+    "Stage-09/Handling-kernel-stack.md",
+    "Stage-10/1-Console-output.md",
+    "Stage-05/1-XSM-Debugging.md",
     "Stage-12",
     "Stage-10/3-Status-Table.md",
-    "Stage-09/Handling-kernel-stack.md",
     "Stage-10/Console-output.md",
     "Stage-11",
-    "Stage-10/2-Process-Table.md",
     "Stage-06/1-Running-a-user-program.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-06/3-Practice-XSM.md",
