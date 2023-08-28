@@ -223,6 +223,93 @@ The main purpose of the idle process is to run as a background process in an inf
 ```
 
 ---
+# Stage 12 Code
+
+> File: os_startup_12.spl
+```nasm
+// ./spl ./spl_progs/os_startup_09.spl
+
+// load the idle code
+loadi(69,11);
+loadi(70,12);
+
+// load the library code
+loadi(63, 13);
+loadi(64, 14);
+
+// load int 7
+loadi(16,29);
+loadi(17,30);
+
+// load timer inturrupt
+loadi(4, 17);
+loadi(5, 18);
+
+// load init program
+loadi(65,7);
+loadi(66,8);
+
+// load int 10 program
+loadi(22,35);
+loadi(23,36);
+
+// load exception handler
+loadi(2,15);
+loadi(3,16);
+
+// setting page table base reg
+
+// IDLE PROGRAM
+PTBR = PAGE_TABLE_BASE + 20;
+PTLR = 10;
+
+// setting user area page
+// 11th --> User Area Page Number
+[PROCESS_TABLE + 11] = 80;
+
+// 1st --> PID Flag
+[PROCESS_TABLE + 1] = 0;
+
+// PID in system status table
+// 1st --> PID Flag
+[SYSTEM_STATUS_TABLE + 1] = 0;
+
+//Library
+[PTBR+0] = -1;
+[PTBR+1] = "0000";
+[PTBR+2] = -1;
+[PTBR+3] = "0000";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+//Code
+[PTBR+8] = 69;
+[PTBR+9] = "0100";
+[PTBR+10] = 70;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 81;
+[PTBR+17] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
+
+SP = 8*512;
+[76*512] = [65 * 512 + 1];
+
+// return
+ireturn;
+```
+
+---
 
 # Assignment 1
 ```ad-question
