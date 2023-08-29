@@ -445,6 +445,7 @@ endif;
 
 restore;
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+ireturn;
 ```
 
 >File: prog1.expl
