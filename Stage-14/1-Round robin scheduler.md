@@ -311,7 +311,7 @@ PTLR=10;
 [PROCESS_TABLE+(240+4)]=TERMINATED;
 
 //set status=0 in terminal status table
-[TERMINAL_STATUS_TABLE]=0;
+// [TERMINAL_STATUS_TABLE]=0;
 
 return;
 ```
