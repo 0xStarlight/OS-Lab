@@ -642,7 +642,7 @@ $> ./compile.sh stage14
 
 ![[Pasted image 20230830175948.png]]
 ### 2. Loading File
-> File: load_14.dat
+> File: load14.dat
 ```bash
 load --library ../expl/library.lib
 load --idle /home/kali/myexpos/expl/expl_progs/stage14/even_nos.xsm

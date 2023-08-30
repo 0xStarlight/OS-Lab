@@ -8,12 +8,12 @@
         "type": "tabs",
         "children": [
           {
-            "id": "1c5298eb1f725237",
+            "id": "602b158284c9da57",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-11/Introduction-to-ExpL.md",
+                "file": "Stage-15/1-Resource-Manager-Module.md",
                 "mode": "preview",
                 "source": false
               }
@@ -43,32 +43,19 @@
               }
             }
           }
-        ],
-        "currentTab": 1
+        ]
       },
       {
         "id": "e6bd1f821a7e8787",
         "type": "tabs",
         "children": [
           {
-            "id": "2feabeea5705655a",
+            "id": "ec63e6bbc30e3234",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-10/2-Process-Table.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "74b526a906a7ed7f",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-12/Introduction-to-Multiprogramming.md",
+                "file": "Stage-15/1-Resource-Manager-Module.md",
                 "mode": "preview",
                 "source": false
               }
@@ -81,7 +68,7 @@
               "type": "markdown",
               "state": {
                 "file": "Stage-14/1-Round robin scheduler.md",
-                "mode": "preview",
+                "mode": "source",
                 "source": false
               }
             }
@@ -99,7 +86,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -165,7 +152,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-14/1-Round robin scheduler.md",
+                "file": "Stage-15/1-Resource-Manager-Module.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -202,12 +189,19 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "8ca271daf29b50ff",
+  "active": "1e81aa38dd3a4b24",
   "lastOpenFiles": [
-    "00-Compile-Script/0-Auto-Compile.md",
+    "Stage-01",
+    "~Attachments/Pasted image 20230831014540.png",
+    "~Attachments/Pasted image 20230831014238.png",
     "Stage-14/1-Round robin scheduler.md",
-    "Stage-13/1-Boot-Module.md",
+    "Stage-15/1-Resource-Manager-Module.md",
+    "~Attachments/Pasted image 20230831013940.png",
     "01-Assignment/1-Assignment.md",
+    "~Attachments/Pasted image 20230831001952.png",
+    "Stage-15",
+    "00-Compile-Script/0-Auto-Compile.md",
+    "Stage-13/1-Boot-Module.md",
     "Stage-11/Introduction-to-ExpL.md",
     "Stage-10/2-Process-Table.md",
     "~Attachments/Pasted image 20230830155844.png",
@@ -216,10 +210,6 @@
     "~Attachments/Pasted image 20230830154751.png",
     "~Attachments/Pasted image 20230830154719.png",
     "~Attachments/Pasted image 20230830153956.png",
-    "~Attachments/Pasted image 20230830153847.png",
-    "~Attachments/Pasted image 20230830153818.png",
-    "~Attachments/Pasted image 20230830153428.png",
-    "~Attachments/Pasted image 20230830143935.png",
     "01-Assignment",
     "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-14/2-Timer-Algo.md",
@@ -243,11 +233,9 @@
     "Stage-00/Read-Doc.md",
     "Stage-09",
     "Stage-08",
-    "Stage-07",
     "Stage-03/1-Bootstrap-Loader.md",
     "Stage-03/2-XSM-Practice.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
-    "Stage-04/3-Practice-SPL.md",
-    "Stage-02/1-Understanding-the-Filesystem.md"
+    "Stage-04/3-Practice-SPL.md"
   ]
 }
