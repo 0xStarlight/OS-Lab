@@ -25,8 +25,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-13/2-Modules.md",
-                "mode": "preview",
+                "file": "01-Assignment/1-Assignment.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -43,7 +43,8 @@
               }
             }
           }
-        ]
+        ],
+        "currentTab": 1
       },
       {
         "id": "e6bd1f821a7e8787",
@@ -136,8 +137,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5,
-    "collapsed": true
+    "width": 234.5
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -153,7 +153,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-14/1-Round robin scheduler.md",
+                "file": "01-Assignment/1-Assignment.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -190,12 +190,30 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "b8fd66ce07f658b6",
+  "active": "ed1bf57e98f24c73",
   "lastOpenFiles": [
+    "~Attachments/Pasted image 20230830155844.png",
+    "~Attachments/Pasted image 20230830155722.png",
+    "~Attachments/Pasted image 20230830154825.png",
+    "~Attachments/Pasted image 20230830154751.png",
+    "~Attachments/Pasted image 20230830154719.png",
+    "~Attachments/Pasted image 20230830153956.png",
+    "~Attachments/Pasted image 20230830153847.png",
+    "~Attachments/Pasted image 20230830153818.png",
+    "~Attachments/Pasted image 20230830153428.png",
+    "~Attachments/Pasted image 20230830143935.png",
+    "~Attachments/Pasted image 20230830143752.png",
     "Stage-12/Introduction-to-Multiprogramming.md",
+    "01-Assignment/1-Assignment.md",
+    "01-Assignment",
+    "Stage-13/2-Modules.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
+    "Stage-05/1-XSM-Debugging.md",
+    "Stage-03/2-XSM-Practice.md",
+    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-14/1-Round robin scheduler.md",
     "Stage-14/2-Timer-Algo.md",
-    "~Attachments/Pasted image 20230829141847.png",
     "README.md",
     "Stage-10/2-Process-Table.md",
     "Stage-14",
@@ -203,16 +221,9 @@
     "Stage-13/1-Boot-Module.md",
     "00-Compile-Script/0-Auto-Compile.md",
     "Stage-10/1-Console-output.md",
-    "Stage-13/2-Modules.md",
     "Stage-13",
-    "~Attachments/image_2023-08-28_14-48-05.png",
-    "~Attachments/image_2023-08-28_14-48-05 1.png",
-    "~Attachments/Pasted image 20230828222937.png",
-    "~Attachments/Pasted image 20230828222408.png",
-    "~Attachments/Pasted image 20230828222048.png",
     "00-Compile-Script",
     "Stage-09/Handling-kernel-stack.md",
-    "Stage-05/1-XSM-Debugging.md",
     "Stage-12",
     "Stage-10/3-Status-Table.md",
     "Stage-10/Console-output.md",
@@ -221,21 +232,11 @@
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
     "Stage-06/3-Practice-XSM.md",
     "Stage-07/ABI-and-XEXE-Format.md",
-    "~Attachments/Pasted image 20230823164044.png",
-    "~Attachments/Pasted image 20230823164033.png",
     "Stage-10",
     "Stage-00/Read-Doc.md",
     "Stage-09",
     "Stage-08/Handling-Timer-Interrupt.md",
-    "~Attachments/Pasted image 20230817014616.png",
     "Stage-08",
-    "~Attachments/Pasted image 20230815214758.png",
-    "Stage-07",
-    "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-03/2-XSM-Practice.md",
-    "Stage-04/1-Learning-the-SPL-Language.md",
-    "Stage-04/3-Practice-SPL.md",
-    "Stage-02/1-Understanding-the-Filesystem.md",
-    "Stage-06"
+    "Stage-07"
   ]
 }
