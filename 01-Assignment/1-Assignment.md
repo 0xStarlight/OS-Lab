@@ -47,7 +47,7 @@ make menuconfig
 
 ![[Pasted image 20230830155844.png]]
 
-
+![[Pasted image 20230901222543.png]]
 
 
 

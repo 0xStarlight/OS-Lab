@@ -6,34 +6,9 @@
       {
         "id": "43f6c0649654b54d",
         "type": "tabs",
-        "dimension": 48.98897058823529,
         "children": [
           {
-            "id": "602b158284c9da57",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-13/1-Boot-Module.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "13e3060f43ca1dd3",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-15/1-Resource-Manager-Module.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "8ca271daf29b50ff",
+            "id": "b8fd66ce07f658b6",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -45,32 +20,67 @@
             }
           },
           {
-            "id": "3c68e0378245d3f4",
+            "id": "ed1bf57e98f24c73",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01-Assignment/1-Assignment.md",
+                "file": "Stage-12/Introduction-to-Multiprogramming.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "03f9c5c9ea3c15d1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-16/1-Console-Input.md",
+                "mode": "source",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "b3cd126fc690986c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "00-Compile-Script/0-Auto-Compile.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       },
       {
-        "id": "c648382a08161d87",
+        "id": "c359674ae3410629",
         "type": "split",
-        "dimension": 51.01102941176471,
         "children": [
           {
             "id": "e6bd1f821a7e8787",
             "type": "tabs",
-            "dimension": 53.78590078328982,
+            "dimension": 63.615295480880654,
             "children": [
               {
-                "id": "1e31d089bdde4cbb",
+                "id": "9a9deb58fa9c6255",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Stage-13/1-Boot-Module.md",
+                    "mode": "preview",
+                    "source": false
+                  }
+                }
+              },
+              {
+                "id": "e1cdf8803dc3f252",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
@@ -82,63 +92,27 @@
                 }
               },
               {
-                "id": "ec63e6bbc30e3234",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-15/1-Resource-Manager-Module.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "f6d328dea00b72e0",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-14/1-Round robin scheduler.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "3760bbf8e8daaf12",
+                "id": "071cabfef32a5975",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
                   "state": {
                     "file": "Stage-11/Introduction-to-ExpL.md",
-                    "mode": "preview",
+                    "mode": "source",
                     "source": false
                   }
                 }
               }
             ],
-            "currentTab": 2
+            "currentTab": 1
           },
           {
-            "id": "c49af80d2ddae635",
+            "id": "68de85f1d5b28edc",
             "type": "tabs",
-            "dimension": 46.21409921671018,
+            "dimension": 36.384704519119346,
             "children": [
               {
-                "id": "63618f0bd3490171",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-15/1-Resource-Manager-Module.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "243b0a5b98c12eaf",
+                "id": "49f8403c5b72e3af",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
@@ -149,8 +123,7 @@
                   }
                 }
               }
-            ],
-            "currentTab": 1
+            ]
           }
         ],
         "direction": "horizontal"
@@ -203,8 +176,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5,
-    "collapsed": true
+    "width": 234.5
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -220,7 +192,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-15/1-Resource-Manager-Module.md",
+                "file": "Stage-16/1-Console-Input.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -257,52 +229,53 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "13e3060f43ca1dd3",
+  "active": "03f9c5c9ea3c15d1",
   "lastOpenFiles": [
-    "Stage-14/1-Round robin scheduler.md",
+    "~Attachments/Pasted image 20230903021624.png",
     "Stage-15/1-Resource-Manager-Module.md",
-    "Stage-13/1-Boot-Module.md",
+    "Stage-16/1-Console-Input.md",
+    "Stage-16",
     "Stage-12/Introduction-to-Multiprogramming.md",
+    "~Attachments/Pasted image 20230901222543.png",
+    "01-Assignment/1-Assignment.md",
     "Stage-13/2-Modules.md",
+    "Stage-14/2-Timer-Algo.md",
+    "00-Compile-Script/0-Auto-Compile.md",
+    "Stage-14/1-Round robin scheduler.md",
+    "Stage-13/1-Boot-Module.md",
     "Stage-11/Introduction-to-ExpL.md",
-    "Stage-10/2-Process-Table.md",
-    "Stage-01",
+    "Stage-10/1-Console-output.md",
+    "Stage-09/Handling-kernel-stack.md",
+    "Stage-08/Handling-Timer-Interrupt.md",
+    "Stage-07/ABI-and-XEXE-Format.md",
+    "Stage-06/3-Practice-XSM.md",
+    "Stage-06/2-Unprivileged-Mode-Tutorial.md",
+    "Stage-06/1-Running-a-user-program.md",
+    "Stage-05/1-XSM-Debugging.md",
+    "Stage-04/3-Practice-SPL.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
+    "Stage-04/2-SPL-Syntax.md",
+    "Stage-03/2-XSM-Practice.md",
+    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
     "~Attachments/Pasted image 20230831014540.png",
     "~Attachments/Pasted image 20230831014238.png",
     "~Attachments/Pasted image 20230831013940.png",
-    "01-Assignment/1-Assignment.md",
     "~Attachments/Pasted image 20230831001952.png",
     "Stage-15",
-    "00-Compile-Script/0-Auto-Compile.md",
+    "~Attachments/Pasted image 20230830175948.png",
+    "~Attachments/Pasted image 20230830175729.png",
     "~Attachments/Pasted image 20230830155844.png",
     "~Attachments/Pasted image 20230830155722.png",
     "~Attachments/Pasted image 20230830154825.png",
-    "~Attachments/Pasted image 20230830154751.png",
-    "~Attachments/Pasted image 20230830154719.png",
-    "~Attachments/Pasted image 20230830153956.png",
     "01-Assignment",
-    "Stage-14/2-Timer-Algo.md",
+    "README.md",
     "Stage-14",
     "Stage-13",
-    "Stage-10/1-Console-output.md",
     "00-Compile-Script",
-    "Stage-06/3-Practice-XSM.md",
-    "Stage-06/1-Running-a-user-program.md",
     "Stage-12",
-    "Stage-09/Handling-kernel-stack.md",
-    "Stage-10/3-Status-Table.md",
-    "Stage-08/Handling-Timer-Interrupt.md",
-    "Stage-07/ABI-and-XEXE-Format.md",
-    "Stage-06/2-Unprivileged-Mode-Tutorial.md",
-    "Stage-05/1-XSM-Debugging.md",
-    "Stage-10/Console-output.md",
     "Stage-11",
     "Stage-10",
-    "Stage-00/Read-Doc.md",
-    "Stage-09",
-    "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-03/2-XSM-Practice.md",
-    "Stage-04/1-Learning-the-SPL-Language.md",
-    "Stage-04/3-Practice-SPL.md"
+    "Stage-09"
   ]
 }
