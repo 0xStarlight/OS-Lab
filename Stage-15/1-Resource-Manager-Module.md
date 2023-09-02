@@ -284,9 +284,9 @@ Set a **breakpoint** (see [SPL breakpoint instruction](https://exposnitc.gith
 7. [x] os_startup.spl
 8. [x] sample_int7.spl
 9. [x] sample_timer.spl
-10. [ ] even_nos.expl
-11. [ ] odd_nos.expl
-12. [ ] prime.expl 
+10. [x] even_nos.expl
+11. [x] odd_nos.expl
+12. [x] prime.expl 
 
 > File: boot_module.spl
 ```c
@@ -740,6 +740,29 @@ SP=userSP;
 ireturn;
 ```
 
+> File: sample_timer.spl
+```c
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+11]*512-1 ;
+backup;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 4] = READY;
+
+call MOD_5;
+
+restore;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+//Commented below because already done in scheduler
+//PTBR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 14];
+//PTLR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 15];
+//MODE=0
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=0;
+
+ireturn;
+```
+
 > File: odd_nos.expl
 ```c
 int main()
@@ -873,8 +896,74 @@ $> ./xsm --timer 80
 
 ![[Pasted image 20230831014540.png]]
 
+---
 
+# Modification Question
+```ad-question
+Make the prog-n execute completly before going to the next prog.
+```
 
+```c
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+multipush(BP);
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+alias pid_last R2;
+pid_last=currentPID;
+
+currentPID=(currentPID+1)%16;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+alias newPID R3;
+newPID=pid_last;
+
+if([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 4] == TERMINATED) then
+
+	newPID=-1;
+	while([process_table_entry + 4]!=READY && [process_table_entry + 4]!=CREATED) do
+	 currentPID=(currentPID+1)%16;
+	 process_table_entry = PROCESS_TABLE + currentPID * 16;
+	 if([process_table_entry + 4]==READY || [process_table_entry + 4]==CREATED)then
+	  break;
+	 endif;
+	 if(currentPID==pid_last) then
+	  newPID=0;
+	  break;
+	 endif;
+	endwhile;
+	if(newPID==-1)then
+	 newPID=currentPID;
+	endif;
+endif;
+
+alias new_process_table R4;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if([new_process_table + 4] == CREATED) then
+ [new_process_table + 4] = RUNNING;
+ SP = [new_process_table + 13];
+ //MODE=0
+ [new_process_table + 9] = 0;
+ ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+multipop(BP);
+
+return;
+```
 
 
 
