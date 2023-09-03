@@ -2,7 +2,7 @@
 
 - The IN instruction initiates a console input but will not suspend machine execution till some input is read. Machine execution proceeds to the next instruction in the program. When the user enters data, the data is transferred to port P0, and a console interrupt is raised by the console device.
 - After the execution of each instruction in unprivileged mode, the machine checks whether a pending disk/console/timer interrupt. If so, the machine does the following actions:
-    1. ****Push the IP value into the top of the stack.
+    1. Push the IP value into the top of the stack.
     2. Set IP to value stored in the interrupt vector table entry for the timer interrupt handler. The vector table entry for timer interrupt is located at physical address 493 in page 0 (ROM) of XSM and the value 2048 is preset in this location. Hence, the IP register gets value 1. The machine then switches to to privileged mode and address translation is disabled. Hence, next instruction will be fetched from physical address 2048. (See Boot ROM and Boot block section in [XSM Machine Organization](https://exposnitc.github.io/expos-docs/arch-spec/machine-organization/) documentation)
 
 ## Implementation
@@ -42,7 +42,7 @@
 
 # Practice 1
 ```ad-question
-Take input of two numbers and find the gcd.
+Write an ExpL program which reads two numbers from console and finds the GCD using Euclidean's algorithm and print the GCD. Load this program as init program.
 ```
 
 > File: boot_module.spl
@@ -701,9 +701,88 @@ $> ./xsm
 
 ---
 
+```ad-question
+title: Q1. Is it possible that, the running process interrupted by the console interrupt be the same process that had acquired the terminal for reading?
+No, The process which has acquired the terminal will be in WAIT_TERMINAL state after issuing a terminal read until the console interrupt occurs. Hence, this process will not be scheduled until console interrupt changes it's state to READY.
+```
+
+---
+
 # Assignment 1
+```ad-question
+Write an ExpL program to read N numbers in an array, sort using bubble sort and print the sorted array to the terminal. Load this program as init program and run the machine.
+```
 
+> File: assign_1.expl
+```c
+decl 
+   int n,arr[50],i,j,dup; 
+enddecl
 
+int main()
+{
+  begin
+  read(n);
+
+  i=0;
+  while(i<n) do
+    read(arr[i]);
+    i = i+1;
+  endwhile;
+
+  i=0;
+  while(i<n) do
+    j=i;
+    while(j<n) do
+      if(arr[i]>arr[j]) then
+        dup = arr[i];
+        arr[i] = arr[j];
+        arr[j] = dup;
+      endif;
+      j = j + 1;
+    endwhile;
+    i = i+1;
+  endwhile;
+
+  i=0;
+  while(i<n) do
+    write(arr[i]);
+    i = i+1;
+  endwhile;
+
+  return 0;
+  end
+}
+```
+
+---
+
+# Assignment 2
+
+```nasm
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+backup;
+breakpoint;
+alias reqPID R5;
+reqPID = [TERMINAL_STATUS_TABLE + 1];
+[PROCESS_TABLE + reqPID * 16 + 8] = P0;
+breakpoint;
+multipush(R0,R1,R2,R3);
+
+R1=9;
+R2=reqPID;
+call RESOURCE_MANAGER;
+
+multipop(R0,R1,R2,R3);
+
+restore;
+
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+
+ireturn;
+```
 
 
 
