@@ -37,3 +37,687 @@
 4. Invoke the scheduler
 5. After console interrupt wakes up this process, transfer data present in the input buffer field of the process table into the word address (passed as an argument).
 ![[Pasted image 20230903021624.png]]
+
+---
+
+# Practice 1
+```ad-question
+Take input of two numbers and find the gcd.
+```
+
+> File: boot_module.spl
+```nasm
+//MOD_0
+loadi(40,53);
+loadi(41,54);
+
+//MOD_4
+loadi(48,61);
+loadi(49,62);
+
+//lib
+loadi(63,13);
+loadi(64,14);
+
+//scheduler
+loadi(50,63);
+loadi(51,64);
+
+//init
+loadi(65,7);
+loadi(66,8);
+
+//int 10
+loadi(22,35);
+loadi(23,36);
+
+//int 7
+loadi(16,29);
+loadi(17,30);
+
+//int 6
+loadi(14,27);
+loadi(15,28);
+
+//int 3(terminal inturrupt handler)
+loadi(8,21);
+loadi(9,22);
+
+//exception
+loadi(2,15);
+loadi(3,1*16);
+
+//timer
+loadi(4,17);
+loadi(5,18);
+
+//FOR INIT
+//pid
+[PROCESS_TABLE+(1*16+1)]=1;
+
+//userareapgnum
+//Setting user area pg num
+[PROCESS_TABLE + (1*16+11)]=80;
+//UPTR FOR INIT
+[PROCESS_TABLE + (1*16+13)]=8*512;
+
+//KPTR FOR INIT
+[PROCESS_TABLE+(1*16+12)]=0;
+
+[PROCESS_TABLE+(1*16+14)]=(PAGE_TABLE_BASE+20);
+[PROCESS_TABLE+(1*16+15)]=10;
+[PROCESS_TABLE+(1*16+4)]=CREATED;
+
+//init
+PTBR=PAGE_TABLE_BASE+20;
+PTLR=10;
+
+//lib
+[PTBR+0]=63;
+[PTBR+1]="0100";
+[PTBR+2]=64;
+[PTBR+3]="0100";
+
+//heap
+[PTBR+4]=78;
+[PTBR+5]="0110";
+[PTBR+6]=79;
+[PTBR+7]="0110";
+
+//Code
+[PTBR+8]=65;
+[PTBR+9]="0100";
+[PTBR+10]=66;
+[PTBR+11]="0100";
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+//stack
+[PTBR+1*16]=76;
+[PTBR+17]="0110";
+[PTBR+18]=77;
+[PTBR+19]="0110";
+
+[76 * 512] = [65*512 + 1];
+
+//other process table entries,state=terminated
+[PROCESS_TABLE + 2*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 3*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 4*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 5*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 6*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 7*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 8*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 9*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 10*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 11*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 12*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 13*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 14*16 + 4] = TERMINATED;
+[PROCESS_TABLE + 15*16 + 4] = TERMINATED;
+
+//set status=0 in terminal status table
+[TERMINAL_STATUS_TABLE]=0;
+
+return;
+```
+
+> File: os_startup.spl
+```nasm
+loadi(69,11); //idle
+loadi(70,12);
+
+loadi(54,67); //module_7
+loadi(55,68);
+
+//.....Calling BOOT Module........//
+
+SP = 82*512-1;	//Kernal Stack of Idle Process
+call BOOT_MODULE;
+
+//.....Page Table Entry for IDLE process pid=0.....//
+
+PTBR = PAGE_TABLE_BASE;
+PTLR=10;
+
+//.....library.......//
+[PTBR+0]= 63;		
+[PTBR+1]= "0100";
+[PTBR+2]= 64;
+[PTBR+3]= "0100";
+
+
+//.....Heap........//
+[PTBR+4]= -1;		
+[PTBR+5]= "0000";
+[PTBR+6]= -1;
+[PTBR+7]= "0000";
+
+
+//.....code.......//
+[PTBR+8]=69;		
+[PTBR+9]="0100";
+[PTBR+10]=70;
+[PTBR+11]="0100";
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+
+
+//.......stack.......//
+[PTBR+16]=81;		
+[PTBR+17]="0110";
+[PTBR+18]=-1;
+[PTBR+19]="0000";
+
+[81*512]=[69*512+1];
+SP = 8*512;
+
+//....process table
+[PROCESS_TABLE] = 0;		//Tick
+[PROCESS_TABLE+1] = 0;		//pid
+[PROCESS_TABLE+4] = RUNNING;	//State
+[PROCESS_TABLE+11] = 82;	//User Area Page
+[PROCESS_TABLE+13] = 8*512;	//UPTR
+[PROCESS_TABLE+12] = 0;		//KPTR
+[PROCESS_TABLE+14] = PAGE_TABLE_BASE;	//PTBR
+[PROCESS_TABLE+15] = 10;	//PTLR
+
+[SYSTEM_STATUS_TABLE+1]=0;	//currently running process
+
+ireturn;
+```
+
+> File: console.spl
+```nasm
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+backup;
+
+alias reqPID R5;
+reqPID = [TERMINAL_STATUS_TABLE + 1];
+[PROCESS_TABLE + reqPID * 16 + 8] = P0;
+
+multipush(R0,R1,R2,R3);
+
+R1=9;
+R2=reqPID;
+call RESOURCE_MANAGER;
+
+multipop(R0,R1,R2,R3);
+
+restore;
+
+SP=[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+
+ireturn;
+```
+
+> File: haltprog.spl
+```nasm
+halt;
+```
+
+> File: int_10.spl
+```nasm
+[PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+4] = TERMINATED;
+
+alias i R0;
+i=1;	//dnt check for idle
+while(i<16) do
+ if([PROCESS_TABLE+16*i+4]!=TERMINATED) then
+  break;
+ endif;
+i = i+1;
+endwhile;
+
+if(i==16) then
+	halt;
+endif;
+
+call SCHEDULER;
+```
+
+> File: mod_0.spl
+```nasm
+alias funcNo R1;
+alias currPid R2;
+
+// Acquire Terminal
+if(funcNo==8) then
+while([TERMINAL_STATUS_TABLE]==1) do
+
+ [PROCESS_TABLE+16*currPid+4] = WAIT_TERMINAL;
+ multipush(R1,R2,R3);
+ call SCHEDULER;
+ multipop(R1,R2,R3);
+ 
+endwhile;
+
+[TERMINAL_STATUS_TABLE] = 1;	
+[TERMINAL_STATUS_TABLE+1] = currPid;
+
+breakpoint;
+return;
+endif;
+
+// Release Terminal
+alias ret R0;
+if(funcNo==9) then
+if(currPid!=[TERMINAL_STATUS_TABLE+1]) then
+ ret = -1;
+ return;
+endif;
+
+[TERMINAL_STATUS_TABLE] = 0;
+alias i R5;
+i=0;
+while(i<16) do
+ if([PROCESS_TABLE+16*i+4]==WAIT_TERMINAL) then
+  [PROCESS_TABLE+16*i+4] = READY;
+ endif;
+i = i+1;
+endwhile;
+
+ret = 0;
+
+breakpoint;
+return;
+endif;
+```
+
+> File: mod_4.spl
+```nasm
+alias func_num R1;
+alias currPID R2;
+
+if(func_num==3)then
+	multipush(R1,R2,R3);
+	
+	//to call acquire terminal(func_num=8)
+	R1=8;
+	R2=[SYSTEM_STATUS_TABLE + 1];
+	call RESOURCE_MANAGER;
+	
+	multipop(R1,R2,R3);
+	print R3;
+	
+	multipush(R1,R2,R3);
+	
+	//to call release terminal(func_num=9)
+	R1=9;
+	R2=[SYSTEM_STATUS_TABLE + 1];
+	call RESOURCE_MANAGER;
+	
+	//can save retval which is in R0 if needed.
+	
+	multipop(R1,R2,R3);
+endif;
+
+if(func_num == 4) then
+	multipush(R1,R2,R3);
+
+	R1 = 8;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R3);
+
+	read;
+
+	[PROCESS_TABLE+16*R2+4] = WAIT_TERMINAL;
+	multipush(R1,R2,R3);
+
+	call SCHEDULER;
+
+	multipop(R1,R2,R3);
+
+	alias word R5;
+	word = ([PTBR + (R3)*2/512])*512 + (R3)%512;
+	[word] = [PROCESS_TABLE + currPID * 16 + 8];
+
+endif;
+
+return;
+```
+
+> File: mod_5.spl
+```nasm
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+multipush(BP);
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+alias pid_last R2;
+pid_last=currentPID;
+
+currentPID=(currentPID+1)%16;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+alias newPID R3;
+newPID=-1;
+while([process_table_entry + 4]!=READY && [process_table_entry + 4]!=CREATED) do
+ currentPID=(currentPID+1)%16;
+ process_table_entry = PROCESS_TABLE + currentPID * 16;
+ if([process_table_entry + 4]==READY || [process_table_entry + 4]==CREATED)then
+  break;
+ endif;
+ if(currentPID==pid_last) then
+  newPID=0;
+  break;
+ endif;
+endwhile;
+if(newPID==-1)then
+ newPID=currentPID;
+endif;
+
+alias new_process_table R4;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if([new_process_table + 4] == CREATED) then
+ [new_process_table + 4] = RUNNING;
+ SP = [new_process_table + 13];
+ //MODE=0
+ [new_process_table + 9] = 0;
+ ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+multipop(BP);
+
+return;
+```
+
+> File: sample_int6.spl
+```nasm
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 7;
+
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+
+alias physicalPageNum R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileDescriptor R4;
+fileDescriptor=[fileDescPhysicalAddr];
+
+
+
+if (fileDescriptor != -1)
+then
+	 alias physicalAddrRetVal R5;
+	 physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+	 [physicalAddrRetVal] = -1;
+else
+	 alias word R5;
+	word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+	//print word;
+
+	//Code for S15
+	multipush(R0,R1,R2,R3,R4,R5);
+	alias func_num R1;
+	alias pid R2;
+	alias word_print R3;
+
+	func_num=4;
+	pid=[SYSTEM_STATUS_TABLE + 1];
+	word_print=word;
+
+	//call to device manager.
+	call DEVICE_MANAGER;
+
+	multipop(R0,R1,R2,R3,R4,R5);
+
+	alias physicalAddrRetVal R6;
+	physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+	[physicalAddrRetVal] = 0;
+endif;
+
+SP=userSP;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+ireturn;
+```
+
+> File: sample_int7.spl
+```nasm
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 5;
+
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+
+alias physicalPageNum R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileDescriptor R4;
+fileDescriptor=[fileDescPhysicalAddr];
+
+
+
+if (fileDescriptor != -2)
+then
+	 alias physicalAddrRetVal R5;
+	 physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+	 [physicalAddrRetVal] = -1;
+else
+	 alias word R5;
+	word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+	//print word;
+
+	//Code for S15
+	multipush(R0,R1,R2,R3,R4,R5);
+	alias func_num R1;
+	alias pid R2;
+	alias word_print R3;
+
+	func_num=3;
+	pid=[SYSTEM_STATUS_TABLE + 1];
+	word_print=word;
+
+	//call to device manager.
+	call DEVICE_MANAGER;
+
+	multipop(R0,R1,R2,R3,R4,R5);
+
+	alias physicalAddrRetVal R6;
+	physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+	[physicalAddrRetVal] = 0;
+endif;
+
+SP=userSP;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+ireturn;
+```
+
+> File: sample_timer.spl
+```nasm
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+11]*512-1 ;
+backup;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 4] = READY;
+
+call MOD_5;
+
+restore;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+//Commented below because already done in scheduler
+//PTBR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 14];
+//PTLR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 15];
+//MODE=0
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=0;
+
+ireturn;
+```
+
+> File: infinite.expl
+```c
+int main()
+{
+decl
+    int temp,num,check;
+enddecl
+begin
+    num=1;
+    while ( num == 1 ) do
+    	 check = num%2;
+    endwhile;
+    return 0;
+end
+}
+```
+
+> File: gcd.expl
+```c
+decl
+ int ExtendedEuclid(int a,int b);
+enddecl
+
+int ExtendedEuclid(int a,int b)
+{
+ decl
+  int r0,r1,s0,s1,t0,t1,qi,ri,si,ti;
+ enddecl
+
+ begin
+  r0 = a;
+  r1 = b;
+  s0 = 1;
+  s1 = 0;
+  t0 = 0;
+  t1 = 1;
+
+  while(r1 != 0) do
+   qi = r0/r1;
+   ri = r0 - (qi*r1);
+   si = s0 - (qi*s1);
+   ti = t0 - (qi*t1);
+   r0 = r1;
+   r1 = ri;
+   s0 = s1;
+   s1 = si;
+   t0 = t1;
+   t1 = ti;
+  endwhile;
+
+  write(r0);
+  return 0;
+ end
+}
+
+int main()
+{
+ decl
+  int a,b,c;
+ enddecl
+
+ begin
+  read(a);
+  read(b);
+  c = ExtendedEuclid(a,b);
+  return 0;
+ end 
+}
+```
+
+## Compile
+```bash
+$> ./compile.sh stage16
+```
+
+![[Pasted image 20230903145757.png]]
+
+## Load the files
+> File: load16.dat
+```bash
+load --library ../expl/library.lib
+load --idle /home/kali/myexpos/expl/expl_progs/stage16/infinite.xsm
+load --init /home/kali/myexpos/expl/expl_progs/stage16/gcd.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/stage16/int_10.xsm
+load --int=7 /home/kali/myexpos/spl/spl_progs/stage16/sample_int7.xsm
+load --int=6 /home/kali/myexpos/spl/spl_progs/stage16/sample_int6.xsm
+load --int=console /home/kali/myexpos/spl/spl_progs/stage16/console.xsm
+load --module 0 /home/kali/myexpos/spl/spl_progs/stage16/mod_0.xsm
+load --module 5 /home/kali/myexpos/spl/spl_progs/stage16/mod_5.xsm
+load --module 4 /home/kali/myexpos/spl/spl_progs/stage16/mod_4.xsm
+load --module 7 /home/kali/myexpos/spl/spl_progs/stage16/boot_module.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/stage16/haltprog.xsm
+load --int=timer /home/kali/myexpos/spl/spl_progs/stage16/sample_timer.xsm
+load --os /home/kali/myexpos/spl/spl_progs/stage16/os_startup.xsm
+exit
+```
+
+```bash
+$> ./xfs-interface < ../test/load16.dat
+```
+
+![[Pasted image 20230903145931.png]]
+
+## Execute xsm
+
+```bash
+$> ./xsm
+4
+16
+4
+```
+
+![[Pasted image 20230903150045.png]]
+
+---
+
+# Assignment 1
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
