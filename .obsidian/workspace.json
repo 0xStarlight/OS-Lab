@@ -21,6 +21,18 @@
             }
           },
           {
+            "id": "c00c38fc16cd31b1",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-17/1-Program-Loader.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
             "id": "13e3060f43ca1dd3",
             "type": "leaf",
             "state": {
@@ -75,55 +87,9 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-15/1-Resource-Manager-Module.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "ec63e6bbc30e3234",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-15/1-Resource-Manager-Module.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "f6d328dea00b72e0",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-14/1-Round robin scheduler.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "c00c38fc16cd31b1",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
                     "file": "Stage-16/1-Console-Input.md",
                     "mode": "preview",
                     "source": false
-                  }
-                }
-              },
-              {
-                "id": "6386b88db81ddea9",
-                "type": "leaf",
-                "state": {
-                  "type": "release-notes",
-                  "state": {
-                    "currentVersion": "1.4.5"
                   }
                 }
               },
@@ -140,7 +106,7 @@
                 }
               }
             ],
-            "currentTab": 3
+            "currentTab": 1
           },
           {
             "id": "c49af80d2ddae635",
@@ -241,7 +207,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-16/1-Console-Input.md",
+                "file": "Stage-17/1-Program-Loader.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -280,29 +246,32 @@
   },
   "active": "c00c38fc16cd31b1",
   "lastOpenFiles": [
-    "Stage-14/1-Round robin scheduler.md",
+    "Stage-11/Introduction-to-ExpL.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
+    "Stage-17/1-Program-Loader.md",
     "Stage-16/1-Console-Input.md",
+    "Stage-15/1-Resource-Manager-Module.md",
+    "~Attachments/Pasted image 20230904001100.png",
+    "~Attachments/Pasted image 20230904001045.png",
+    "Stage-17",
+    "Stage-14/1-Round robin scheduler.md",
     "01-Assignment/1-Assignment.md",
     "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20230903150045.png",
     "~Attachments/Pasted image 20230903145931.png",
     "~Attachments/Pasted image 20230903145757.png",
-    "Stage-15/1-Resource-Manager-Module.md",
     "~Attachments/Pasted image 20230903021624.png",
     "~Attachments/Pasted image 20230901222543.png",
     "Stage-16",
     "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-13/2-Modules.md",
-    "Stage-11/Introduction-to-ExpL.md",
     "Stage-10/2-Process-Table.md",
     "Stage-01",
     "~Attachments/Pasted image 20230831014540.png",
     "~Attachments/Pasted image 20230831014238.png",
     "~Attachments/Pasted image 20230831013940.png",
-    "~Attachments/Pasted image 20230831001952.png",
     "Stage-15",
     "00-Compile-Script/0-Auto-Compile.md",
-    "~Attachments/Pasted image 20230830155844.png",
     "01-Assignment",
     "Stage-14/2-Timer-Algo.md",
     "Stage-14",
@@ -320,10 +289,8 @@
     "Stage-05/1-XSM-Debugging.md",
     "Stage-10/Console-output.md",
     "Stage-11",
-    "Stage-10",
     "Stage-00/Read-Doc.md",
     "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-03/2-XSM-Practice.md",
-    "Stage-04/1-Learning-the-SPL-Language.md"
+    "Stage-03/2-XSM-Practice.md"
   ]
 }
