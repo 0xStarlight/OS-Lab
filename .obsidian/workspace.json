@@ -6,34 +6,21 @@
       {
         "id": "43f6c0649654b54d",
         "type": "tabs",
-        "dimension": 48.71406959152799,
         "children": [
           {
-            "id": "602b158284c9da57",
+            "id": "b8fd66ce07f658b6",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "01-Assignment/1-Assignment.md",
+                "file": "Stage-15/1-Resource-Manager-Module.md",
                 "mode": "preview",
                 "source": false
               }
             }
           },
           {
-            "id": "c00c38fc16cd31b1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-17/1-Program-Loader.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "13e3060f43ca1dd3",
+            "id": "ed1bf57e98f24c73",
             "type": "leaf",
             "state": {
               "type": "markdown",
@@ -45,75 +32,67 @@
             }
           },
           {
-            "id": "8ca271daf29b50ff",
+            "id": "03f9c5c9ea3c15d1",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-15/1-Resource-Manager-Module.md",
+                "file": "01-Assignment/1-Assignment.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "775719f9a0ce69a0",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-17/1-Program-Loader.md",
+                "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "b3cd126fc690986c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "00-Compile-Script/0-Auto-Compile.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       },
       {
-        "id": "c648382a08161d87",
+        "id": "c359674ae3410629",
         "type": "split",
-        "dimension": 51.28593040847201,
         "children": [
           {
             "id": "e6bd1f821a7e8787",
             "type": "tabs",
-            "dimension": 53.78590078328982,
+            "dimension": 54.34530706836617,
             "children": [
               {
-                "id": "1e31d089bdde4cbb",
+                "id": "9a9deb58fa9c6255",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-17/1-Program-Loader.md",
+                    "file": "Stage-13/1-Boot-Module.md",
                     "mode": "preview",
                     "source": false
                   }
                 }
               },
               {
-                "id": "22484516d074d3d9",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-14/1-Round robin scheduler.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              },
-              {
-                "id": "3760bbf8e8daaf12",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-11/Introduction-to-ExpL.md",
-                    "mode": "preview",
-                    "source": false
-                  }
-                }
-              }
-            ]
-          },
-          {
-            "id": "c49af80d2ddae635",
-            "type": "tabs",
-            "dimension": 46.21409921671018,
-            "children": [
-              {
-                "id": "63618f0bd3490171",
+                "id": "e1cdf8803dc3f252",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
@@ -125,12 +104,56 @@
                 }
               },
               {
-                "id": "243b0a5b98c12eaf",
+                "id": "0d78b85a87bd796e",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "00-Compile-Script/0-Auto-Compile.md",
+                    "mode": "preview",
+                    "source": false
+                  }
+                }
+              },
+              {
+                "id": "071cabfef32a5975",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Stage-11/Introduction-to-ExpL.md",
+                    "mode": "source",
+                    "source": false
+                  }
+                }
+              }
+            ],
+            "currentTab": 1
+          },
+          {
+            "id": "68de85f1d5b28edc",
+            "type": "tabs",
+            "dimension": 45.65469293163383,
+            "children": [
+              {
+                "id": "49f8403c5b72e3af",
                 "type": "leaf",
                 "state": {
                   "type": "markdown",
                   "state": {
                     "file": "Stage-13/2-Modules.md",
+                    "mode": "preview",
+                    "source": false
+                  }
+                }
+              },
+              {
+                "id": "56667f85cac27428",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Stage-17/1-Program-Loader.md",
                     "mode": "preview",
                     "source": false
                   }
@@ -169,7 +192,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "privious",
+                "query": "halt",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -186,7 +209,8 @@
               "state": {}
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -244,53 +268,53 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "c00c38fc16cd31b1",
+  "active": "775719f9a0ce69a0",
   "lastOpenFiles": [
+    "~Attachments/Pasted image 20230919231657.png",
+    "~Attachments/Pasted image 20230919230830.png",
     "Stage-16/1-Console-Input.md",
     "Stage-17/1-Program-Loader.md",
-    "Stage-03/1-Bootstrap-Loader.md",
-    "Stage-02/1-Understanding-the-Filesystem.md",
-    "Stage-13/2-Modules.md",
     "Stage-15/1-Resource-Manager-Module.md",
+    "00-Compile-Script/0-Auto-Compile.md",
     "Stage-14/1-Round robin scheduler.md",
-    "Stage-11/Introduction-to-ExpL.md",
+    "01-Assignment/1-Assignment.md",
+    "Stage-10/3-Status-Table.md",
+    "Stage-10/2-Process-Table.md",
     "~Attachments/Pasted image 20230904001100.png",
     "~Attachments/Pasted image 20230904001045.png",
+    "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-17",
-    "01-Assignment/1-Assignment.md",
-    "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20230903150045.png",
     "~Attachments/Pasted image 20230903145931.png",
     "~Attachments/Pasted image 20230903145757.png",
     "~Attachments/Pasted image 20230903021624.png",
-    "~Attachments/Pasted image 20230901222543.png",
     "Stage-16",
-    "Stage-12/Introduction-to-Multiprogramming.md",
-    "Stage-10/2-Process-Table.md",
-    "Stage-01",
-    "~Attachments/Pasted image 20230831014540.png",
-    "~Attachments/Pasted image 20230831014238.png",
-    "~Attachments/Pasted image 20230831013940.png",
-    "Stage-15",
-    "00-Compile-Script/0-Auto-Compile.md",
-    "01-Assignment",
+    "~Attachments/Pasted image 20230901222543.png",
+    "Stage-13/2-Modules.md",
     "Stage-14/2-Timer-Algo.md",
-    "Stage-14",
-    "Stage-13",
+    "Stage-13/1-Boot-Module.md",
+    "Stage-11/Introduction-to-ExpL.md",
     "Stage-10/1-Console-output.md",
-    "00-Compile-Script",
-    "Stage-06/3-Practice-XSM.md",
-    "Stage-06/1-Running-a-user-program.md",
-    "Stage-12",
     "Stage-09/Handling-kernel-stack.md",
-    "Stage-10/3-Status-Table.md",
     "Stage-08/Handling-Timer-Interrupt.md",
     "Stage-07/ABI-and-XEXE-Format.md",
+    "Stage-06/3-Practice-XSM.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
+    "Stage-06/1-Running-a-user-program.md",
     "Stage-05/1-XSM-Debugging.md",
-    "Stage-10/Console-output.md",
+    "Stage-04/3-Practice-SPL.md",
+    "Stage-04/1-Learning-the-SPL-Language.md",
+    "Stage-04/2-SPL-Syntax.md",
+    "Stage-03/2-XSM-Practice.md",
+    "~Attachments/Pasted image 20230831014540.png",
+    "~Attachments/Pasted image 20230831014238.png",
+    "Stage-15",
+    "01-Assignment",
+    "Stage-14",
+    "Stage-13",
+    "00-Compile-Script",
+    "Stage-12",
     "Stage-11",
-    "Stage-00/Read-Doc.md",
-    "Stage-03/2-XSM-Practice.md"
+    "Stage-10"
   ]
 }
