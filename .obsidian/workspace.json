@@ -55,18 +55,6 @@
                 "source": false
               }
             }
-          },
-          {
-            "id": "3c68e0378245d3f4",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "01-Assignment/1-Assignment.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
           }
         ],
         "currentTab": 1
@@ -87,7 +75,19 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-16/1-Console-Input.md",
+                    "file": "Stage-17/1-Program-Loader.md",
+                    "mode": "preview",
+                    "source": false
+                  }
+                }
+              },
+              {
+                "id": "22484516d074d3d9",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Stage-14/1-Round robin scheduler.md",
                     "mode": "preview",
                     "source": false
                   }
@@ -105,8 +105,7 @@
                   }
                 }
               }
-            ],
-            "currentTab": 1
+            ]
           },
           {
             "id": "c49af80d2ddae635",
@@ -119,7 +118,7 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-15/1-Resource-Manager-Module.md",
+                    "file": "Stage-16/1-Console-Input.md",
                     "mode": "preview",
                     "source": false
                   }
@@ -191,7 +190,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5
+    "width": 234.5,
+    "collapsed": true
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -246,15 +246,17 @@
   },
   "active": "c00c38fc16cd31b1",
   "lastOpenFiles": [
-    "Stage-11/Introduction-to-ExpL.md",
-    "Stage-02/1-Understanding-the-Filesystem.md",
-    "Stage-17/1-Program-Loader.md",
     "Stage-16/1-Console-Input.md",
+    "Stage-17/1-Program-Loader.md",
+    "Stage-03/1-Bootstrap-Loader.md",
+    "Stage-02/1-Understanding-the-Filesystem.md",
+    "Stage-13/2-Modules.md",
     "Stage-15/1-Resource-Manager-Module.md",
+    "Stage-14/1-Round robin scheduler.md",
+    "Stage-11/Introduction-to-ExpL.md",
     "~Attachments/Pasted image 20230904001100.png",
     "~Attachments/Pasted image 20230904001045.png",
     "Stage-17",
-    "Stage-14/1-Round robin scheduler.md",
     "01-Assignment/1-Assignment.md",
     "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20230903150045.png",
@@ -264,7 +266,6 @@
     "~Attachments/Pasted image 20230901222543.png",
     "Stage-16",
     "Stage-12/Introduction-to-Multiprogramming.md",
-    "Stage-13/2-Modules.md",
     "Stage-10/2-Process-Table.md",
     "Stage-01",
     "~Attachments/Pasted image 20230831014540.png",
@@ -290,7 +291,6 @@
     "Stage-10/Console-output.md",
     "Stage-11",
     "Stage-00/Read-Doc.md",
-    "Stage-03/1-Bootstrap-Loader.md",
     "Stage-03/2-XSM-Practice.md"
   ]
 }

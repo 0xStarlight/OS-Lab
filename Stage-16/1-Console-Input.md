@@ -79,7 +79,7 @@ loadi(17,30);
 loadi(14,27);
 loadi(15,28);
 
-//int 3(terminal inturrupt handler)
+//int 3(terminal interrupt handler)
 loadi(8,21);
 loadi(9,22);
 

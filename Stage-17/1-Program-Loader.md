@@ -70,32 +70,25 @@ The Release Page function takes the page number to be released as an argument. T
 ```c
 // Save user stack value for later use, set up the kernel stack.
 
+alias userSP R0;
+userSP = SP;
+
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
 SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
 
 // Set the MODE FLAG in the process table to system call number of exec.
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
-alias userSP R0;
-userSP = SP;
 
 // Get the argument (name of the file) from user stack.
 
-alias physicalPageNum R1;
-alias offset R2;
-alias fileDescPhysicalAddr R3;
-
-physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
-offset = (userSP - 4) % 512;
-fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
-
-alias fileName R4;
-fileName=[fileDescPhysicalAddr];
+alias fileName R1;
+fileName = [[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
 
 // Search the memory copy of the inode table for the file, If the file is not present or file is not in XEXE format return to user mode with return value -1 indicating failure (after setting up MODE FLAG and the user stack).
 
 // inode index value
-alias i R5;
+alias i R2;
 i = 0;
 
 while(i < MAX_FILE_NUM) do
@@ -109,28 +102,27 @@ if( i == MAX_FILE_NUM ) then
 	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
 	SP = userSP;
 
-	alias physicalAddrRetVal R6;
-	physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
-	[physicalAddrRetVal] = -1;
+	[[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
+	ireturn;
 endif;
 
 // Call the Exit Process function in process manager module to deallocate the resources and pages of the current process.
 
-alias exitPID R7;
+alias exitPID R3;
 exitPID = [SYSTEM_STATUS_TABLE+1];
 
-multipush(R0,R1,R2,R3,R4,R5,R6,R7);
+multipush(R0,R1,R2,R3);
 
 // EXIT_PROCESS = 3 and argument is PID
 R1 = 3;
-R2 = exitPID;
+R2 = [SYSTEM_STATUS_TABLE+1];
 call PROCESS_MANAGER;
 
-multipop(R0,R1,R2,R3,R4,R5,R6,R7);
+multipop(R0,R1,R2,R3);
 
 // Get the user area page number from the process table of the current process. This page has been deallocated by the Exit Process function. Reclaim the same page by incrementing the memory free list entry of user area page and decrementing the MEM_FREE_COUNT field in the system status table.
 
-alias user_area_page R8;
+alias user_area_page R4;
 user_area_page = [PROCESS_TABLE + 16 * exitPID + 11];
 
 [MEMORY_FREE_LIST + user_area_page] = [MEMORY_FREE_LIST + user_area_page] + 1;
@@ -147,50 +139,50 @@ SP = user_area_page * 512 - 1;
 
 // Allocate new pages and set the page table entries for the new process.
 
-alias freePage R9;
+alias freePage R5;
 
 // Invoke the Get Free Page function to allocate 2 stack and 2 heap pages. Also validate the corresponding entries in page table.
 
 // allocating stack page 1
 
-multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipush(R0,R1,R2,R3);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
 freePage = R0;
-multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipop(R0,R1,R2,R3);
 
 [PTBR + 16] = freePage;
 [PTBR + 17] = "0110";
 
 // allocating stack page 2
 
-multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipush(R0,R1,R2,R3);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
 freePage = R0;
-multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipop(R0,R1,R2,R3);
 
 [PTBR + 18] = freePage;
 [PTBR + 19] = "0110";
 
 // allocating heap page 1
 
-multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipush(R0,R1,R2,R3);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-freePage = R0;
-multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+freePage = R2;
+multipop(R0,R1,R2,R3);
 
 [PTBR + 4] = freePage;
 [PTBR + 5] = "0110";
 
 // allocating heap page 2
 
-multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+multipush(R0,R1,R2,R3);
 R1 = GET_FREE_PAGE;
 call MEMORY_MANAGER;
-freePage = R0;
-multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+freePage = R2;
+multipop(R0,R1,R2,R3);
 
 [PTBR + 6] = freePage;
 [PTBR + 7] = "0110";
@@ -199,11 +191,11 @@ multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
 
 // Checking DataBlock 1
 if([INODE_TABLE + 16 * i + 8] != -1) then
-	multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	multipush(R0,R1,R2,R3);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	freePage = R0;
-	multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	freePage = R2;
+	multipop(R0,R1,R2,R3);
 
 	[PTBR + 8] = freePage;
 	[PTBR + 9] = "0100";	
@@ -212,11 +204,11 @@ endif;
 
 // Checking DataBlock 2
 if([INODE_TABLE + 16 * i + 9] != -1) then
-	multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	multipush(R0,R1,R2,R3);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	freePage = R0;
-	multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	freePage = R2;
+	multipop(R0,R1,R2,R3);
 
 	[PTBR + 10] = freePage;
 	[PTBR + 11] = "0100";	
@@ -225,11 +217,11 @@ endif;
 
 // Checking DataBlock 3
 if([INODE_TABLE + 16 * i + 10] != -1) then
-	multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	multipush(R0,R1,R2,R3);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	freePage = R0;
-	multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	freePage = R2;
+	multipop(R0,R1,R2,R3);
 
 	[PTBR + 12] = freePage;
 	[PTBR + 13] = "0100";	
@@ -238,11 +230,11 @@ endif;
 
 // Checking DataBlock 4
 if([INODE_TABLE + 16 * i + 11] != -1) then
-	multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	multipush(R0,R1,R2,R3);
 	R1 = GET_FREE_PAGE;
 	call MEMORY_MANAGER;
-	freePage = R0;
-	multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8);
+	freePage = R2;
+	multipop(R0,R1,R2,R3);
 
 	[PTBR + 14] = freePage;
 	[PTBR + 15] = "0100";	
@@ -282,7 +274,6 @@ SP = 8 * 512;
 [PROCESS_TABLE + 16 * [SYSTEM_STATUS_TABLE+1] + 9] = 0;
 ireturn;
 ```
-
 ## MOD 1 (Process Manager)
 
 ```c
@@ -680,6 +671,8 @@ return;
 
 ```
 
+## EXEC File
+
 ```c
 int main()
 {
@@ -700,6 +693,7 @@ end
 }
 ```
 
+## INIT File
 ```c
 int main()
 {
@@ -716,211 +710,3 @@ end
 }
 ```
 
-## INT 9 WORKING
-```c
-// Save user stack value for later use, set up the kernel stack.
-
-alias userSP R0;
-userSP = SP;
-
-[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
-SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
-
-// Set the MODE FLAG in the process table to system call number of exec.
-
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
-
-// Get the argument (name of the file) from user stack.
-
-alias fileName R1;
-fileName = [[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
-
-// Search the memory copy of the inode table for the file, If the file is not present or file is not in XEXE format return to user mode with return value -1 indicating failure (after setting up MODE FLAG and the user stack).
-
-// inode index value
-alias i R2;
-i = 0;
-
-while(i < MAX_FILE_NUM) do
-	if([INODE_TABLE + 16 * i + 1] == fileName && [INODE_TABLE + 16 * i + 0] == EXEC) then
-		break;
-	endif;
-i = i+1;
-endwhile;
-
-if( i == MAX_FILE_NUM ) then
-	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
-	SP = userSP;
-
-	[[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
-	ireturn;
-endif;
-
-// Call the Exit Process function in process manager module to deallocate the resources and pages of the current process.
-
-alias exitPID R3;
-exitPID = [SYSTEM_STATUS_TABLE+1];
-
-multipush(R0,R1,R2,R3);
-
-// EXIT_PROCESS = 3 and argument is PID
-R1 = 3;
-R2 = [SYSTEM_STATUS_TABLE+1];
-call PROCESS_MANAGER;
-
-multipop(R0,R1,R2,R3);
-
-// Get the user area page number from the process table of the current process. This page has been deallocated by the Exit Process function. Reclaim the same page by incrementing the memory free list entry of user area page and decrementing the MEM_FREE_COUNT field in the system status table.
-
-alias user_area_page R4;
-user_area_page = [PROCESS_TABLE + 16 * exitPID + 11];
-
-[MEMORY_FREE_LIST + user_area_page] = [MEMORY_FREE_LIST + user_area_page] + 1;
-[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
-
-// Set the SP to the start of the user area page to intialize the kernel stack of the new process.
-
-SP = user_area_page * 512 - 1;
-
-// New process uses the PID of the terminated process. Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
-
-[PROCESS_TABLE + 16 * exitPID + 4] = RUNNING;
-[PROCESS_TABLE + 16 * exitPID + 7] = i;
-
-// Allocate new pages and set the page table entries for the new process.
-
-alias freePage R5;
-
-// Invoke the Get Free Page function to allocate 2 stack and 2 heap pages. Also validate the corresponding entries in page table.
-
-// allocating stack page 1
-
-multipush(R0,R1,R2,R3);
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-freePage = R0;
-multipop(R0,R1,R2,R3);
-
-[PTBR + 16] = freePage;
-[PTBR + 17] = "0110";
-
-// allocating stack page 2
-
-multipush(R0,R1,R2,R3);
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-freePage = R0;
-multipop(R0,R1,R2,R3);
-
-[PTBR + 18] = freePage;
-[PTBR + 19] = "0110";
-
-// allocating heap page 1
-
-multipush(R0,R1,R2,R3);
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-freePage = R2;
-multipop(R0,R1,R2,R3);
-
-[PTBR + 4] = freePage;
-[PTBR + 5] = "0110";
-
-// allocating heap page 2
-
-multipush(R0,R1,R2,R3);
-R1 = GET_FREE_PAGE;
-call MEMORY_MANAGER;
-freePage = R2;
-multipop(R0,R1,R2,R3);
-
-[PTBR + 6] = freePage;
-[PTBR + 7] = "0110";
-
-// Find out the number of blocks occupied by the file from inode table. Allocate same number of code pages by invoking the GetFree Page function and update the page table entries.
-
-// Checking DataBlock 1
-if([INODE_TABLE + 16 * i + 8] != -1) then
-	multipush(R0,R1,R2,R3);
-	R1 = GET_FREE_PAGE;
-	call MEMORY_MANAGER;
-	freePage = R2;
-	multipop(R0,R1,R2,R3);
-
-	[PTBR + 8] = freePage;
-	[PTBR + 9] = "0100";	
-
-endif;
-
-// Checking DataBlock 2
-if([INODE_TABLE + 16 * i + 9] != -1) then
-	multipush(R0,R1,R2,R3);
-	R1 = GET_FREE_PAGE;
-	call MEMORY_MANAGER;
-	freePage = R2;
-	multipop(R0,R1,R2,R3);
-
-	[PTBR + 10] = freePage;
-	[PTBR + 11] = "0100";	
-
-endif;
-
-// Checking DataBlock 3
-if([INODE_TABLE + 16 * i + 10] != -1) then
-	multipush(R0,R1,R2,R3);
-	R1 = GET_FREE_PAGE;
-	call MEMORY_MANAGER;
-	freePage = R2;
-	multipop(R0,R1,R2,R3);
-
-	[PTBR + 12] = freePage;
-	[PTBR + 13] = "0100";	
-
-endif;
-
-// Checking DataBlock 4
-if([INODE_TABLE + 16 * i + 11] != -1) then
-	multipush(R0,R1,R2,R3);
-	R1 = GET_FREE_PAGE;
-	call MEMORY_MANAGER;
-	freePage = R2;
-	multipop(R0,R1,R2,R3);
-
-	[PTBR + 14] = freePage;
-	[PTBR + 15] = "0100";	
-
-endif;
-
-// Load the code blocks from the disk to the memory pages using loadi statement
-
-// Loading in DataBlock 1
-if([INODE_TABLE + 16 * i + 8] != -1) then
-	loadi([PTBR + 8],[INODE_TABLE + 16 * i + 8]);
-endif;
-
-// Loading in DataBlock 2
-if([INODE_TABLE + 16 * i + 9] != -1) then
-	loadi([PTBR + 10],[INODE_TABLE + 16 * i + 9]);
-endif;
-
-// Loading in DataBlock 3
-if([INODE_TABLE + 16 * i + 10] != -1) then
-	loadi([PTBR + 12],[INODE_TABLE + 16 * i + 10]);
-endif;
-
-// Loading in DataBlock 4
-if([INODE_TABLE + 16 * i + 11] != -1) then
-	loadi([PTBR + 14],[INODE_TABLE + 16 * i + 11]);
-endif;
-
-// Store the entry point IP (present in the header of first code page) value on top of the user stack
-
-// Making the stack point to the top of the code section
-[[PTBR+16]*512]=[[PTBR+8]*512+1];
-
-// Change SP to user stack, change the MODE FLAG back to user mode and return to user mode.
-
-SP = 8 * 512;
-[PROCESS_TABLE + 16 * [SYSTEM_STATUS_TABLE+1] + 9] = 0;
-ireturn;
-```
