@@ -8,6 +8,13 @@ title: Learning Objectives
 
 ---
 
+# Summary
+
+eXpOS modules are used for frequently performed logical tasks, such as scheduling new processes and acquiring/releasing resources. These modules run in kernel mode and can only be invoked from kernel mode. User programs cannot directly invoke modules. Modules can be invoked from interrupt routines, other modules, or the OS startup code. XSM supports eight modules, each with a specific function number. The CALL instruction pushes the IP address of the next instruction on top of the kernel stack and starts module execution. Modules return to the caller using the RET instruction. The OS startup code initializes the idle process and invokes the Boot module, responsible for initializing all eXpOS data structures, user processes, interrupt routines, and modules. The idle process is scheduled first to initialize its context for later kernel operations.
+
+---
+# Starting
+
 Modules in eXpOS are used to perform certain logical tasks, which are performed frequently. eXpOS modules serve various purposes like scheduling new process, acquiring and releasing resources etc. These modules run in kernel mode and are invoked only from the kernel mode. A user program can never invoke a module directly. Modules can be invoked from interrupt routines, other modules or the OS startup code.
 
 As modules execute in kernel mode, the kernel stack of the currently scheduled process is used as the caller-stack for module invocation. XSM supports eight modules - `MOD_0` to `MOD_7` - which can be invoked using the `CALL MOD_n` / `CALL <module_name>` instruction (see [SPL constants](https://exposnitc.github.io/expos-docs/support-tools/constants/#spl-constants-defining-the-call-addresses-for-interruptsexceptionsmodules)).While switching to module, the CALL instruction pushes the IP address of the instruction following the `CALL` instruction on the top of the kernel stack and starts execution of the corresponding module. A module returns to the caller using the RET instruction (return statement in SPL) which restores the IP value present on the top of the kernel stack, pushed earlier by the CALL instruction. Note that we use the return statement, instead of the ireturn statement, to return to the caller. The `IRET` instruction (ireturn statement) changes mode from kernel to user as it assumes that SP contains a logical address. The RET instruction (return statement) on the other hand just returns to the caller in kernel mode, using the IP value pointed by SP. Read about kernel stack management during kernel module calls [here](https://exposnitc.github.io/expos-docs/os-design/stack-module/).

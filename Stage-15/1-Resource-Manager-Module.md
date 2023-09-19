@@ -5,6 +5,14 @@
 - Implement Resource Manager and Device Manager modules for terminal output handling.
 ```
 
+---
+# Summary
+
+In eXpOS, a resource manager module is used to manage resources such as terminal, disk, and inode among different processes. Before using a resource, a process must acquire it by invoking the resource manager. If the requested resource is unavailable, the process is blocked until it becomes available. The resource manager module also handles the release of system resources. To manage the terminal, the OS maintains a data structure called the Terminal Status Table which contains details of the process that has acquired the terminal. The Terminal Write function in Device Manager module is used to print to the terminal and acts as an abstract layer between the write system call and terminal handling functions in the resource manager module. A busy loop is used to wait for a resource because if a process waits just once, it may find that the resource is locked again when it tries to acquire it when it resumes execution. The interrupt routine 7 implemented in stage 10 is modified to invoke Terminal Write function present in Device Manager module instead of print statement. In this stage, we will implement only Terminal Write function in Device Manager module.
+
+
+---
+# Starting
 ## **Module 0: Resource Manager**
 
 This module is responsible for allocating and releasing the different resources. Note that the Terminal and Disk devices are freed by the corresponding interrupt handlers.
@@ -265,6 +273,20 @@ Deadlock will not occur according to the resource management system implemented 
 ```ad-info
 See [link](https://en.wikipedia.org/wiki/Deadlock#Necessary_conditions) for a set of neccessary conditions for deadlock.
 ```
+
+## What is a deadlock?
+
+In [concurrent computing](https://en.wikipedia.org/wiki/Concurrent_computing), **deadlock** is any situation in which no member of some group of entities can proceed because each waits for another member, including itself, to take action, such as sending a message or, more commonly, releasing a [lock](https://en.wikipedia.org/wiki/Lock_(computer_science)).
+
+> Conditions for deadlock
+
+💡 A deadlock situation on a resource can arise only if all of the following conditions occur simultaneously in a system: [6](https://en.wikipedia.org/wiki/Deadlock#cite_note-6)
+
+
+1. _[Mutual exclusion](https://en.wikipedia.org/wiki/Mutual_exclusion):_ At least one resource must be held in a non-shareable mode; that is, only one process at a time can use the resource. Otherwise, the processes would not be prevented from using the resource when necessary. Only one process can use the resource at any given instant of time.
+2. _Hold and wait_ or _resource holding:_ a process is currently holding at least one resource and requesting additional resources which are being held by other processes.
+3. _No [preemption](https://en.wikipedia.org/wiki/Preemption_(computing)):_ a resource can be released only voluntarily by the process holding it.
+4. _Circular wait:_ each process must be waiting for a resource which is being held by another process, which in turn is waiting for the first process to release the resource. In general, there is a [set](https://en.wikipedia.org/wiki/Set_(mathematics)) of waiting processes, _P_ = {_P1_, _P2_, ..., _PN_}, such that _P1_ is waiting for a resource held by _P2_, _P2_ is waiting for a resource held by _P3_ and so on until _PN_ is waiting for a resource held by _P1_ 
 
 ---
 

@@ -4,6 +4,14 @@ Implement a preliminary version of the Round Robin scheduling algorithm as an eX
 ```
 
 ---
+# Summary
+
+Stage 14 provides the steps to implement an initial version of the Round Robin scheduler used in eXpOS. The first step is to write an ExpL program to print odd numbers from 1-100 and load it as init. The second step is to write an ExpL program to print even numbers from 1-100 and load it as an executable. The text then discusses modifications to the boot module code and timer interrupt routine to call the scheduler module. The scheduler module uses the Round Robin Scheduling algorithm to decide which process to run next. If the new process is in the CREATED state, the scheduler directly starts its execution using the IRET instruction. The text emphasizes the importance of understanding kernel stack management during module calls and context switch.
+
+In eXpOS, before a context switch, the kernel stack saves the context of the outgoing process, and the incoming process's previously saved context is restored from its kernel stack. There are two situations that can cause a context switch: 1) a timer interrupt is raised when the time slice of a process executing in user mode expires, and 2) while executing in kernel mode, a process voluntarily invokes the scheduler to schedule itself out when it has to wait for some event. The Timer ISR saves the user context of the process from which it was entered into its kernel stack and calls the scheduler module to determine which process must be run next. In the second case, it is the responsibility of the calling module or handler to save its context in its kernel stack before invoking the scheduler module, which should restore the context and resume execution. A patch is added to the scheduler to save the value of BP register before making a system call because the ExpL compiler fails to do so.
+
+---
+# Starting
 
 Multiprogramming refers to running more than one process simultaneously. In this stage, you will implement an initial version of the [Round Robin scheduler](https://en.wikipedia.org/wiki/Round-robin_scheduling) used in eXpOS. You will hand create another user process (apart from idle and init) and schedule its execution using the timer interrupt.
 

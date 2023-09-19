@@ -1174,8 +1174,7 @@ exit
 $> ./compile.sh stage17
 ```
 
-![[Pasted image 20230919230830.png]]
-
+![[Pasted image 20230919231847.png]]
 ## Execute
 
 ```bash

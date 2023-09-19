@@ -1,3 +1,22 @@
+
+# Summary
+
+In Stage16 it explains how to handle console interrupts in the XSM console. The IN instruction is used to read data from the console into the input port P0, and it can only be executed inside a system call/module. When data is entered from the keyboard, the XSM machine raises a console interrupt, which helps the OS infer that the execution of the IN instruction is complete.
+
+The console interrupt handler is responsible for transferring the data from port P0 to the process that is waiting for the data. A process executing the IN instruction sets its state to WAIT_TERMINAL and invokes the scheduler, and it must resume execution only after the XSM machine sends an interrupt upon data arrival.
+
+User programs can invoke the read system call using the library interface. For a terminal read, the file descriptor (-1 for terminal input) is passed as the first argument. The read system call invokes the Terminal Read function present in the Device Manager Module. The Terminal Read function performs the following: acquires the terminal, issues an IN instruction, sets its state as WAIT_TERMINAL, invokes the scheduler, and transfers data present in the input buffer field of the process table into the word address (passed as an argument) after a console interrupt wakes up this process.
+
+The OS maintains a global data structure called the terminal status table that stores information about the current state of the terminal. A process can acquire the terminal by invoking the Acquire Terminal function of the resource manager module.
+
+The implementation of read system call (interrupt 6 routine) involves setting the MODE FLAG in the process table of the current process to the system call number, saving and initializing register SP, retrieving file descriptor from user stack, storing -1 as return value in user stack if file descriptor is not -1, and retrieving word address sent as an argument from user stack if file descriptor is -1.
+
+In addition, we will add Terminal Read function in Module 4, which calls Acquire Terminal function, initializes registers R1 and R2 with function number of Acquire Terminal and PID of current process respectively, and uses read statement for requesting to read from the terminal. After invoking the scheduler and returning from it, Terminal Read function converts logical address to physical address and stores the value present in input buffer field of process table to that physical address of word.
+
+The console interrupt handler interrupts the current process and executes when a console interrupt occurs. It transfers data from port P0 to the process that is waiting for data and wakes up all processes in WAIT_TERMINAL state by setting their state to READY.
+
+---
+# Starting
 ## Console interrupt
 
 - The IN instruction initiates a console input but will not suspend machine execution till some input is read. Machine execution proceeds to the next instruction in the program. When the user enters data, the data is transferred to port P0, and a console interrupt is raised by the console device.

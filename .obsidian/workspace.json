@@ -8,37 +8,13 @@
         "type": "tabs",
         "children": [
           {
-            "id": "b8fd66ce07f658b6",
+            "id": "93b5202ce5d6f04d",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-15/1-Resource-Manager-Module.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "ed1bf57e98f24c73",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-16/1-Console-Input.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "03f9c5c9ea3c15d1",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "01-Assignment/1-Assignment.md",
-                "mode": "preview",
+                "file": "Stage-13/1-Boot-Module.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -49,26 +25,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-17/1-Program-Loader.md",
+                "file": "Stage-14/1-Round robin scheduler.md",
                 "mode": "preview",
                 "source": false
               }
             }
           },
           {
-            "id": "b3cd126fc690986c",
+            "id": "88596ac63ac221ca",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00-Compile-Script/0-Auto-Compile.md",
+                "file": "Stage-16/1-Console-Input.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 2
       },
       {
         "id": "c359674ae3410629",
@@ -109,8 +85,8 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "00-Compile-Script/0-Auto-Compile.md",
-                    "mode": "preview",
+                    "file": "Stage-01/1-Basics.md",
+                    "mode": "source",
                     "source": false
                   }
                 }
@@ -128,7 +104,7 @@
                 }
               }
             ],
-            "currentTab": 1
+            "currentTab": 2
           },
           {
             "id": "68de85f1d5b28edc",
@@ -153,14 +129,26 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-17/1-Program-Loader.md",
+                    "file": "Stage-10/2-Process-Table.md",
+                    "mode": "preview",
+                    "source": false
+                  }
+                }
+              },
+              {
+                "id": "924860a1743c944e",
+                "type": "leaf",
+                "state": {
+                  "type": "markdown",
+                  "state": {
+                    "file": "Stage-15/2-Terminal-Status-Table.md",
                     "mode": "preview",
                     "source": false
                   }
                 }
               }
             ],
-            "currentTab": 1
+            "currentTab": 2
           }
         ],
         "direction": "horizontal"
@@ -209,13 +197,11 @@
               "state": {}
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "horizontal",
-    "width": 234.5,
-    "collapsed": true
+    "width": 234.5
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -231,7 +217,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-17/1-Program-Loader.md",
+                "file": "Stage-16/1-Console-Input.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -268,21 +254,27 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "775719f9a0ce69a0",
+  "active": "88596ac63ac221ca",
   "lastOpenFiles": [
+    "Stage-15/2-Terminal-Status-Table.md",
+    "Stage-10/2-Process-Table.md",
+    "Stage-16/1-Console-Input.md",
+    "Stage-14/1-Round robin scheduler.md",
+    "Stage-15/1-Resource-Manager-Module.md",
+    "Stage-10/3-Status-Table.md",
+    "Stage-17/1-Program-Loader.md",
+    "Stage-13/1-Boot-Module.md",
+    "Stage-01/1-Basics.md",
+    "Stage-11/Introduction-to-ExpL.md",
+    "Stage-12/Introduction-to-Multiprogramming.md",
+    "00-Compile-Script/0-Auto-Compile.md",
+    "Stage-13/2-Modules.md",
+    "~Attachments/Pasted image 20230919231847.png",
+    "01-Assignment/1-Assignment.md",
     "~Attachments/Pasted image 20230919231657.png",
     "~Attachments/Pasted image 20230919230830.png",
-    "Stage-16/1-Console-Input.md",
-    "Stage-17/1-Program-Loader.md",
-    "Stage-15/1-Resource-Manager-Module.md",
-    "00-Compile-Script/0-Auto-Compile.md",
-    "Stage-14/1-Round robin scheduler.md",
-    "01-Assignment/1-Assignment.md",
-    "Stage-10/3-Status-Table.md",
-    "Stage-10/2-Process-Table.md",
     "~Attachments/Pasted image 20230904001100.png",
     "~Attachments/Pasted image 20230904001045.png",
-    "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-17",
     "~Attachments/Pasted image 20230903150045.png",
     "~Attachments/Pasted image 20230903145931.png",
@@ -290,10 +282,7 @@
     "~Attachments/Pasted image 20230903021624.png",
     "Stage-16",
     "~Attachments/Pasted image 20230901222543.png",
-    "Stage-13/2-Modules.md",
     "Stage-14/2-Timer-Algo.md",
-    "Stage-13/1-Boot-Module.md",
-    "Stage-11/Introduction-to-ExpL.md",
     "Stage-10/1-Console-output.md",
     "Stage-09/Handling-kernel-stack.md",
     "Stage-08/Handling-Timer-Interrupt.md",
@@ -305,9 +294,6 @@
     "Stage-04/3-Practice-SPL.md",
     "Stage-04/1-Learning-the-SPL-Language.md",
     "Stage-04/2-SPL-Syntax.md",
-    "Stage-03/2-XSM-Practice.md",
-    "~Attachments/Pasted image 20230831014540.png",
-    "~Attachments/Pasted image 20230831014238.png",
     "Stage-15",
     "01-Assignment",
     "Stage-14",
