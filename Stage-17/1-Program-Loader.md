@@ -1,3 +1,9 @@
+# Summary
+
+The exec system call is a program loader in eXpOS. When executed, it deallocates all pages used by the invoking process, including heap, user stack, and code pages. The page table of the invoking process is also invalidated. The Exit Process function in the process manager module is called to deallocate pages and terminate the current process. After this, exec reclaims the user area page for its own execution and acquires two heap, two stack, and the required number of code pages for the new process. The Get Free Page function in the memory manager module is then invoked to acquire new pages, which are updated in the page table. Code blocks for the new process are loaded from the disk to the memory pages obtained. Finally, exec initializes the IP value of the new process on top of its user stack and initiates execution of the newly loaded process in user mode. The Exit Process function deallocates all pages of a given process, while Free Page Table invalidates all page table entries of a given process and frees its corresponding pages. Free User Area Page frees the user area page of a given process and releases its resources, such as files and semaphores, acquired by the process. Release Page decrements the value in the memory free list corresponding to a page number given as an argument, while Get Free Page acquires new pages for a new process.
+
+---
+# Starting
 ## What does a program loader do?
 
 1. **Input**: The `exec` system call takes the name of an executable file as its input. This file should already exist on the computer's disk.
@@ -62,9 +68,26 @@ The Release Page function takes the page number to be released as an argument. T
 
 ![[Pasted image 20230904001100.png]]
 
+```ad-question
+title:  Why does exec reclaim the same user area page for the new process? (As done in step 7 of exec system call implementation.)
+Since the page storing the kernel context has been de-allocated, before making any function call, a stack page has to be allocated to store parameters, return address etc. It is unsafe to invoke the Get Free Page function of the memory manager module before allocating a stack page (why?).
+```
+
+```ad-question
+title:  Why should the OS set the WRITE PERMISSION BIT for library and code pages in each page table entry to 0, denying permission for the process to write to these pages?
+
+ExpOS does not expect processess to modify the code page during execution. Hence, during a fork() system call (to be seen in later stages), the code pages are shared between several processes. Similarly, the library pages are shared by all processes. If a process is allowed to write into a code/library page, the shared program/library will get modified and will alter the execution behaviour of other processes, which violates the basic [virtual address space](https://en.wikipedia.org/wiki/Virtual_address_space) model offered by the OS.
+```
+
 ---
 
-# Code Implementation
+# Assignment
+
+```ad-question
+title: Assignment1
+Write an ExpL program to read the name of program from the console and execute that program using exec system call. Load this program as INIT program and run the odd.expl (printing odd numbers between 1-100) program using the shell.
+```
+## Code Implementation
 
 ## OS Startup
 > File: os_startup.spl
