@@ -6,7 +6,7 @@
       {
         "id": "43f6c0649654b54d",
         "type": "tabs",
-        "dimension": 48.65951742627346,
+        "dimension": 48.569157392686805,
         "children": [
           {
             "id": "93b5202ce5d6f04d",
@@ -14,8 +14,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-13/1-Boot-Module.md",
-                "mode": "source",
+                "file": "Stage-15/1-Resource-Manager-Module.md",
+                "mode": "preview",
                 "source": false
               }
             }
@@ -26,7 +26,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-17/1-Program-Loader.md",
+                "file": "Stage-19/1-Exception-Handler.md",
                 "mode": "preview",
                 "source": false
               }
@@ -38,19 +38,19 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-18/1-Disk-Interrupt-Handler.md",
+                "file": "Stage-19/2-FastNotes.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       },
       {
         "id": "c359674ae3410629",
         "type": "split",
-        "dimension": 51.34048257372654,
+        "dimension": 51.430842607313195,
         "children": [
           {
             "id": "e6bd1f821a7e8787",
@@ -75,7 +75,7 @@
                 "state": {
                   "type": "markdown",
                   "state": {
-                    "file": "Stage-16/1-Console-Input.md",
+                    "file": "Stage-19/3-Disk-Map-Table.md",
                     "mode": "preview",
                     "source": false
                   }
@@ -88,7 +88,7 @@
                   "type": "markdown",
                   "state": {
                     "file": "Stage-01/1-Basics.md",
-                    "mode": "source",
+                    "mode": "preview",
                     "source": false
                   }
                 }
@@ -202,7 +202,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5
+    "width": 234.5,
+    "collapsed": true
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -218,7 +219,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-18/1-Disk-Interrupt-Handler.md",
+                "file": "Stage-19/1-Exception-Handler.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -265,36 +266,40 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "88596ac63ac221ca",
+  "active": "775719f9a0ce69a0",
   "lastOpenFiles": [
-    "~Attachments/Pasted image 20230921031042.png",
-    "~Attachments/Pasted image 20230921030600.png",
+    "~Attachments/Pasted image 20230923011824.png",
+    "~Attachments/Pasted image 20230923011653.png",
+    "Stage-19/3-Disk-Map-Table.md",
     "Stage-16/1-Console-Input.md",
+    "Stage-19/1-Exception-Handler.md",
+    "~Attachments/Pasted image 20230922203416.png",
+    "~Attachments/Pasted image 20230922203353.png",
     "Stage-18/1-Disk-Interrupt-Handler.md",
+    "Stage-19/2-FastNotes.md",
     "Stage-17/1-Program-Loader.md",
-    "~Attachments/Pasted image 20230921021114.png",
-    "Stage-13/2-Modules.md",
+    "Stage-01/1-Basics.md",
+    "~Attachments/Pasted image 20230921141516.png",
+    "~Attachments/Pasted image 20230921141502.png",
+    "~Attachments/Pasted image 20230921141450.png",
+    "~Attachments/Pasted image 20230921141437.png",
+    "~Attachments/Pasted image 20230921141425.png",
+    "~Attachments/Pasted image 20230921141413.png",
+    "~Attachments/Pasted image 20230921141402.png",
+    "Stage-19",
+    "Stage-15/1-Resource-Manager-Module.md",
+    "Stage-11/Introduction-to-ExpL.md",
     "Stage-14/1-Round robin scheduler.md",
+    "Stage-13/1-Boot-Module.md",
+    "Stage-12/Introduction-to-Multiprogramming.md",
+    "Stage-13/2-Modules.md",
     "Stage-10/2-Process-Table.md",
     "Stage-15/2-Terminal-Status-Table.md",
     "Stage-18",
-    "Stage-01/1-Basics.md",
-    "Stage-15/1-Resource-Manager-Module.md",
     "Stage-10/3-Status-Table.md",
-    "Stage-13/1-Boot-Module.md",
-    "Stage-11/Introduction-to-ExpL.md",
-    "Stage-12/Introduction-to-Multiprogramming.md",
     "00-Compile-Script/0-Auto-Compile.md",
-    "~Attachments/Pasted image 20230919231847.png",
     "01-Assignment/1-Assignment.md",
-    "~Attachments/Pasted image 20230919231657.png",
-    "~Attachments/Pasted image 20230919230830.png",
-    "~Attachments/Pasted image 20230904001100.png",
-    "~Attachments/Pasted image 20230904001045.png",
     "Stage-17",
-    "~Attachments/Pasted image 20230903150045.png",
-    "~Attachments/Pasted image 20230903145931.png",
-    "~Attachments/Pasted image 20230903145757.png",
     "Stage-16",
     "Stage-14/2-Timer-Algo.md",
     "Stage-10/1-Console-output.md",
@@ -303,15 +308,11 @@
     "Stage-07/ABI-and-XEXE-Format.md",
     "Stage-06/3-Practice-XSM.md",
     "Stage-06/2-Unprivileged-Mode-Tutorial.md",
-    "Stage-06/1-Running-a-user-program.md",
-    "Stage-05/1-XSM-Debugging.md",
-    "Stage-04/3-Practice-SPL.md",
     "Stage-15",
     "01-Assignment",
     "Stage-14",
     "Stage-13",
     "00-Compile-Script",
-    "Stage-12",
-    "Stage-11"
+    "Stage-12"
   ]
 }
