@@ -92,6 +92,7 @@ title: Assignment 1
 Write an ExpL program to implement a linked list. Your program should first read an integer N, then read N intergers from console and store them in the linked list and print the linked list to the console. Run this program using shell version-I of stage 17.
 ```
 
+> NOTE: FOR ASSIGNMENT 2 PUT A BREAKPOINT AND RUN IN DEBUGGER
 ## Implementation
 1. int 9
 2. mod 2
