@@ -267,6 +267,8 @@
   },
   "active": "775719f9a0ce69a0",
   "lastOpenFiles": [
+    "Stage-20/1-Process-Creation-and-Termination.md",
+    "Stage-21/1-Process-Synchronization.md",
     "Stage-21/stage21-spl/timer.xsm",
     "Stage-21/stage21-spl/timer.spl",
     "Stage-21/stage21-spl/os_startup.xsm",
@@ -277,9 +279,6 @@
     "Stage-21/stage21-spl/mod_5.xsm",
     "Stage-21/stage21-spl/mod_4.xsm",
     "Stage-21/stage21-spl/mod_4.spl",
-    "Stage-21/stage21-spl/mod_2.spl",
-    "Stage-20/1-Process-Creation-and-Termination.md",
-    "Stage-21/1-Process-Synchronization.md",
     "Stage-11/Introduction-to-ExpL.md",
     "~Attachments/Pasted image 20230923201759.png",
     "~Attachments/Pasted image 20230923201729.png",

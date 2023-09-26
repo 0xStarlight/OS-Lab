@@ -280,7 +280,43 @@ exit
 Write an ExpL program 'pid.expl' which invokes Getpid system call and prints the pid. Write another ExpL program which invokes Fork system call three times back to back. Then, the program shall use Exec system call to execute pid.xsm file. Run this program using the shell.
 ```
 
-// todo plej wait
+> File: pid.expl
+```c
+int main()
+{
+	decl
+		int temp, pid;
+	enddecl
+
+	begin
+
+		pid = exposcall("Getpid");
+		temp = exposcall("Write",-2,pid);
+
+		return 0;
+	end
+}
+```
+
+> File: fork.expl
+```c
+int main()
+{
+	decl
+		int temp;
+	enddecl
+
+	begin
+
+		temp = exposcall("Fork");
+		temp = exposcall("Fork");
+		temp = exposcall("Fork");
+		temp = exposcall("Exec","pid.xsm");
+
+		return 0;
+	end
+}
+```
 
 
 
