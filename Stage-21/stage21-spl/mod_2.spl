@@ -1,0 +1,128 @@
+// According to the function number value present in R1, implement different functions in module 2.
+
+
+alias funcNo R1;
+
+// If the function number corresponds to Get Free Page, follow steps below
+
+// GET_FREE_TABLE function number is 1
+if(funcNo == 1) then
+
+	// Increment WAIT_MEM_COUNT field in the system status table.
+	// Do not increment the WAIT_MEM_COUNT in busy loop
+
+	// WAIT_MEM_COUNT field id is 3
+	// The number of processes waiting for mem is increased by 1
+	[SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+	
+	// While memory is full (MEM_FREE_COUNT will be 0), do following.
+	
+	// MEM_FREE_COUNT field id is 2
+	while([SYSTEM_STATUS_TABLE + 2] == 0) do
+		
+		// Set the state of the invoked process as WAIT_MEM.
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_MEM;
+
+		// Schedule other process by invoking the context switch module. // blocking the process
+
+		multipush(R1,R2);
+		call MOD_5;
+		multipop(R1,R2);
+
+	endwhile;
+
+	// Decrement the WAIT_MEM_COUNT field and MEM_FREE_COUNT field in the system status table. Note the sequence - increment WAIT_MEM_COUNT, waiting for the memory, decrement WAIT_MEM_COUNT.
+
+	[SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+	[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+	// Find a free page using memory free list and set the corresponding entry as 1. Make sure to store the obtained free page number in R0 as return value.
+	alias retVal R0;
+	alias i R3;
+	i = 0;
+	while(i < MAX_MEM_PAGE) do
+		if([MEMORY_FREE_LIST + i] == 0) then
+			[MEMORY_FREE_LIST + i] = 1;
+			retVal = i;
+
+			// Return to the caller.
+			return;
+		endif;
+		i = i + 1;
+	endwhile;
+endif;
+
+// If the function number corresponds to Release Page, follow steps below
+
+// RELEASE_PAGE function number is 2
+if(funcNo == 2) then
+	alias pageNo R2;
+	// The Page number to be released is present in R2. Decrement the corresponding entry in the memory free list.
+	[MEMORY_FREE_LIST + pageNo] = [MEMORY_FREE_LIST + pageNo] - 1;
+	
+	// If that entry in the memory free list becomes zero, then the page is free. So increment the MEM_FREE_COUNT in the system status table.
+	if([MEMORY_FREE_LIST] + pageNo == 0) then
+		[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+
+		// Update the STATUS to READY for all processes (with valid PID) which have STATUS as WAIT_MEM.
+		alias i R3;
+		i = 0;
+		while(i < 16) do
+			if([PROCESS_TABLE + i * 16 + 4] == WAIT_MEM) then
+				[PROCESS_TABLE + i * 16 + 4] = READY;
+			endif;
+			i = i + 1;
+		endwhile;
+	endif;
+
+	R0 = pageNo;
+	// Return to the caller.
+	return;
+endif;
+
+// Check the disk map tableentries ofall the processes, if the given block number is present in any entry and the corresponding page table entry is valid then return the memory page number.Also increment the memory free list entry of that page. Memory Free list entry is incrementedas page is being shared by another process.
+if(funcNo == 5) then
+    alias bNo R2;
+    alias pid R3;
+    alias i R4;
+    i = 0;
+    while(i < MAX_PROC_NUM)do
+        alias j R7;
+        alias page_entry R5;
+        alias disk_entry R6;
+        page_entry = [PROCESS_TABLE + i * 16 + 14 ];
+        disk_entry = DISK_MAP_TABLE + i *10;
+        j = 0;
+        while(j < 4) do
+            if([disk_entry + 4 + j] == bNo && [page_entry + 8 + j*2] != -1) then
+                R0 = [page_entry + 8 + j*2];
+                [MEMORY_FREE_LIST + R0] = [MEMORY_FREE_LIST + R0] + 1;
+                return;
+            endif;
+            j = j + 1;
+        endwhile;
+        i = i + 1;
+    endwhile;
+
+
+    multipush(R1,R2,R3);
+    R1 = 1;
+    call MOD_2; 
+    multipop(R1,R2,R3);
+    multipush(R0,R1,R2,R3);
+    R1 = 2;
+    R4 = bNo;
+    R2 = pid;
+    R3 = R0;
+    call MOD_4; 
+    multipop(R0,R1,R2,R3);
+
+endif;
+
+// Decrement the count of the disk block number in the memory copy of the Disk Free List.
+if(funcNo == 4) then
+    alias bNo R2;
+    [DISK_FREE_LIST + bNo] = [DISK_FREE_LIST + bNo] - 1;
+endif;
+
+return;

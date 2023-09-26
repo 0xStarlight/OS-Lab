@@ -1,0 +1,87 @@
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = -1;
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;				//Save the current value of User SP into the corresponding Process Table entry.
+
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;			// Setting SP to UArea Page number * 512 - 1
+backup;
+multipush(EIP);
+alias userSP R1;
+userSP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+
+if(EC != 0 || userSP == [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 15] * 512 - 1) then
+	print "ERROR";
+	if (EC == 1) then
+		//print EIP;
+		//print R0;
+		print "ILLEGAL INSTRUCTION";
+	else
+		if(EC == 2) then
+			print "ILLEGAL MEMORY ACCESS";
+		else
+			print "ARITHMETIC EXPRESSION";
+		endif;
+	endif;
+	
+	
+	//invoke exit process
+	//print "exit";
+	multipush(R0);
+	R1 = 3;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+	call MOD_1;
+	multipop(R0);
+	
+	//print R0;
+	//print "call scheduler";
+	call MOD_5;
+	//print "exit";
+
+else
+	print "page fault";
+	//for heap page
+	alias i R1;
+	alias ptbr R2;
+	ptbr = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 14];
+	if(EPN == 2 || EPN == 3) then
+		print "heap";
+		i=0;
+		while(i<2) do
+			multipush(R1, R2);
+			R1 = 1;
+			call MOD_2;
+			multipop(R1, R2);
+			
+			[ptbr + 2*i + 4] = R0;
+			[ptbr + 2*i + 5] = "0110";
+			i = i + 1;
+		endwhile;
+	endif;
+	
+	
+	
+	//for code page
+	if ( EPN >= 4 && EPN <=7) then
+		//print EPN;
+		print "code";
+		multipush(R0, R1, R2);
+		R1 = 5;
+		R2 = [DISK_MAP_TABLE + ([SYSTEM_STATUS_TABLE + 1]*10) + EPN];
+		call MOD_2;
+		//R3 = R0;
+		multipop(R0, R1, R2);
+		[ptbr + EPN*2] = R0;
+		[ptbr + EPN*2 + 1] = "1100";
+	endif;
+endif;
+	
+//print "doe";
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+multipop(EIP);
+restore;
+	//increment SP, store EIP, to location pointed by SP
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+SP = SP + 1;
+[[[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 14] + 2*((SP)/512)] * 512 + ((SP)%512)] = EIP;
+	
+	
+	
+ireturn;

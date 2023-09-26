@@ -1,0 +1,76 @@
+//print "MOD_5";
+//print "SCHEDULER";
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+
+multipush(BP);
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+
+alias iter R2;
+alias newPID R3;
+
+iter = currentPID + 1;
+
+if(iter > 15) then
+    iter = 1;
+endif;
+
+while(iter != currentPID) do
+
+    if([PROCESS_TABLE + iter * 16 + 4] == CREATED || [PROCESS_TABLE + iter * 16 + 4] == READY) then
+        newPID = iter;
+        break;
+    endif;
+    
+    iter = iter + 1;
+    
+    if(iter > 15) then
+    
+        if(currentPID == 0) then
+            iter = 0;
+            break;
+        endif;
+        
+        iter = 1;
+    endif;
+    
+endwhile;
+
+if(iter == currentPID) then
+    newPID = 0;
+endif;
+
+
+
+
+
+alias new_process_table R4;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR, PTLR
+SP = [new_process_table + 11] * 512 + [new_process_table + 12];
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+
+if([new_process_table + 4] == CREATED) then
+    SP = [new_process_table + 13];
+    BP = [[new_process_table + 11] * 512];
+    
+    [new_process_table + 4] = RUNNING;
+    [new_process_table + 9] = 0; //setting mode flag to 0
+    ireturn;
+endif;
+
+
+
+[new_process_table + 4] = RUNNING;
+multipop(BP);
+return;

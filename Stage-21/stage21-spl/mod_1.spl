@@ -1,0 +1,157 @@
+//PROCESS MANAGER MODULE
+//print "MOD1";
+
+alias functionNum R1;
+alias currentPID R2;
+
+
+//Get PCB entry
+if(functionNum == 1) then
+
+	alias iter R3;
+	iter = 0;
+
+	while(iter < 16) do
+		if([PROCESS_TABLE + (iter * 16) + 4] == TERMINATED) then
+			[PROCESS_TABLE + (iter * 16) + 1] = iter;
+			[PROCESS_TABLE + (iter * 16) + 4] = ALLOCATED;
+			[PROCESS_TABLE + (iter * 16) + 14] = PAGE_TABLE_BASE + (iter * 20);
+			[PROCESS_TABLE + (iter * 16) + 15] = 10;
+			R0 = iter;
+			return;
+		endif;
+		iter = iter + 1;
+	endwhile;
+
+	R0 = -1;
+	return;	
+
+endif;
+
+//Free User Area Page
+if(functionNum == 2) then
+	alias userAreaPage R3;
+	userAreaPage = [PROCESS_TABLE + (currentPID * 16) + 11];
+
+	//Release Page
+	multipush(R1,R2);
+	R1 = 2;
+	R2 = userAreaPage;
+	call MOD_2;
+	multipop(R1,R2);
+
+	return;
+endif;
+
+//Exit Process
+if(functionNum == 3) then
+	//Free Page Table
+	multipush(R1,R2);
+	R1 = 4;
+	call MOD_1;
+	multipop(R1,R2);
+
+	//Free User Area Page
+	multipush(R1,R2);
+	R1 = 2;
+	call MOD_1; 
+	multipop(R1,R2);
+
+	[PROCESS_TABLE + (currentPID * 16) + 4] = TERMINATED;
+
+	alias iter R3;
+	iter = 0;
+
+	if([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] != 9) then
+		while(iter < 16) do
+			if([PROCESS_TABLE + (iter * 16) + 4] == WAIT_PROCESS) then
+				[PROCESS_TABLE + (iter * 16) + 4] = READY;
+				if([PROCESS_TABLE + (iter * 16) + 2] == [PROCESS_TABLE + (currentPID * 16) + 1]) then
+					[PROCESS_TABLE + (iter * 16) + 2] = -1;
+				endif;
+			endif;
+			iter = iter + 1;
+		endwhile;
+	endif;
+	return;
+endif;
+
+//Free Page Table
+if(functionNum == 4) then
+
+	alias ptbr R3;
+	ptbr = [PROCESS_TABLE + (currentPID*16) + 14];
+
+	[ptbr + 0] = -1;
+	[ptbr + 1] = "0000";
+	[ptbr + 2] = -1;
+	[ptbr + 3] = "0000";
+
+	alias iter R4;
+	iter = 4;
+
+	while(iter < 20) do
+		if([ptbr + iter] != -1) then
+
+			//Release Page
+			multipush(R1,R2,R3,R4);
+			R1 = 2;
+			R2 = [ptbr + iter];
+			call MOD_2;
+			multipop(R1,R2,R3,R4);
+
+			[ptbr + iter] = -1;
+			[ptbr + iter + 1] = "0000";
+		endif;
+
+		iter = iter + 2;
+
+	endwhile;
+
+	alias disk_map_table_entry R5;
+	disk_map_table_entry = DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10;
+
+	iter = 2;
+	while(iter < 4) do
+		if([disk_map_table_entry + iter] != -1) then
+
+			multipush(R0,R1,R2,R3,R4,R5);
+			R1 = 4;
+			R2 = [disk_map_table_entry + iter];
+			call MOD_2;
+			multipop(R0,R1,R2,R3,R4,R5);
+
+		endif;
+
+		iter = iter + 1;
+	endwhile;
+
+	iter = 8;
+	while(iter < 10) do
+		if([disk_map_table_entry + iter] != -1) then
+
+			multipush(R0,R1,R2,R3,R4,R5);
+			R1 = 4;
+			R2 = [disk_map_table_entry + iter];
+			call MOD_2;
+			multipop(R0,R1,R2,R3,R4,R5);
+
+		endif;
+		iter = iter + 1;
+	endwhile;
+
+	[disk_map_table_entry + 0] = -1;
+	[disk_map_table_entry + 1] = -1;
+	[disk_map_table_entry + 2] = -1;
+	[disk_map_table_entry + 3] = -1;
+	[disk_map_table_entry + 4] = -1;
+	[disk_map_table_entry + 5] = -1;
+	[disk_map_table_entry + 6] = -1;
+	[disk_map_table_entry + 7] = -1;
+	[disk_map_table_entry + 8] = -1;
+	[disk_map_table_entry + 9] = -1;
+
+
+	return;
+
+endif;

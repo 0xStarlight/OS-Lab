@@ -1,0 +1,33 @@
+int main()
+{
+	decl
+		str name, fileName;
+		int temp, pid;
+	enddecl
+
+	begin
+
+		pid = exposcall("Fork");
+	
+		if (pid == 0) then
+		
+			fileName = "child";
+		else
+		
+			fileName = "parent";
+		endif;
+
+		temp = exposcall("Write", -2, fileName);
+		//breakpoint;
+		//fileName = "Breaky";
+		temp = exposcall("Read", -1, name);
+		//breakpoint;
+		temp = exposcall("Exec",name);
+		return 0;
+	end
+}
+
+// fork(parent) -> child(fork)
+// 				-> even
+// 			 -> parent(fork)
+// 			 	 -> odd

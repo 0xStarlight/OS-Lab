@@ -1,0 +1,41 @@
+// When the disk-memory transfer is complete, XSM raises the disk interrupt. The disk interrupt handler then performs the following tasks 
+
+alias userSP R0;
+userSP = SP;
+
+// Switch to the kernel stack and back up the register context.
+[PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+13] = SP;  
+SP = [PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+11]*512-1;
+
+// backup the register contexts
+backup;
+
+// breapoint to view the dst before entry
+//breakpoint;
+
+// Set the STATUS field in the Disk Status table to 0 indicating that disk is no longer busy.
+
+[DISK_STATUS_TABLE] = 0;
+
+// breapoint to view the dst after entry
+// breakpoint;
+
+// Go through all the process table entries, and change the state of the process to READY, which is in WAIT_DISK state.
+
+alias i R1;
+i = 0;
+
+while(i < 16) do
+    if([PROCESS_TABLE + 16 * i + 4] == WAIT_DISK) then
+        [PROCESS_TABLE + 16 * i + 4] = READY;
+    endif;
+    i = i + 1;
+endwhile;
+
+// Restore the register context and return to user mode using the ireturn statement.
+restore;
+SP=userSP;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+ireturn;
+
+

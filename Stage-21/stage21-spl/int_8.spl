@@ -1,0 +1,241 @@
+//INT 8
+//print "INT 8";
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 8;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+
+alias childPID R0;
+alias iter R1;
+alias currentPID R10;
+alias process_table_entry R11;
+alias child_pt_entry R12;
+
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+process_table_entry = PROCESS_TABLE + (currentPID * 16);
+
+R1 = 1;
+call MOD_1;
+
+child_pt_entry = PROCESS_TABLE + (childPID * 16);
+
+if(childPID == -1) then
+	[process_table_entry + 9] = 0;
+	SP = [process_table_entry+ 13];
+	ireturn;
+endif;
+
+alias ptbr R2;
+ptbr = [process_table_entry + 14];
+
+
+
+//allocating heap for parent if it does not have any
+iter = 0;
+while(iter < 2) do
+
+	if([ptbr + 2*iter + 4] == -1) then
+	
+		multipush(R0,R1,R2,R10,R11);
+		R1 = 1;
+		call MOD_2;
+		R3 = R0;
+		multipop(R0,R1,R2,R10,R11);
+		
+		[ptbr + 2*iter + 4] = R3;
+		[ptbr + 2*iter + 5] = "1110";
+		
+	endif;
+	
+	iter = iter + 1;
+	
+endwhile;
+
+
+
+
+//allocating stack pages for child
+alias childPTBR R3;
+childPTBR = [child_pt_entry + 14];
+iter = 0;
+while(iter < 2) do
+
+	
+	
+		multipush(R0,R1,R2,R3,R10,R11);
+		R1 = 1;
+		call MOD_2;
+		R4 = R0;
+		multipop(R0,R1,R2,R3,R10,R11);
+		[childPTBR + 2*iter + 16] = R4;
+		[childPTBR + 2*iter + 17] = "0110";
+		
+	
+	
+	iter = iter + 1;
+	
+endwhile;
+
+
+
+//allocating user area page for child
+multipush(R0,R1,R2,R3,R10,R11);
+R1 = 1;
+call MOD_2;
+R4 = R0;
+multipop(R0,R1,R2,R3,R10,R11);
+
+[child_pt_entry + 11] = R4;
+
+//initializing child process table
+[child_pt_entry + 3] = [process_table_entry + 3];  //user id
+[child_pt_entry + 6] = [process_table_entry + 6];  //swap flag
+[child_pt_entry + 10] = [process_table_entry + 10]; //swap status field
+[child_pt_entry + 13] = [process_table_entry + 13]; //uptr
+[child_pt_entry + 7] = [process_table_entry + 7]; //inode index
+
+[child_pt_entry + 0] = 0; //tick
+[child_pt_entry + 9] = 0; //mode
+[child_pt_entry + 12] = 0; //kptr
+
+[child_pt_entry + 2] = currentPID; //ppid
+[child_pt_entry + 4] = CREATED;
+
+
+
+
+//copying per-process resource table
+
+iter = 0;
+while(iter < 16) do
+	[(([child_pt_entry + 11] + 1) * 512 ) - 16 + iter] = [(([process_table_entry + 11] + 1) * 512 ) - 16 + iter];
+	iter = iter + 1;
+endwhile;
+
+
+
+
+//copying Disk Map Table
+
+alias disk_map_table_entry_c R4;
+alias disk_map_table_entry_p R5;
+disk_map_table_entry_p = DISK_MAP_TABLE + currentPID*10;
+disk_map_table_entry_c = DISK_MAP_TABLE + childPID*10;
+
+iter = 0;
+while(iter < 10) do
+	[disk_map_table_entry_c + iter] = [disk_map_table_entry_p + iter];
+	iter = iter + 1;
+endwhile;
+
+
+
+
+//initialize page table
+
+//library
+[childPTBR + 0] = [ptbr+0];
+[childPTBR + 1] = [ptbr+1];
+[childPTBR + 2] = [ptbr+2];
+[childPTBR + 3] = [ptbr+3];
+
+R9 = [MEMORY_FREE_LIST + [ptbr + 0]];
+R9 = R9 + 1;
+
+R9 = [MEMORY_FREE_LIST + [ptbr + 2]];
+R9 = R9 + 1;
+
+
+
+
+//heap
+[childPTBR + 4] = [ptbr+4];
+[childPTBR + 5] = [ptbr+5];
+[childPTBR + 6] = [ptbr+6];
+[childPTBR + 7] = [ptbr+7];
+
+[MEMORY_FREE_LIST + [ptbr + 4]] = [MEMORY_FREE_LIST + [ptbr + 4]] + 1;
+[MEMORY_FREE_LIST + [ptbr + 6]] = [MEMORY_FREE_LIST + [ptbr + 6]] + 1;
+
+
+
+//code
+iter = 0;
+
+while(iter < 4) do
+	R9 = ptbr + 2*iter + 8;
+	[childPTBR + 2*iter + 8] = [R9];
+	[childPTBR + 2*iter + 9] = [R9 + 1];
+	
+	if([R9] != - 1) then
+		[MEMORY_FREE_LIST + [R9]] = [MEMORY_FREE_LIST + [R9]] + 1;
+	endif;
+	iter = iter + 1;
+endwhile;
+
+
+//stack is done
+
+
+
+// copy stack word by word
+alias iter2 R6;
+iter2 = 0;
+iter = 0;
+
+
+
+
+while(iter2<2) do
+	
+	while(iter<512) do
+		[[childPTBR + 16 + 2*iter2] * 512 + iter] = [[ptbr + 16 + 2*iter2] * 512 + iter];
+		iter = iter + 1;
+	endwhile;
+	iter2 = iter2 + 1;
+endwhile;
+
+
+
+
+//setting BP value to top of child kernel stack
+[[child_pt_entry + 11] * 512] = BP;
+
+
+//set return value
+alias childSP_ret R7;
+childSP_ret = [child_pt_entry + 13] - 1;
+
+
+[[childPTBR + 2 * ((childSP_ret)/ 512)] * 512 + ((childSP_ret) % 512)] = 0;
+
+alias parentSP_ret R8;
+parentSP_ret = [process_table_entry + 13] - 1;
+[[ptbr + 2 * ((parentSP_ret)/ 512)] * 512 + ((parentSP_ret) % 512)] = childPID;
+
+
+
+[process_table_entry + 9] = 0;
+SP = [process_table_entry + 13];
+
+
+ireturn;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

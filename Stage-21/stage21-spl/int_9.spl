@@ -1,0 +1,168 @@
+// Save user stack value for later use, set up the kernel stack.
+print "INT9";
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+// Set the MODE FLAG in the process table to system call number of exec.
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
+
+// Get the argument (name of the file) from user stack.
+
+alias fileName R1;
+fileName = [[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+// Search the memory copy of the inode table for the file, If the file is not present or file is not in XEXE format return to user mode with return value -1 indicating failure (after setting up MODE FLAG and the user stack).
+
+// inode index value
+alias i R2;
+i = 0;
+
+while(i < MAX_FILE_NUM) do
+	if([INODE_TABLE + 16 * i + 1] == fileName && [INODE_TABLE + 16 * i + 0] == EXEC) then
+		break;
+	endif;
+i = i+1;
+endwhile;
+
+if( i == MAX_FILE_NUM ) then
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+	SP = userSP;
+
+	[[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
+	ireturn;
+endif;
+
+// Call the Exit Process function in process manager module to deallocate the resources and pages of the current process.
+
+alias exitPID R3;
+exitPID = [SYSTEM_STATUS_TABLE+1];
+
+multipush(R0,R1,R2,R3);
+
+// EXIT_PROCESS = 3 and argument is PID
+R1 = 3;
+R2 = [SYSTEM_STATUS_TABLE+1];
+call PROCESS_MANAGER;
+
+multipop(R0,R1,R2,R3);
+
+// Get the user area page number from the process table of the current process. This page has been deallocated by the Exit Process function. Reclaim the same page by incrementing the memory free list entry of user area page and decrementing the MEM_FREE_COUNT field in the system status table.
+
+alias user_area_page R4;
+user_area_page = [PROCESS_TABLE + 16 * exitPID + 11];
+
+[MEMORY_FREE_LIST + user_area_page] = [MEMORY_FREE_LIST + user_area_page] + 1;
+[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+// Set the SP to the start of the user area page to intialize the kernel stack of the new process.
+
+SP = user_area_page * 512 - 1;
+
+// pre-process resource table
+alias iter R6;
+iter = 0;
+while(iter < 16) do
+	[(([PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11] + 1) * 512 ) - 16 + iter] = -1;
+	iter = iter + 1;
+endwhile;
+
+// New process uses the PID of the terminated process. Update the STATE field to RUNNING and store inode index obtained above in the inode index field in the process table.
+
+[PROCESS_TABLE + 16 * exitPID + 4] = RUNNING;
+[PROCESS_TABLE + 16 * exitPID + 7] = i;
+
+// Allocate new pages and set the page table entries for the new process.
+
+alias freePage R5;
+
+// Invoke the Get Free Page function to allocate 2 stack and 2 heap pages. Also validate the corresponding entries in page table.
+
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+// allocating stack page 1
+
+multipush(R0,R1,R2,R3);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+freePage = R0;
+multipop(R0,R1,R2,R3);
+
+[PTBR + 16] = freePage;
+[PTBR + 17] = "0110";
+
+// allocating stack page 2
+
+multipush(R0,R1,R2,R3);
+R1 = GET_FREE_PAGE;
+call MEMORY_MANAGER;
+freePage = R0;
+multipop(R0,R1,R2,R3);
+
+[PTBR + 18] = freePage;
+[PTBR + 19] = "0110";
+
+// Don't allocate memory pages for heap. Instead, invalidate page table entries for heap.
+// allocating heap page 1
+
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+
+// allocating heap page 2
+
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
+
+// Change the page allocation for code pages from previous stage. Invoke the Get Code Page function for the first code block and update the page table entry for this first code page.Invalidate rest of the code pages entries in the page table.
+
+// allocation for code page 1
+
+multipush(R0, R1, R2, R3, R4, R5);
+R1 = 5;
+// block number
+R2 = [INODE_TABLE + (i * 16) + 8];
+// pid
+R3 = [SYSTEM_STATUS_TABLE+1];
+call MEMORY_MANAGER;
+print R0;
+[PTBR + 8] = R0;
+[PTBR + 9] = "0110";
+multipop(R0,R1,R2,R3,R4,R5);
+
+print "here";
+// allocating rest pages of the code to be null (-1)
+[PTBR + 10] = -1;
+[PTBR + 11] = "0000";
+[PTBR + 12] = -1;
+[PTBR + 13] = "0000";
+[PTBR + 14] = -1;
+[PTBR + 15] = "0000";
+
+// Initialize the disk map table of the process. The code page entries are set to the disk block numbers from inode table of the program (program given as argument to exec). Initialize rest of the entries to -1.
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 0] =-1;
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 1] =-1;
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 2] =-1;
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 3] =-1;
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 4] = [INODE_TABLE + (i * 16) + 8 + 0];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 5] = [INODE_TABLE + (i * 16) + 8 + 1];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 6] = [INODE_TABLE + (i * 16) + 8 + 2];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 7] = [INODE_TABLE + (i * 16) + 8 + 3];
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 8] =-1;
+[DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] *10 + 9] =-1;
+
+
+// Making the stack point to the top of the code section
+[[PTBR+16]*512]=[[PTBR+8]*512+1];
+
+// Change SP to user stack, change the MODE FLAG back to user mode and return to user mode.
+
+SP = 8 * 512;
+[PROCESS_TABLE + 16 * [SYSTEM_STATUS_TABLE+1] + 9] = 0;
+ireturn;

@@ -1,0 +1,116 @@
+// The system calls Wait, Signal, Getpid and Getppid are all implemented in the interrupt routine 11. Each system call has a different system call number.
+
+
+// At the beginning of interrupt routine 11, extract the system call number from the user stack and switch to the kernel stack.
+
+alias userSP R0;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+// Implement system calls according to the system call number extracted from above step. Steps to implement each system call are explained below.
+
+
+// NOTE
+// GETPID SYSCALL == 11
+// GETPPID SYSCALL == 12
+// WAIT SYSCALL == 13
+// SIGNAL SYSCALL == 14
+// instructionPointer+2, returnValue, Arguement3, Arguement2, Arguement1, syscallNo
+
+alias syscallNo R1;
+alias ptbr R2;
+
+
+ptbr = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 14];
+syscallNo = [[ptbr + 2 * ((userSP - 5)/512)] * 512 + ((userSP - 5)%512)];
+
+// GETPID SYSCALL
+if(syscallNo == 11) then
+	// Change the MODE FLAG in the process tableto the system call number.
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]* 16) + 9] = 11;
+	
+	// returns the PID of the current process
+	[[ptbr+2*((userSP-1)/512)]*512 + (userSP-1)%512] = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 1];
+
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+endif;
+
+// GETPPID SYSCALL
+if(syscallNo == 12) then
+	// Change the MODE FLAG in the process tableto the system call number.
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]* 16) + 9] = 12;
+
+	// returns the PPID of the current process
+	[[ptbr+2*((userSP-1)/512)]*512 + (userSP-1)%512] = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 2];
+
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+
+endif;
+
+// WAIT SYSCALL 
+// Wait system call takes PID of a process (for which the given process will wait) as an argument.
+if(syscallNo == 13) then
+	// Change the MODE FLAG in the process tableto the system call number.
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]* 16) + 9] = 13;
+	
+	// Extract the PID from the user stack. Check the valid conditions for argument. A process should not wait for itself or a TERMINATED process. The argument PID should be in valid range (what is the valid range?). If any of the above conditons are not satisfying, return to the user mode with -1 stored as return value indicating failure. At any point of return to user, remember to reset the MODE FLAG and change the stack to user stack.
+
+	alias PID R3;
+	PID = [[ptbr+2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+	if((PID == [SYSTEM_STATUS_TABLE +1]) || PID < 0 || PID >=16 || ([PROCESS_TABLE + (PID * 16) + 4] == TERMINATED)) then
+
+		// If any of the above conditons are not satisfying, return to the user mode with -1 stored as return value indicating failure.
+		[[ptbr+2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
+
+		[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+		SP = userSP;
+		ireturn;
+
+	endif;
+
+	// If all valid conditions are satisfied then proceed as follows. Change the state of the current process from RUNNING to the tuple (WAIT_PROCESS, argument PID) in the process table. Note that the STATE field in the process table is a tuple (allocated 2 words).
+
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 4 ] = WAIT_PROCESS;
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 5 ] = PID;
+
+	// Invoke the scheduler to schedule other processes.
+	call SCHEDULER;
+
+	// The following step is executed only when the scheduler runs this process again, which in turn happens only when the state of the process becomes READY again.
+
+	// Reset the MODE FLAG in the process table of the current process. Store 0 in the user stack as return value and return to the calling program.
+
+	[[ptbr+2*((userSP-1)/512)]*512 + (userSP-1)%512] = 0;
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+
+endif;
+
+// SIGNAL SYSCALL
+// Signal system call does not have any arguments.
+if(syscallNo == 14) then
+	// Set the MODE FLAG in the process table to the signal system call number.
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1]* 16) + 9] = 14;
+
+	// Loop through all process table entries, if there is a process with STATE as tuple (WAIT_PROCESS, current process PID) then change the STATE field to READY.
+	
+	alias i R4;
+	i = 0;
+
+	while(i < 16) do
+		if([PROCESS_TABLE + (i * 16) + 4] == WAIT_PROCESS) then
+			[PROCESS_TABLE + (i * 16) + 4] = READY;
+		endif;
+		i = i + 1;
+	endwhile;
+
+	// Reset the MODE FLAG to 0 in the process table and store 0 as return value in the user stack.
+
+	[[ptbr+2*((userSP-1)/512)]*512 + (userSP-1)%512] = 0;
+	[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9 ] = 0;
+endif;
+
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+ireturn;

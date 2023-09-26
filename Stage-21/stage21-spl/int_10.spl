@@ -1,0 +1,13 @@
+[ PROCESS_TABLE+[SYSTEM_STATUS_TABLE + 1]*16+4] = TERMINATED;
+//sets the MODE FLAG to 10
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9] = 10;   
+
+// switch to kernel stack 
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512  - 1 ;
+
+// exit function number
+R1 = 3;           
+R2 = [SYSTEM_STATUS_TABLE + 1]; 
+call PROCESS_MANAGER; 
+call SCHEDULER; 

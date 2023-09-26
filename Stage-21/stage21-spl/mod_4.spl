@@ -1,0 +1,83 @@
+alias func_num R1;
+alias currPID R2;
+
+// Disk Load Function
+// The Disk Load function takes the PID of a process, a page number and a block number as input and performs the following tasks
+// function number for DISK_LOAD = 2
+if(func_num == 2) then
+    alias currPgNo R3;
+    alias currBlockNo R4;
+    multipush(R1,R2,R3,R4);
+    // Acquires the disk by invoking the Acquire Disk function in the resource manager module
+    // function number for aquire disk is 3 in resource manager
+    R1 = 3;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+    // Set the Disk Status tableentries as mentioned in the algorithm
+    [DISK_STATUS_TABLE] = 1;
+    [DISK_STATUS_TABLE + 1] = 0;
+    [DISK_STATUS_TABLE + 2] = currPgNo;
+    [DISK_STATUS_TABLE + 3] = currBlockNo;
+    [DISK_STATUS_TABLE + 4] = currPID;
+
+    // Issue the load statement to initiate a disk block to memory page DMA transfer.
+    load(currPgNo, currBlockNo);
+
+    // Set the state of the process (with given PID) to WAIT_DISK and invoke the scheduler.
+    [PROCESS_TABLE +currPID*16 + 4] = WAIT_DISK;
+
+    multipush(R1,R2,R3,R4);
+    call MOD_5;
+    multipop(R1,R2,R3,R4);
+    return;
+endif;
+
+if(func_num==3)then
+  multipush(R1,R2,R3);
+  
+  //to call acquire terminal(func_num=8)
+  R1=8;
+  R2=[SYSTEM_STATUS_TABLE + 1];
+  call RESOURCE_MANAGER;
+  
+  multipop(R1,R2,R3);
+  print R3;
+  
+  multipush(R1,R2,R3);
+  
+  //to call release terminal(func_num=9)
+  R1=9;
+  R2=[SYSTEM_STATUS_TABLE + 1];
+  call RESOURCE_MANAGER;
+  
+  //can save retval which is in R0 if needed.
+  
+  multipop(R1,R2,R3);
+endif;
+
+if(func_num == 4) then
+  multipush(R1,R2,R3);
+
+  R1 = 8;
+  R2 = [SYSTEM_STATUS_TABLE + 1];
+
+  call RESOURCE_MANAGER;
+  multipop(R1,R2,R3);
+
+  read;
+
+  [PROCESS_TABLE+16*R2+4] = WAIT_TERMINAL;
+  multipush(R1,R2,R3);
+
+  call SCHEDULER;
+
+  multipop(R1,R2,R3);
+
+  alias word R5;
+  word = ([PTBR + (R3)*2/512])*512 + (R3)%512;
+  [word] = [PROCESS_TABLE + currPID * 16 + 8];
+
+endif;
+
+return;

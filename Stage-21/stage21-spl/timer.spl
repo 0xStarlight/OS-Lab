@@ -1,0 +1,19 @@
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+11]*512-1 ;
+backup;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 4] = READY;
+
+call MOD_5;
+
+restore;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 13];
+//Commented below because already done in scheduler
+//PTBR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 14];
+//PTLR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 15];
+//MODE=0
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 9]=0;
+
+ireturn;

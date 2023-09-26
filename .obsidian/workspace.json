@@ -26,7 +26,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-20/1-Process-Creation-and-Termination.md",
+                "file": "Stage-21/1-Process-Synchronization.md",
                 "mode": "preview",
                 "source": false
               }
@@ -38,7 +38,7 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-11/Introduction-to-ExpL.md",
+                "file": "Stage-20/1-Process-Creation-and-Termination.md",
                 "mode": "preview",
                 "source": false
               }
@@ -202,8 +202,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5,
-    "collapsed": true
+    "width": 234.5
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -219,7 +218,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-20/1-Process-Creation-and-Termination.md",
+                "file": "Stage-21/1-Process-Synchronization.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -268,12 +267,24 @@
   },
   "active": "775719f9a0ce69a0",
   "lastOpenFiles": [
+    "Stage-21/stage21-spl/timer.xsm",
+    "Stage-21/stage21-spl/timer.spl",
+    "Stage-21/stage21-spl/os_startup.xsm",
+    "Stage-21/stage21-spl/os_startup.spl",
+    "Stage-21/stage21-spl/mod_7.xsm",
+    "Stage-21/stage21-spl/mod_7.spl",
+    "Stage-21/stage21-spl/mod_5.spl",
+    "Stage-21/stage21-spl/mod_5.xsm",
+    "Stage-21/stage21-spl/mod_4.xsm",
+    "Stage-21/stage21-spl/mod_4.spl",
+    "Stage-21/stage21-spl/mod_2.spl",
+    "Stage-20/1-Process-Creation-and-Termination.md",
+    "Stage-21/1-Process-Synchronization.md",
+    "Stage-11/Introduction-to-ExpL.md",
     "~Attachments/Pasted image 20230923201759.png",
     "~Attachments/Pasted image 20230923201729.png",
     "~Attachments/Pasted image 20230923201319.png",
-    "Stage-11/Introduction-to-ExpL.md",
     "Stage-16/1-Console-Input.md",
-    "Stage-20/1-Process-Creation-and-Termination.md",
     "~Attachments/Pasted image 20230923190414.png",
     "~Attachments/Pasted image 20230923190351.png",
     "~Attachments/Pasted image 20230923190348.png",
@@ -281,38 +292,26 @@
     "Stage-13/2-Modules.md",
     "Stage-19/3-Disk-Map-Table.md",
     "Stage-19/1-Exception-Handler.md",
-    "Stage-20",
     "Stage-15/1-Resource-Manager-Module.md",
     "Stage-19/2-FastNotes.md",
     "~Attachments/Pasted image 20230923011824.png",
     "~Attachments/Pasted image 20230923011653.png",
     "~Attachments/Pasted image 20230922203416.png",
-    "~Attachments/Pasted image 20230922203353.png",
     "Stage-18/1-Disk-Interrupt-Handler.md",
     "Stage-17/1-Program-Loader.md",
     "Stage-01/1-Basics.md",
-    "Stage-19",
     "Stage-14/1-Round robin scheduler.md",
     "Stage-13/1-Boot-Module.md",
     "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-10/2-Process-Table.md",
     "Stage-15/2-Terminal-Status-Table.md",
-    "Stage-18",
     "Stage-10/3-Status-Table.md",
     "00-Compile-Script/0-Auto-Compile.md",
     "01-Assignment/1-Assignment.md",
-    "Stage-17",
-    "Stage-16",
     "Stage-14/2-Timer-Algo.md",
     "Stage-10/1-Console-output.md",
     "Stage-09/Handling-kernel-stack.md",
     "Stage-08/Handling-Timer-Interrupt.md",
-    "Stage-07/ABI-and-XEXE-Format.md",
-    "Stage-06/3-Practice-XSM.md",
-    "Stage-15",
-    "01-Assignment",
-    "Stage-14",
-    "Stage-13",
-    "00-Compile-Script"
+    "Stage-07/ABI-and-XEXE-Format.md"
   ]
 }

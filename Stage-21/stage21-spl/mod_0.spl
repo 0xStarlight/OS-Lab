@@ -1,0 +1,67 @@
+alias funcNo R1;
+alias currPid R2;
+
+// Aquire Disk Function
+// The Acquire Disk function in the resource manager module takes the PID of a process as an argument. The Acquire disk function performs the following tasks 
+// function number for AQUIRE_DISK = 3
+if(funcNo == 3) then
+    // While the disk is busy (STATUS field in the Disk Status Table is 1)
+    while([DISK_STATUS_TABLE] == 1) do
+        // set the state of the process to WAIT_DISK and invoke the scheduler.
+        [PROCESS_TABLE + 16 * currPid + 4] = WAIT_DISK;
+        multipush(R1,R2);
+        call SCHEDULER;
+        multipop(R1,R2);
+    endwhile;
+
+    // When the disk is finally free, the process is woken up by the disk interrupt handler.
+
+    // Lock the disk by setting the STATUS and the PID fields in the Disk Status Table to 1 and PID of the process respectively.
+
+    [DISK_STATUS_TABLE] = 1;
+    [DISK_STATUS_TABLE + 4] = currPid;
+
+    return;
+endif;
+
+// Acquire Terminal
+if(funcNo==8) then
+while([TERMINAL_STATUS_TABLE]==1) do
+
+ [PROCESS_TABLE+16*currPid+4] = WAIT_TERMINAL;
+ multipush(R1,R2);
+ call SCHEDULER;
+ multipop(R1,R2);
+ 
+endwhile;
+
+[TERMINAL_STATUS_TABLE] = 1;  
+[TERMINAL_STATUS_TABLE+1] = currPid;
+
+breakpoint;
+return;
+endif;
+
+// Release Terminal
+alias ret R0;
+if(funcNo==9) then
+if(currPid!=[TERMINAL_STATUS_TABLE+1]) then
+ ret = -1;
+ return;
+endif;
+
+[TERMINAL_STATUS_TABLE] = 0;
+alias i R5;
+i=0;
+while(i<16) do
+ if([PROCESS_TABLE+16*i+4]==WAIT_TERMINAL) then
+  [PROCESS_TABLE+16*i+4] = READY;
+ endif;
+i = i+1;
+endwhile;
+
+ret = 0;
+
+breakpoint;
+return;
+endif;
