@@ -245,6 +245,34 @@ ireturn;
 halt;
 ```
 
+> File: load21.dat
+```.
+load --library ../expl/library.lib
+load --idle /home/kali/myexpos/expl/expl_progs/stage21/infinite.xsm
+load --init /home/kali/myexpos/expl/expl_progs/stage21/shell.xsm
+load --exec /home/kali/myexpos/expl/expl_progs/stage21/even.xsm
+load --exec /home/kali/myexpos/expl/expl_progs/stage21/odd.xsm
+load --int=6 /home/kali/myexpos/spl/spl_progs/stage21/int_6.xsm
+load --int=7 /home/kali/myexpos/spl/spl_progs/stage21/int_7.xsm
+load --int=8 /home/kali/myexpos/spl/spl_progs/stage21/int_8.xsm
+load --int=9 /home/kali/myexpos/spl/spl_progs/stage21/int_9.xsm
+load --int=10 /home/kali/myexpos/spl/spl_progs/stage21/int_10.xsm
+load --int=15 /home/kali/myexpos/spl/spl_progs/stage21/int_15.xsm
+load --int=11 /home/kali/myexpos/spl/spl_progs/stage21/int_11.xsm
+load --int=console /home/kali/myexpos/spl/spl_progs/stage21/console.xsm
+load --int=disk /home/kali/myexpos/spl/spl_progs/stage21/disk.xsm
+load --module 0 /home/kali/myexpos/spl/spl_progs/stage21/mod_0.xsm
+load --module 1 /home/kali/myexpos/spl/spl_progs/stage21/mod_1.xsm
+load --module 2 /home/kali/myexpos/spl/spl_progs/stage21/mod_2.xsm
+load --module 4 /home/kali/myexpos/spl/spl_progs/stage21/mod_4.xsm
+load --module 5 /home/kali/myexpos/spl/spl_progs/stage21/mod_5.xsm
+load --module 7 /home/kali/myexpos/spl/spl_progs/stage21/mod_7.xsm
+load --exhandler /home/kali/myexpos/spl/spl_progs/stage21/haltprog.xsm
+load --int=timer /home/kali/myexpos/spl/spl_progs/stage21/timer.xsm
+load --os /home/kali/myexpos/spl/spl_progs/stage21/os_startup.xsm
+exit
+```
+
 ---
 # Assignment 2
 
@@ -253,6 +281,7 @@ Write an ExpL program 'pid.expl' which invokes Getpid system call and prints the
 ```
 
 // todo plej wait
+
 
 
 
