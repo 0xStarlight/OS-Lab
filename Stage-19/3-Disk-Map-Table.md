@@ -1,4 +1,4 @@
-#### PER-PROCESS DISK MAP TABLE[¶](https://exposnitc.github.io/expos-docs/os-design/process-table/#per-process-disk-map-table "Permanent link")
+# PER-PROCESS DISK MAP TABLE[¶](https://exposnitc.github.io/expos-docs/os-design/process-table/#per-process-disk-map-table "Permanent link")
 
 The per-process Disk Map Table stores the disk block number corresponding to the pages of each process. The Disk Map Table has 10 entries for a single process. When the memory pages of a process are swapped out into the disk, the corresponding disk block numbers of those pages are stored in this table. It also stores block numbers of the code pages of the process.
 

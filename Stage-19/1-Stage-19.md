@@ -1,3 +1,10 @@
+# Exception Handler
+---
+# Table of Content
+1. [[1-Stage-19]]
+2. [[2-FastNotes]]
+3. [[3-Disk-Map-Table]]
+4. [[4-PER-PROCESS-RESOURCE-TABLE]]
 # Summary
 
 This stage covers exception handling in eXpOS, which involves four events that generate exceptions: illegal memory access, illegal instruction, arithmetic exception, and page fault. The exception handler code used in previous stages contained only the halt instruction, which is inappropriate for handling exceptions that occur in a single process. Therefore, we implement the exception handler that takes appropriate action for each exception. The exception handler occupies page 2 and 3 in the memory and blocks 15 and 16 in the disk. There are four special registers in XSM that are used to obtain the cause of the exception and related information.

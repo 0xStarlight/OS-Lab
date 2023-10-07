@@ -1,0 +1,62 @@
+//Set MODE Flag to 7
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 7;
+
+alias userSP R0;
+userSP=SP;
+
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+//Accessing physical fileDescriptor location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias fileDescPhysicalAddr R3;
+
+//Try to find fileDescPhysicalAddr and the fileDescriptor
+
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileDescPhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileDescriptor R4;
+fileDescriptor=[fileDescPhysicalAddr];
+
+
+
+
+//Checking File fileDescriptor and doing operations
+
+if (fileDescriptor != -1)then
+
+    //Set Return value to -1  
+    alias physicalAddrRetVal R5;
+    physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+    [physicalAddrRetVal] = -1;
+
+else
+
+    //Take word address from stack and call DEVICE MANAGER 
+    alias wordaddr R5;
+    wordaddr = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+    multipush(R0,R1,R2,R3,R4,R5,R6);
+    R1 = 4;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = wordaddr;
+    call DEVICE_MANAGER;
+    multipop(R0,R1,R2,R3,R4,R5,R6);
+
+    //Set Return value to 0
+    alias physicalAddrRetVal R6;
+    physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+    [physicalAddrRetVal] = 0;
+endif;
+
+// Reset Mode Flag
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+ireturn;
