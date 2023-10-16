@@ -1,0 +1,71 @@
+[PROCESS_TABLE + 16 *[SYSTEM_STATUS_TABLE + 1] + 9] = -1;
+alias userSP R0;
+userSP =SP;
+[PROCESS_TABLE + 16 *[SYSTEM_STATUS_TABLE + 1] + 13]= SP;
+SP = [PROCESS_TABLE + 16 *[SYSTEM_STATUS_TABLE + 1] + 11]* 512 -1 ;
+
+backup;
+multipush(EIP);
+
+if(EC != 0 || userSP == PTLR*512-1 ) then
+	if(EC != 0) then
+		print( "exception");
+	endif;
+	if( userSP == PTLR*512-1 ) then
+		print("userStackfull");
+	endif;
+	
+	multipush(R0,R1);
+	R1 = EXIT_PROCESS;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+	call MOD_1;
+	multipop(R0,R1);
+
+	multipush(R0,R1);	
+	call SCHEDULER;
+	multipop(R0,R1);
+		
+endif;
+
+if(EC == 0) then
+	if(EPN == 4 || EPN == 5 || EPN == 6 || EPN == 7) then
+		alias blocknum R2; 
+		blocknum = [DISK_MAP_TABLE + 10*[SYSTEM_STATUS_TABLE + 1] + EPN];
+		multipush(R1,R2);
+		R1 = GET_CODE_PAGE;
+		call MOD_2;
+		multipop(R1,R2);
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*EPN ] = R0;
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*EPN + 1]= "1100";
+	endif;
+	if(EPN == 2) then
+		multipush(R1,R2,R3);
+		R1 = GET_FREE_PAGE;
+		call MOD_2;
+		multipop(R1,R2,R3);	
+		
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*2 ] = R0;	
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*2 ] = "1110";
+		
+		multipush(R1,R2,R3);
+		R1 = GET_FREE_PAGE;
+		call MOD_2;
+		multipop(R1,R2,R3);
+			
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*2 ] = R0;	
+		[PAGE_TABLE_BASE + 20*[SYSTEM_STATUS_TABLE + 1] + 2*2 ] = "1110";		
+	endif;
+endif;
+
+[PROCESS_TABLE + 16 *[SYSTEM_STATUS_TABLE + 1] + 9] = 0;
+
+multipop(EIP);
+
+restore;
+
+SP = [PROCESS_TABLE + 16 *[SYSTEM_STATUS_TABLE + 1] + 13];
+SP =SP +1;
+[[PTBR + 2*(SP/512)]*512 +(SP%512)] = EIP;
+
+ireturn;
+	

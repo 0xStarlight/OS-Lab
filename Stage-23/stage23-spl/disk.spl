@@ -1,0 +1,30 @@
+// breakpoint;
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+backup;
+
+//Set status of Disk Status Table as Free
+[ DISK_STATUS_TABLE + 0 ] = 0;
+
+//Setting States to READY
+
+alias index R1;
+
+index=1;
+while( index != 16 )do
+    if ( [PROCESS_TABLE + ( index * 16 ) + 4] == WAIT_DISK) then
+        [PROCESS_TABLE + ( index * 16 ) + 4] = READY;
+    endif;
+    index = index + 1;
+endwhile;
+
+
+restore;
+
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+// breakpoint;
+ireturn;

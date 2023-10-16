@@ -1,0 +1,28 @@
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+backup;
+
+
+alias reqPID R0;
+
+reqPID = [TERMINAL_STATUS_TABLE + 1];
+
+[PROCESS_TABLE + ( reqPID * 16 ) + 8 ] = P0;
+
+multipush(R0,R1,R2,R3);
+R1 = 9;
+R2 = reqPID;
+call RESOURCE_MANAGER;
+multipop(R0,R1,R2,R3);
+
+restore;
+
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+
+//breakpoint;
+
+ireturn;

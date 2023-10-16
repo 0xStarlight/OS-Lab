@@ -1,0 +1,201 @@
+alias sysNo R1;
+alias ptbr R8;
+alias userSP R9;
+alias PTE R10;
+
+PTE = PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16);
+ptbr = [PTE + 14];
+
+userSP = SP;
+[PTE + 13] = SP;
+SP = [PTE + 11] * 512 -1;
+
+sysNo = [[ptbr + 2*((userSP - 5)/512)] * 512 + (userSP - 5)%512];
+
+alias fileName R2;
+alias retAddr R3;
+
+fileName = [[ptbr + 2*((userSP - 4)/512)] * 512 + (userSP - 4)%512];
+retAddr = [[ptbr + 2*((userSP - 1)/512)] * 512 + (userSP - 1)%512];
+
+// SyscallNo for create is 1
+if(sysNo == 1) then
+
+	alias PERM R4;
+	PERM = [[ptbr + 2*((userSP - 3)/512)] * 512 + (userSP - 3)%512];
+
+	// Set the MODE_FLAG in the process table entry to 1,
+	[PTE + 9] = 1;
+
+	alias i R5;
+	i = 0;
+
+	while(i < MAX_FILE_NUM) do
+		if([INODE_TABLE + i * 16 + 1] == fileName) then
+			// If the file is present in the system, return 0. 
+			[retAddr] = 0;
+			[PTE + 9] = 0;
+			SP = userSP;
+			ireturn;
+		endif;
+
+		i = i + 1;
+	endwhile;
+
+	i = 0;
+	while(i < MAX_FILE_NUM) do
+		if([INODE_TABLE + i * 16 + 1] == -1) then
+			break;
+		endif;
+
+		i = i + 1;
+	endwhile;
+
+	// Find the index of a free entry in the Inode Table. 
+	// If no free entry found, return -1.   /* Maximum number of files reached */
+
+	if(i == MAX_FILE_NUM) then
+		[retAddr] = -1;
+		[PTE + 9] = 0;
+		SP = userSP;
+		ireturn;
+	endif;
+
+	// In the Inode Table entry found above, set FILE NAME to the given file name, FILE SIZE to 0 and FILE TYPE to DATA.
+	// In the Inode Table entry, set the block numbers to -1.  /* No disk blocks are allocated to the file */
+
+	[INODE_TABLE + i*16] = DATA;
+	[INODE_TABLE + i*16 + 1] = fileName;
+	[INODE_TABLE + i*16 + 2] = 0;
+
+	// Set the USER ID to the USERID of the process /* See the process table for user id */
+	// Set the PERMISSION to the permission supplied as input.
+
+	[INODE_TABLE + i*16 + 3] = [PTE + 3];
+	[INODE_TABLE + i*16 + 4] = PERM;
+
+	[INODE_TABLE + i*16 + 8] = -1;
+	[INODE_TABLE + i*16 + 9] = -1;
+	[INODE_TABLE + i*16 + 10] = -1;
+	[INODE_TABLE + i*16 + 11] = -1;
+
+	// In the Root file entry corresponding to the Inode Table index, 
+	// set the FILE NAME, FILE SIZE, FILE TYPE, USERNAME and PERMISSION fields.
+
+	[ROOT_FILE + i*8] = fileName;
+	[ROOT_FILE + i*8 + 1] = 0;
+	[ROOT_FILE + i*8 + 2] = DATA;
+	[ROOT_FILE + i*8 + 3] = [PTE + 3];
+	[ROOT_FILE + i*8 + 4] = PERM;
+
+	// Return from the system call with 0.  /* success */
+	[retAddr] = 0;
+
+	// Set the MODE_FLAG in the process table entry to 0.
+	[PTE + 9] = 0;
+
+	SP = userSP;
+	ireturn;
+
+endif;
+
+// SyscallNo for delete is 4
+if(sysNo == 4) then
+	[PTE + 9] = 4;
+	
+	alias i R4;
+	i = 0;
+	while(i<MAX_FILE_NUM) do
+
+		if([INODE_TABLE + i* 16 + 1] == fileName) then
+			break;
+		endif;
+
+		i = i + 1;
+	endwhile;
+
+	if(i == MAX_FILE_NUM) then
+		[retAddr] = 0;
+		[PTE + 9] = 0;
+		SP = userSP;
+		ireturn;
+	endif;
+
+	if([INODE_TABLE + i * 16] != DATA) then
+		[retAddr] = -1;
+		[PTE + 9] = 0;
+		SP = userSP;
+		ireturn;
+	endif;
+
+	if([INODE_TABLE + i*16 + 4] == 0) then
+		if([INODE_TABLE + i*16 + 3] != 1 && [INODE_TABLE + i*16 + 3] != [PTE + 3]) then
+			[retAddr] = -1;
+			[PTE + 9] = 0;
+			SP = userSP;
+			ireturn;
+		endif;
+	endif;
+
+
+	multipush(R1,R2,R3,R4,R8,R9,R10);
+	R1 = 4;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+	R3 = i;
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R3,R4,R8,R9,R10);
+
+	if([FILE_STATUS_TABLE + i* 4 + 1] != -1) then
+		[retAddr] = -2;
+		[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+		SP = userSP;
+		ireturn;
+	endif;
+
+
+	alias x R5;
+	alias y R6;
+
+	x = 0;
+	while(x < 4) do
+		if([INODE_TABLE + i* 16 + 8 + x] != -1) then
+			y = 0;
+			while(y < 4) do
+				if([BUFFER_TABLE + y*4] == [INODE_TABLE + i*16 + 8 + x] && [BUFFER_TABLE + y*4 + 1] == 1) then
+					[BUFFER_TABLE + y*4 + 1] = 0;
+				endif;
+				y = y + 1;
+			endwhile;
+
+			multipush(R1,R2,R3,R4,R5,R6);
+			R1 = 4;
+			R2 = [INODE_TABLE + i* 16 + 8 + x];
+			multipop(R1,R2,R3,R4,R5,R6);
+
+		endif;
+
+		x = x + 1;
+	endwhile;
+
+	x = 0;
+	while(x<16) do
+		[INODE_TABLE + i*16 + x] = -1;
+		x = x + 1;
+	endwhile;
+
+
+	[ROOT_FILE + i*8] = -1;
+
+
+	multipush(R1,R2,R3,R4,R5,R6);
+	R1 = 5;
+	R2 = [SYSTEM_STATUS_TABLE + 1];
+	R3 = i;
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R3,R4,R5,R6);
+
+	[retAddr] = 0;
+	[PTE + 9] = 0;
+	SP = userSP;
+	ireturn;
+endif;
