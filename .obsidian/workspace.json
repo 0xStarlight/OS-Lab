@@ -50,8 +50,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-23/1-Stage23.md",
-                "mode": "preview",
+                "file": "Stage-24/1-Stage24.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -250,7 +250,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5
+    "width": 234.5,
+    "collapsed": true
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -266,7 +267,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-23/1-Stage23.md",
+                "file": "Stage-24/1-Stage24.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -313,8 +314,16 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "1e81aa38dd3a4b24",
+  "active": "6a4f9879c5770215",
   "lastOpenFiles": [
+    "~Attachments/Pasted image 20231016195617.png",
+    "~Attachments/Pasted image 20231016195459.png",
+    "~Attachments/Pasted image 20231016195335.png",
+    "~Attachments/Pasted image 20231016194316.png",
+    "~Attachments/Pasted image 20231016191332.png",
+    "Stage-22/1-Semaphores.md",
+    "Stage-24/1-Stage24.md",
+    "Stage-23/1-Stage23.md",
     "Stage-24",
     "Stage-23/stage23-spl/tmp/timer.spl",
     "Stage-23/stage23-spl/tmp/os_startup.spl",
@@ -325,11 +334,8 @@
     "Stage-23/stage23-spl/tmp/mod_1.spl",
     "Stage-23/stage23-spl/tmp/mod_0.spl",
     "Stage-23/stage23-spl/tmp/int_9.spl",
-    "Stage-23/stage23-spl/tmp/int_8.spl",
     "Stage-21/1-Process-Synchronization.md",
     "Stage-20/1-Process-Creation-and-Termination.md",
-    "Stage-23/1-Stage23.md",
-    "Stage-22/1-Semaphores.md",
     "Stage-13/2-Modules.md",
     "Stage-10/2-Process-Table.md",
     "Stage-13/1-Boot-Module.md",
@@ -352,14 +358,9 @@
     "Stage-19/2-FastNotes.md",
     "Stage-19/3-Disk-Map-Table.md",
     "Stage-19/4-PER-PROCESS-RESOURCE-TABLE.md",
-    "00-Compile-Script/0-Auto-Compile.md",
     "~Attachments/Pasted image 20230923201759.png",
     "~Attachments/Pasted image 20230923201729.png",
     "~Attachments/Pasted image 20230923201319.png",
-    "~Attachments/Pasted image 20230923190414.png",
-    "~Attachments/Pasted image 20230923190351.png",
-    "~Attachments/Pasted image 20230923190348.png",
-    "~Attachments/Pasted image 20230923190117.png",
-    "~Attachments/Pasted image 20230923011824.png"
+    "~Attachments/Pasted image 20230923190414.png"
   ]
 }
