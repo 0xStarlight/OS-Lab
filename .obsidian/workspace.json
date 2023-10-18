@@ -26,8 +26,8 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-26/1-Stage26.md",
-                "mode": "preview",
+                "file": "README.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -243,7 +243,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-26/1-Stage26.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -292,6 +292,7 @@
   },
   "active": "6a4f9879c5770215",
   "lastOpenFiles": [
+    "Stage-26/1-Stage26.md",
     "Stage-21/1-Process-Synchronization.md",
     "Stage-26/stage26-spl.zip",
     "Stage-26/stage26-spl.7z",
@@ -305,7 +306,6 @@
     "Stage-26/stage26-spl/temp/mod_2.spl",
     "Stage-24/1-Stage24.md",
     "Stage-25/1-Stage25.md",
-    "Stage-26/1-Stage26.md",
     "Stage-23/3-Memory-DS.md",
     "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20231016233632.png",
