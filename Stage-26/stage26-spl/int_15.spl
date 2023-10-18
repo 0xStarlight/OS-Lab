@@ -1,0 +1,78 @@
+alias userSP R10;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+//IP+2,ret val,arg 3,arg 2,arg 1,funcode/sysnum
+
+alias sysnum R9;
+sysnum=[ ([PTBR+ 2*((userSP-5)/512) ]*512) + ((userSP-5) % 512)];
+
+//shutdown
+if(sysnum==21)then
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] =21;
+	if([SYSTEM_STATUS_TABLE+1]!=2 && [SYSTEM_STATUS_TABLE]!=1)then
+		[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=-1;
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	//kill all
+	multipush(R10,R9);
+	R1=5;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	call PROCESS_MANAGER;
+	multipop(R10,R9);
+	
+	alias count R8;
+	count=0;
+	//print "here";
+	while(count<MAX_BUFFER)do
+		if([BUFFER_TABLE+count*4+1]==1)then
+			//disk store
+			multipush(R10,R9,R8);
+			R1=1;
+			R2=[SYSTEM_STATUS_TABLE+1];
+			R3=BUFFER_BASE+count;
+			R4=[BUFFER_TABLE+count*4];
+			call DEVICE_MANAGER;
+			multipop(R10,R9,R8);
+		endif;
+		count=count+1;
+	endwhile;
+	//print "there";
+	//using disk store to store inode table, root file, and disk free list.
+	multipush(R10,R9);
+	R1=1;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	R3=59;
+	R4=3;
+	call DEVICE_MANAGER;
+	
+	R1=1;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	R3=60;
+	R4=4;
+	call DEVICE_MANAGER;
+	
+	R1=1;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	R3=61;
+	R4=2;
+	call DEVICE_MANAGER;
+	
+	R1=1;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	R3=62;
+	R4=5;
+	call DEVICE_MANAGER;
+	multipop(R10,R9);
+	
+	halt;
+endif;
+
+ireturn;
+	
+	

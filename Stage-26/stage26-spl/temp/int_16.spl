@@ -1,0 +1,219 @@
+alias currPid R1;
+currPid = [SYSTEM_STATUS_TABLE + 1];
+
+alias process_table R2;
+process_table = PROCESS_TABLE + 16*currPid;
+
+alias userSP R3;
+userSP = SP;
+
+[process_table + 13] = SP;
+SP = [process_table + 11]*512 - 1;
+
+alias syscall R4;
+syscall = [[PTBR + 2*((userSP-5)/512)]*512 + (userSP-5)%512];
+
+alias ret_adr R5;
+ret_adr = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512;
+
+alias UserName R6;
+UserName = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+alias password R7;
+password = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512];
+
+[process_table + 9] = syscall;
+
+if(syscall == INT_NEWUSR) then
+    if(currPid != 2 || [process_table + 3] != ROOT) then
+        [ret_adr] = -2;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    encrypt password;
+
+    alias i R8;
+    i = 0;
+
+    while(i < MAX_USER_NUM) do
+        if([USER_TABLE + 2*i] == UserName) then
+            [ret_adr] = -1;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    i = 0;
+    while(i < MAX_USER_NUM) do
+        if([USER_TABLE + 2*i] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if(i == MAX_USER_NUM) then
+        [ret_adr] = -3;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias free_entry R9;
+    free_entry = i;
+
+    [USER_TABLE + free_entry*2] = UserName;
+    [USER_TABLE + free_entry*2 + 1] = password;
+
+    [ret_adr] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+if(syscall == INT_REMUSR) then
+    if(currPid != 2 || [process_table + 3] != ROOT) then
+        [ret_adr] = -2;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    if(UserName == "root" || UserName == "kernel") then
+        [ret_adr] = -2;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias i R8;
+    i = 0;
+
+    while(i < MAX_USER_NUM) do
+        if([USER_TABLE + 2*i] == UserName) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if(i == MAX_USER_NUM) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias userID R9;
+    userID = i;
+
+    i = 0;
+    while(i < MAX_FILE_NUM) do
+        if([ROOT_FILE + 8*i] != -1 && [ROOT_FILE + 8*i + 3] == UserName) then
+            [ret_adr] = -3;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    [USER_TABLE + 2*userID] = -1;
+    [USER_TABLE + 2*userID + 1] = -1;
+
+    [ret_adr] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+if(syscall == INT_SETPWD) then
+    if([process_table + 1] != 2) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif; 
+
+    encrypt password;
+
+    alias i R8;
+    i = 0;
+
+    while(i < MAX_USER_NUM) do
+        if([USER_TABLE + 2*i] == UserName) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if(i == MAX_USER_NUM) then
+        [ret_adr] = -2;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias userID R9;
+    userID = i;
+
+    if(userID != [process_table + 3] && userID != ROOT) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    [USER_TABLE + 2*userID + 1] = password;
+
+    [ret_adr] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+if(syscall == INT_GETUNAME) then
+    alias userID R8;
+    userID = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+    if(userID < 0 || userID >= MAX_USER_NUM || [USER_TABLE + 2*userID] == -1) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    [ret_adr] = [USER_TABLE + 2*userID];
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+if(syscall == INT_GETUID) then
+    alias i R8;
+    i = 0;
+
+    while(i < MAX_USER_NUM) do
+        if([USER_TABLE + 2*i] == UserName) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if(i == MAX_USER_NUM) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias userID R9;
+    userID = i;
+
+    [ret_adr] = userID;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;

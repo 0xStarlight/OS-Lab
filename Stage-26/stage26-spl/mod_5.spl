@@ -1,0 +1,64 @@
+//SCHEDULER MODULE 
+
+//INFO of OLD PROCESS STORED IN PROCESS TABLE
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+multipush(BP);
+
+//KPTR
+[process_table_entry + 12] = SP % 512;
+
+//Check PCB in expos DOC for more info
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+
+
+alias ind R2;
+ind = ((currentPID + 1) % 16);
+
+while( [PROCESS_TABLE + ind* 16 + 4]!=CREATED &&  [PROCESS_TABLE + ind* 16 + 4]!=READY )do
+    // breakpoint;
+    ind = ((ind + 1) % 16);
+endwhile;
+
+alias newPID R3;
+newPID = ind;
+
+alias new_process_table R4;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+//Current executing PID
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+if( currentPID != newPID ) then
+	[SYSTEM_STATUS_TABLE + 0] = [SYSTEM_STATUS_TABLE + 0] + 1;
+endif;
+
+
+if([new_process_table + 4] == CREATED) then
+    //STATE
+    [new_process_table + 4] = RUNNING;
+    //MODE FLAG
+    [new_process_table + 9] = 0;
+
+    BP = [[new_process_table + 11] * 512 ];
+    //UPTR restored to Stack Pointer
+    SP = [new_process_table + 13];
+    
+    ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+multipop(BP);
+
+return;

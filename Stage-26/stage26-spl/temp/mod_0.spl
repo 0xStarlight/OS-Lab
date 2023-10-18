@@ -1,0 +1,215 @@
+//RESOURCE_MANAGER MODULE
+
+alias funcNo R1;
+
+//ACQIURE BUFFER 
+if( funcNo == ACQUIRE_BUFFER ) then
+	alias currPid R2;
+	alias buffer_idx R3;
+	
+	while([BUFFER_TABLE + 4*buffer_idx + 2] != -1) do
+        [PROCESS_TABLE + 16*currPid + 4] = WAIT_BUFFER;
+        [PROCESS_TABLE + 16*currPid + 5] = buffer_idx;
+
+        backup;
+        call SCHEDULER;
+        restore;
+
+    endwhile;
+
+    [BUFFER_TABLE + 4*buffer_idx + 2] = currPid;
+    return;
+endif;
+
+//RELEASE BUFFER 
+if( funcNo == RELEASE_BUFFER ) then
+	alias currPid R2;
+	alias buffer_idx R3;
+	
+	if([BUFFER_TABLE+4*buffer_idx+2]!=currPid) then
+        R0 = -1;
+        return;
+    endif;
+    
+    [BUFFER_TABLE + 4*buffer_idx + 2] = -1;
+
+	alias i R4;
+    i = 0;
+
+    alias process_table R5;
+
+    while(i < 16) do
+        process_table = PROCESS_TABLE + i*16;
+
+        if([process_table + 4] == WAIT_BUFFER && [process_table + 5] == buffer_idx) then
+            [process_table + 4] = READY;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
+
+// ACQUIRE INODE
+if( funcNo == 4 ) then
+	alias currPid R2;
+	alias index R3;
+	while( [FILE_STATUS_TABLE + 4*index] != -1 ) do
+		[PROCESS_TABLE + 16*currPid + 4] = WAIT_FILE;
+        [PROCESS_TABLE + 16*currPid + 5] = index;
+    	
+    	backup;
+    	call SCHEDULER;
+    	restore;
+    endwhile;
+    
+    // check if was deleted
+    if([INODE_TABLE + 16*index + 1] == -1) then
+        R0 = -1;
+        return;
+    endif;
+    
+    [FILE_STATUS_TABLE + 4*index] = currPid;
+    R0 = 0;
+    return;
+endif;
+
+// RELEASE INODE
+if( funcNo == 5 ) then
+	alias currPid R2;
+	alias index R3;
+	
+	if([FILE_STATUS_TABLE + index*4 + 0] != currPid) then
+        R0 = -1;
+        return;
+    endif;
+
+    [FILE_STATUS_TABLE + index*4 + 0] = -1;
+
+    alias i R4;
+    i = 0;
+
+    while(i < 16) do
+        if([PROCESS_TABLE + i*16 + 4] == WAIT_FILE && [PROCESS_TABLE + i*16 + 5] == index) then
+            [PROCESS_TABLE + i*16 + 4] = READY;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    R0 = 0;
+    return;
+endif;
+
+//ACQUIRE DISK
+if ( funcNo == 3 )then
+	[SYSTEM_STATUS_TABLE + 6] = [SYSTEM_STATUS_TABLE + 6] + 1;
+    alias currentPID R2;
+
+    //Waiting for Disk to be released
+    while( [DISK_STATUS_TABLE + 0] == 1 )do
+        [PROCESS_TABLE + ( currentPID * 16) + 4] = WAIT_DISK;
+        multipush(R1,R2,R3);
+        call SCHEDULER;
+        multipop(R1,R2,R3);
+    endwhile;
+
+    //Setting new process to Disk
+    [DISK_STATUS_TABLE + 0] = 1;
+    [DISK_STATUS_TABLE + 4] = currentPID;
+
+
+endif;
+
+//ACQUIRE SEMAPHORE
+if (funcNo == 6 )then
+    alias currentPID R2;
+    alias index R3;
+
+    index = 0;
+
+    while(index < 32 && [SEMAPHORE_TABLE + index*4 + 1] != 0)do
+        index = index + 1 ;
+    endwhile;
+    
+    if (index == 32)then
+        R0 = -1;
+    else    
+        //Locking PID
+        [SEMAPHORE_TABLE + index*4 + 0] = -1;
+        //Process Count
+        [SEMAPHORE_TABLE + index*4 + 1] = 1;
+        R0 = index;
+    endif;
+endif;
+
+
+//RELEASE SEMAPHORE
+if (funcNo == 7 )then
+    alias semIndex R2;
+    alias currentPID R3;
+    alias i R4;
+
+    //Checking if locked by current process then release semaphore and all waiting processes
+    if ( [SEMAPHORE_TABLE + semIndex*4 ] ==  currentPID )then
+        //Unlock sempahore
+        [SEMAPHORE_TABLE + semIndex*4 ] = -1;
+        i=0;
+        while (i<16)do
+            if ( [ PROCESS_TABLE + i*16 + 4 ] == WAIT_SEMAPHORE && [ PROCESS_TABLE + i*16 + 5 ] == semIndex )then
+                [ PROCESS_TABLE + i*16 + 4 ] = READY;
+            endif;
+            i = i + 1;
+        endwhile;
+    endif;
+
+    [SEMAPHORE_TABLE + semIndex*4 + 1] = [SEMAPHORE_TABLE + semIndex*4 + 1] - 1;
+
+endif;
+
+//ACQUIRING TERMINAL
+if ( funcNo == 8 )then
+    alias currentPID R2;
+
+    //Waiting for Terminal to be released
+    while( [ TERMINAL_STATUS_TABLE + 0 ] == 1 )do
+        [PROCESS_TABLE + ( currentPID * 16) + 4] = WAIT_TERMINAL;
+        multipush(R1,R2,R3);
+        call SCHEDULER;
+        multipop(R1,R2,R3);
+    endwhile;
+    //Assigning new process to Terminal 
+    [ TERMINAL_STATUS_TABLE + 0 ] = 1;
+    [ TERMINAL_STATUS_TABLE + 1 ] = currentPID;
+endif;
+
+
+
+
+//RELEASE TERMINAL
+if ( funcNo == 9 )then
+    alias currentPID R2;
+    alias index R4;
+
+    // This process isnt using terminal resource
+    if ( [ TERMINAL_STATUS_TABLE + 1 ] != currentPID) then
+        R0 = -1;
+    else
+        // Set Terminal as released
+        [ TERMINAL_STATUS_TABLE + 0 ] = 0;
+        index=0;
+        //Loop through and make every process ready
+        while( index != 16 )do
+            if ( [PROCESS_TABLE + ( index * 16) + 4] == WAIT_TERMINAL )then
+                [PROCESS_TABLE + ( index * 16) + 4] = READY;
+            endif;
+            index = index + 1;
+        endwhile;
+        R0 = 0;
+
+    endif; 
+
+endif;
+
+
+return;

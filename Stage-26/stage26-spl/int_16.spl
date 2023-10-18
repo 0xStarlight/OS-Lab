@@ -1,0 +1,216 @@
+alias userSP R10;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+//IP+2,ret val,arg 3,arg 2,arg 1,funcode/sysnum
+
+alias sysnum R9;
+sysnum=[ ([PTBR+ 2*((userSP-5)/512) ]*512) + ((userSP-5) % 512)];
+
+alias proc_add R8;
+proc_add=PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+
+alias retadd R7;
+retadd=([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512);
+//newusr
+if(sysnum==22)then
+	[proc_add+ 9] =22;
+	
+	//if current user not root or current process not shell
+	if([SYSTEM_STATUS_TABLE]!=1 || [SYSTEM_STATUS_TABLE+1]!=2)then
+		[retadd]=-2;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	alias uname R6;
+	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	alias pawd R5;
+	pawd=[([PTBR+ 2*((userSP-3)/512) ]*512) + ((userSP-3) % 512)];
+	
+	alias counter R4;
+	counter=0;
+	while(counter<MAX_USER_NUM)do
+		if([USER_TABLE+counter*2]==uname)then
+			[retadd]=-1;
+			[proc_add + 9] = 0;
+		       	SP = userSP;
+		       	ireturn;
+		endif;
+		counter=counter+1;
+	endwhile;
+	counter=0;
+	while(counter<MAX_USER_NUM)do
+		if([USER_TABLE+counter*2]==-1)then
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	//no free entry
+	if(counter==MAX_USER_NUM)then
+		[retadd]=-3;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	encrypt pawd;
+	[USER_TABLE+counter*2]=uname;
+	[USER_TABLE+counter*2+1]=pawd;
+		
+	[retadd]=0;
+	[proc_add + 9] = 0;
+	SP = userSP;
+endif;
+
+//remusr
+if(sysnum==23)then
+	[proc_add+ 9] =23;
+	
+	alias uname R6;
+	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	//if current user not root or current process not shell
+	if([SYSTEM_STATUS_TABLE]!=1 || [SYSTEM_STATUS_TABLE+1]!=2 || uname=="root" || uname=="kernel")then
+		[retadd]=-2;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	alias count R5;
+	count=0;
+	while(count<MAX_USER_NUM)do
+		if([USER_TABLE+count*2]==uname)then
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+	
+	if(count==MAX_USER_NUM)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	alias counter R4;
+	counter=0;
+	while(counter<MAX_FILE_NUM)do
+		//if files exist of user then cannot remusr
+		if([ROOT_FILE+counter*8+3]==count)then
+			[retadd]=-3;
+			[proc_add + 9] = 0;
+		       	SP = userSP;
+		       	ireturn;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	//invalidate the entries
+	[USER_TABLE+count*2]=-1;
+	[USER_TABLE+count*2+1]=-1;
+	
+	[retadd]=0;
+	[proc_add + 9] = 0;
+	SP = userSP;
+endif;
+
+//setpwd
+if(sysnum==24)then
+	[proc_add+ 9] =24;
+	
+	alias uname R6;
+	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	      
+	//if current process not shell
+	if([SYSTEM_STATUS_TABLE+1]!=2)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	alias counter R5;
+	counter=0;
+	while(counter<MAX_USER_NUM)do
+		if([USER_TABLE+counter*2]==uname)then
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	if(counter==MAX_USER_NUM)then
+		[retadd]=-2;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	if([SYSTEM_STATUS_TABLE]!=counter && [SYSTEM_STATUS_TABLE]!=1)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	alias pswd R4;
+	pswd=[([PTBR+ 2*((userSP-3)/512) ]*512) + ((userSP-3) % 512)];
+	encrypt pswd;
+	
+	//set new passwd in user table
+	[USER_TABLE+counter*2+1]=pswd;
+	
+	[retadd]=0;
+	[proc_add + 9] = 0;
+	SP = userSP;
+endif;
+
+//getuid
+if(sysnum==26)then
+	[proc_add+9]=26;
+	
+	alias uname R6;
+	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	alias counter R5;
+	counter=0;
+	while(counter<MAX_USER_NUM)do
+		if([USER_TABLE+counter*2]==uname)then
+			[retadd]=counter;
+			[proc_add + 9] = 0;
+	       		SP = userSP;
+	       		ireturn;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	[retadd]=-1;
+	[proc_add + 9] = 0;
+      	SP = userSP;
+endif;
+
+//getuname
+if(sysnum==25)then
+	[proc_add+9]=25;
+	
+	alias uid R6;
+	uid=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	if(uid<0 || uid>15)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+	      	SP = userSP;
+	      	ireturn;
+	endif;
+	
+	[retadd]=[USER_TABLE+uid*2];
+	[proc_add + 9] = 0;
+	SP = userSP;
+endif;
+
+ireturn;

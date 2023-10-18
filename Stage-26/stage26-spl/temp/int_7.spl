@@ -1,0 +1,155 @@
+// INT WRITE
+
+alias process_table R1;
+process_table = PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1];
+
+[process_table + 9] = INT_WRITE; 
+
+alias userSP R2;
+userSP = SP;
+
+[process_table + 13] = SP; 
+SP = [process_table + 11]*512 - 1;
+
+alias filedesc R3;
+filedesc = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+alias ret_adr R4;
+ret_adr = ([PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512);
+
+if (filedesc == -2) then
+    alias word R5;
+    word = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512];
+
+    multipush(R1,R2,R3,R4,R5);
+    R1 = TERMINAL_WRITE;
+    R2 = [SYSTEM_STATUS_TABLE+1];
+    R3 = word;
+    call DEVICE_MANAGER;
+    multipop(R1,R2,R3,R4,R5);
+
+    [ret_adr] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+else
+    alias resource_table R5;
+    resource_table = [process_table + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+    if (filedesc < 0 || filedesc > 7 || [resource_table + 2*filedesc] != FILE) then
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias open_file_index R6;
+    open_file_index = [resource_table + 2*filedesc + 1];
+
+    alias inode_index R7;
+    inode_index = [OPEN_FILE_TABLE + 4*open_file_index];
+
+    if ([INODE_TABLE + 16*inode_index + 4] == EXCLUSIVE) then
+        if ([process_table + 3] != ROOT && [process_table + 3] != [INODE_TABLE + 16*inode_index + 3]) then
+            [ret_adr] = -3;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+    endif;
+
+    multipush(R1,R2,R3,R4,R5,R6,R7);
+    R1 = ACQUIRE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE+1];
+    R3 = inode_index;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5,R6,R7);
+
+    if (R0 == -1) then
+        multipush(R1,R2,R3,R4,R5,R6,R7);
+        R1 = RELEASE_INODE;
+        R2 = [SYSTEM_STATUS_TABLE+1];
+        R3 = inode_index;
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R7);
+
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias lseek R8;
+    lseek = [OPEN_FILE_TABLE + 4*open_file_index + 2];
+
+    if (lseek == MAX_FILE_SIZE) then
+        multipush(R1,R2,R3,R4,R5,R6,R7,R8);
+        R1 = RELEASE_INODE;
+        R2 = [SYSTEM_STATUS_TABLE+1];
+        R3 = inode_index;
+        call DEVICE_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R7,R8);
+
+        [ret_adr] = -2;
+        [process_table + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    if (lseek%512 == 0 && lseek == [INODE_TABLE + 16*inode_index + 2]) then
+        alias block_num R9;
+
+        multipush(R1,R2,R3,R4,R5,R6,R7,R8);
+        R1 = GET_FREE_BLOCK;
+        call MEMORY_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R7,R8);
+
+        block_num = R0;
+
+        if (block_num == -1) then
+            backup;
+            R1 = RELEASE_INODE;
+            R2 = [SYSTEM_STATUS_TABLE+1];
+            R3 = inode_index;
+            call DEVICE_MANAGER;
+            restore;
+
+            [ret_adr] = -2;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+
+        [INODE_TABLE + 16*inode_index + 8 + (lseek/512)] = block_num;
+    endif;
+
+    alias word R10;
+    word = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512];
+
+    backup;
+    R1 = BUFFERED_WRITE;
+    R2 = [INODE_TABLE + 16*inode_index + 8 + (lseek/512)];
+    R3 = (lseek%512);
+    R4 = word;
+    call FILE_MANAGER;
+    restore;
+
+    if (lseek == [INODE_TABLE + 16*inode_index + 2]) then
+        [INODE_TABLE + 16*inode_index + 2] = lseek+1;
+        [ROOT_FILE + 8*inode_index + 1] = lseek+1;
+    endif;
+
+    [OPEN_FILE_TABLE + 4*open_file_index + 2] = lseek+1;
+
+    backup;
+    R1 = RELEASE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE+1];
+    R3 = inode_index;
+    call RESOURCE_MANAGER;
+    restore;
+
+    [ret_adr] = 0;
+    [process_table + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;

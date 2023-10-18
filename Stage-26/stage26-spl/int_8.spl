@@ -1,0 +1,158 @@
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 8; 
+alias userSP R10;
+userSP = SP;
+
+alias child_pcb R9;
+child_pcb=-1;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+alias retadd R1;
+retadd=([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512);
+
+multipush(R10,R1);
+R1=1;
+call PROCESS_MANAGER;
+multipop(R10,R1);
+
+child_pcb=R0;
+
+if(R0==-1)then
+	[retadd]= -1;
+	SP = userSP;
+	[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 9] = 0;
+	ireturn;
+endif;
+
+//if heap pgs not allocated,allocate to child process else there will be problem in sharing heap b/w child & parent
+if([PTBR+4]==-1)then
+	multipush(R0,R9,R10,R1);
+	R1=1;
+	call MEMORY_MANAGER;
+	[PTBR+4]=R0;
+	[PTBR+5]="1110";
+	
+	R1=1;
+	call MEMORY_MANAGER;
+	[PTBR+6]=R0;
+	[PTBR+7]="1110";
+	multipop(R0,R9,R10,R1);
+endif;
+
+
+
+//stack pgs for child
+multipush(R9,R10,R1);
+R1=1;
+call MEMORY_MANAGER;
+multipop(R9,R10,R1);
+[PAGE_TABLE_BASE + child_pcb*20 + 16] = R0;
+[PAGE_TABLE_BASE + child_pcb*20 + 17] = "0110";
+
+multipush(R9,R10,R1);
+R1=1;
+call MEMORY_MANAGER;
+multipop(R9,R10,R1);
+[PAGE_TABLE_BASE + child_pcb*20 + 18] = R0;
+[PAGE_TABLE_BASE + child_pcb*20 + 19] = "0110";
+
+multipush(R9,R10,R1);
+R1=1;
+call MEMORY_MANAGER;
+[PROCESS_TABLE + child_pcb*16 + 11] = R0;
+multipop(R9,R10,R1);
+
+alias procadd R3;
+procadd=PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16;
+ //copying from process table of parent to child
+ //userid
+[PROCESS_TABLE + child_pcb*16 + 3]=[procadd+3];
+
+//swap flag and user area swap status
+[PROCESS_TABLE + child_pcb*16 + 6]=[procadd+6];
+[PROCESS_TABLE + child_pcb*16 + 10]=[procadd+10];
+
+//inode_index
+[PROCESS_TABLE + child_pcb*16 + 7]=[procadd+7];
+
+//UPTR
+[PROCESS_TABLE + child_pcb*16 + 13]=[procadd+13];
+
+//MODE,KPTR and TICK=0
+[PROCESS_TABLE + child_pcb*16 + 9]=0;
+[PROCESS_TABLE + child_pcb*16 + 12]=0;
+[PROCESS_TABLE + child_pcb*16 + 0]=0;
+
+//PPID
+[PROCESS_TABLE + child_pcb*16 + 2]=[SYSTEM_STATUS_TABLE+1];
+
+//status
+[PROCESS_TABLE + child_pcb*16 + 4]=CREATED;
+
+alias count R8;
+count=0;
+while(count<10)do
+	[DISK_MAP_TABLE+child_pcb*10+count]=[DISK_MAP_TABLE+[SYSTEM_STATUS_TABLE+1]*10+count];
+	count=count+1;
+endwhile;
+
+
+count=0;
+while(count<16)do
+	[PAGE_TABLE_BASE+child_pcb*20+count]=[PTBR+count];
+	////////////////////////////////////////////////////////////////////////////////
+	if([PTBR+count]!=-1)then
+		[MEMORY_FREE_LIST+[PTBR+count]]=[MEMORY_FREE_LIST+[PTBR+count]]+1;
+	endif;
+	[PAGE_TABLE_BASE+child_pcb*20+(count+1)]=[PTBR+(count+1)];
+	count=count+2;
+endwhile;
+
+count=0;
+while(count<512)do
+	[[PAGE_TABLE_BASE+child_pcb*20+16]*512 + count]=[[PTBR+16]*512 + count];
+	count=count+1;
+endwhile;
+
+count=0;
+while(count<512)do
+	[[PAGE_TABLE_BASE+child_pcb*20+18]*512 + count]=[[PTBR+18]*512 + count];
+	count=count+1;
+endwhile;
+
+//copying the pprt
+count=0;
+alias pprt_child R7;
+pprt_child=[PROCESS_TABLE+child_pcb*16+11]*512 + 496;
+alias pprt_parent R6;
+pprt_parent=[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512 + 496;
+while(count<8)do
+	alias semind R5;
+	semind=[pprt_parent+count*2+1];
+	[pprt_child+count*2]=[pprt_parent+count*2];
+	[pprt_child+count*2+1]=[pprt_parent+count*2+1];
+	if([pprt_child+count*2]==SEMAPHORE)then
+		[SEMAPHORE_TABLE+semind*4+1]=[SEMAPHORE_TABLE+semind*4+1]+1;
+	else
+		if([pprt_child+count*2]==FILE)then
+			[OPEN_FILE_TABLE+[pprt_child+count*2+1]*4+1]=[OPEN_FILE_TABLE+[pprt_child+count*2+1]*4+1]+1;
+		endif;
+	endif;
+	count=count+1;
+endwhile;
+
+//Setting BP to top of kernel stack
+//so that in scheduler we can set this BP of child process as 
+//in contrast to exec here we have a new address space created for the child process(not the same space as in exec).
+[[PROCESS_TABLE + child_pcb*16 + 11]*512]=BP;
+
+//setting up ret vals for child and parent process
+
+[retadd]= child_pcb;
+[([PAGE_TABLE_BASE+child_pcb*20 + 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]= 0;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13];
+
+ireturn;

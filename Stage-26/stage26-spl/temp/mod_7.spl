@@ -1,0 +1,279 @@
+//INIT
+loadi(65,7);
+//loadi(66,8) one page is enough
+//SHELL
+loadi(67,9);
+loadi(68,10);
+//EXHANDLER
+loadi(2,15);
+loadi(3,16);
+//LIBRARY
+loadi(63,13);
+loadi(64,14);
+//INT 4
+loadi(10, 23);
+loadi(11, 24);
+//INT 5
+loadi(12,25);
+loadi(13,26);
+//INT 6
+loadi(14,27);
+loadi(15,28);
+//INT 7
+loadi(16,29);
+loadi(17,30);
+//INT 8
+loadi(18,31);
+loadi(19,32);
+//INT 9
+loadi(20,33);
+loadi(21,34);
+//INT 10
+loadi(22,35);
+loadi(23,36);
+//INT 11
+loadi(24,37);
+loadi(25,38);
+//INT 12
+loadi(26,39);
+loadi(27,40);
+//INT 13
+loadi(28, 41);
+loadi(29, 42);
+//INT 14
+loadi(30, 43);
+loadi(31, 44);
+//INT 15
+loadi(32,45);
+loadi(33,46);
+//INT 16
+loadi(34,47);
+loadi(35,48);
+//INT 17
+loadi(36,49);
+loadi(37,50);
+//TIMER
+loadi(4,17);
+loadi(5,18);
+//CONSOLE
+loadi(8,21);
+loadi(9,22);
+//DISK
+loadi(6,19);
+loadi(7,20);
+//MOD 0
+loadi(40,53);
+loadi(41,54);
+//MOD 1
+loadi(42,55);
+loadi(43,56);
+//MOD 2
+loadi(44,57);
+loadi(45,58);
+//MOD 3
+loadi(46,59);
+loadi(47,60);
+//MOD 4
+loadi(48,61);
+loadi(49,62);
+//MOD 5
+loadi(50,63);
+loadi(51,64);
+
+// PID = 1 LOGIN PROCESS
+PTBR = PAGE_TABLE_BASE+20;
+PTLR = 10;
+
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+[PTBR+4] = -1;
+[PTBR+5] = "0110";
+[PTBR+6] = -1;
+[PTBR+7] = "0110";
+
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+[PTBR+16] = 66;
+[PTBR+17] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
+
+[66*512] = [65*512+1];
+
+//PROCESS TABLE
+alias process_table R4;
+process_table = PROCESS_TABLE + 16;
+
+[process_table + 0] = 0;
+[process_table + 1] = 1;
+[process_table + 3] = KERNEL;
+[process_table + 4] = CREATED;
+[process_table + 11] = 77;
+[process_table + 13] = 8*512;
+[process_table + 12] = 0;
+[process_table + 14] = PAGE_TABLE_BASE+20;
+[process_table + 15] = 10;
+
+alias i R1;
+
+//PER PROCESS TABLE FOR INIT
+alias resource_table R2;
+resource_table = 77*512 + RESOURCE_TABLE_OFFSET;
+
+i = 0;
+while(i < 8) do
+    [resource_table + 2*i] = -1;
+    i = i + 1;
+endwhile; 
+
+// PID = 2 USER SHELL
+PTBR = PAGE_TABLE_BASE + 40;
+PTLR = 10;
+
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+[PTBR+8] = 67;
+[PTBR+9] = "0100";
+[PTBR+10] = 68;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+[PTBR+16] = 78;
+[PTBR+17] = "0110";
+[PTBR+18] = 79;
+[PTBR+19] = "0110";
+
+[78*512] = [67*512+1];
+
+// PROCESS TABLE
+process_table = PROCESS_TABLE + 16*2;
+
+[process_table + 0] = 0;
+[process_table + 1] = 2;
+[process_table + 2] = 1;
+[process_table + 3] = ROOT;
+[process_table + 4] = TERMINATED;
+[process_table + 11] = 80;
+[process_table + 13] = 8*512;
+[process_table + 12] = 0;
+[process_table + 14] = PAGE_TABLE_BASE + 40;
+[process_table + 15] = 10;
+
+//PER PROCESS TABLE FOR SHELL
+resource_table = 80*512 + RESOURCE_TABLE_OFFSET;
+
+i = 0;
+while(i < 8) do
+    [resource_table + 2*i] = -1;
+    i = i + 1;
+endwhile; 
+
+//DISK MAP TABLE
+alias disk_map_table R3;
+disk_map_table = DISK_MAP_TABLE + 10*2;
+
+i = 0;
+while(i < 10) do
+    [disk_map_table + i] = -1;
+    if(i == 4) then
+        [disk_map_table + i] = 9;
+    endif; 
+    if(i == 5) then
+        [disk_map_table + i] = 10;
+    endif;
+    i = i + 1;
+endwhile;
+
+//SEMAPHORE TABLE
+i = 0;
+
+alias sem_table R3;
+
+while(i < MAX_SEM_COUNT) do
+    sem_table = SEMAPHORE_TABLE + 4*i;
+    [sem_table] = -1;
+    [sem_table + 1] = 0;
+    i = i + 1;
+endwhile;
+
+//OPEN FILE TABLE 
+i = 0;
+
+alias open_file_table R3;
+
+while(i < MAX_OPENFILE_NUM) do
+    open_file_table = OPEN_FILE_TABLE + 4*i;
+    [open_file_table] = -1;
+    [open_file_table + 1] = 0;
+    i = i + 1;
+endwhile;
+
+//MEMORY FREE LIST 
+i = 0;
+
+while(i < 81) do
+    [MEMORY_FREE_LIST + i] = 1;
+    i = i + 1;
+endwhile;
+
+while(i < 128) do
+    [MEMORY_FREE_LIST + i] = 0;
+    i = i + 1;
+endwhile;
+
+//TERMINATING EVERY OTHER PROCESS
+i = 2;
+
+while(i < MAX_PROC_NUM) do
+    [PROCESS_TABLE + 16*i + 4] = TERMINATED;
+    i = i + 1;
+endwhile;
+
+//FILE STATUS TABLE
+i = 0;
+
+while(i < MAX_FILE_NUM) do
+    [FILE_STATUS_TABLE + 4*i + 0] = -1;
+    [FILE_STATUS_TABLE + 4*i + 1] = -1;
+    i = i + 1;
+endwhile;
+
+//BUFFER TABLE
+i = 0;
+alias buffer_table R5;
+
+while(i < MAX_BUFFER) do
+    buffer_table = BUFFER_TABLE + 4*i;
+    [buffer_table + 0] = -1;
+    [buffer_table + 1] = 0;
+    [buffer_table + 2] = -1;
+    i = i + 1;
+endwhile;
+
+[TERMINAL_STATUS_TABLE] = 0;
+[DISK_STATUS_TABLE] = 0;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+[SYSTEM_STATUS_TABLE + 2] = 47;
+
+return;

@@ -1,0 +1,27 @@
+int main(){
+decl
+	string file,username,owner;
+	int temp,fd,i;
+enddecl
+begin
+  write("USERNAME");
+	temp=exposcall("Read",-1,username);
+	fd=exposcall("Open","root");
+	i=0;
+	while(i<64) do
+		temp=exposcall("Read",fd,file);
+		if(file!="-1") then
+			temp=exposcall("Seek",fd,2);
+			temp=exposcall("Read",fd,owner);
+			if(owner==username) then
+				temp=exposcall("Delete",file);
+			endif;
+		else 
+			break;
+		endif;
+		temp=exposcall("Seek",fd,4);
+		i=i+1;
+	endwhile;
+	return 0;
+end
+}

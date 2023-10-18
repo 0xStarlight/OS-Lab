@@ -1,0 +1,88 @@
+alias userSP R10;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+//IP+2,ret val,arg 3,arg 2,arg 1,funcode/sysnum
+
+alias sysnum R9;
+sysnum=[ ([PTBR+ 2*((userSP-5)/512) ]*512) + ((userSP-5) % 512)];
+
+//semget
+if(sysnum==17)then
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 17;
+	alias pprt R8;
+	pprt=[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512 + 496;
+	alias counter R7;
+	counter=0;
+	while(counter<8)do
+		if([pprt+2*counter]==-1)then
+			
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	if(counter==8)then
+		[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=-1;
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	
+	multipush(R7,R8,R9,R10);
+	//acquire_semaphore
+	R1=6;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R7,R8,R9,R10);
+	
+	if(R0==-1)then
+		[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=-2;
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
+	       	SP = userSP;
+	       	ireturn;
+	endif;
+	
+	//to indicate it is a semaphore resource ID
+	[pprt+2*counter]=1;
+	[pprt+2*counter+1]=R0;
+	[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=counter;
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+	SP=userSP;
+endif;
+
+//semrelease
+if(sysnum==18)then
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 18;
+	alias pprt R8;
+	pprt=[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512 + 496;
+	alias semid R7;
+	semid=[ ([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	if(semid<0 || semid>7 || [pprt+2*semid]!=1)then
+		[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=-1;
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+		SP=userSP;
+		//print semid;
+		ireturn;
+	endif;
+	
+	multipush(R7,R8,R9,R10);
+	R1=7;
+	R2=[pprt+2*semid+1];
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R7,R8,R9,R10);
+	
+	[pprt+2*semid]=-1;
+	[pprt+2*semid+1]=-1;
+	//print "Success";
+	[ ([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512)]=0;
+	[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+	SP=userSP;
+endif;
+
+ireturn;
+	
+			

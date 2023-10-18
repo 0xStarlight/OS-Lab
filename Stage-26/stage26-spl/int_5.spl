@@ -1,0 +1,210 @@
+alias userSP R10;
+userSP = SP;
+
+[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
+SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+
+//IP+2,ret val,arg 3,arg 2,arg 1,funcode/sysnum
+
+alias sysnum R9;
+sysnum=[ ([PTBR+ 2*((userSP-5)/512) ]*512) + ((userSP-5) % 512)];
+
+alias retadd R8;
+retadd=([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512);
+
+alias proc_add R6;
+proc_add=PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16;
+
+//open
+if(sysnum==2)then
+	alias filename R7;
+	filename=[ ([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	[proc_add + 9] = 2;
+	alias pprt R5;
+	pprt=[proc_add+11]*512 + 496;
+	alias counter R4;
+	counter=0;
+	
+	while(counter<8)do
+		if([pprt+2*counter]==-1)then
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	//pprt is full
+	if(counter==8)then
+	
+		[retadd]=-3;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	
+	
+	//call to open funcn in file manager
+	multipush(R10,R9,R8,R7,R6,R5,R4);
+	R1=3;
+	R2=filename;
+	
+	call FILE_MANAGER;
+	//print "here";
+	multipop(R10,R9,R8,R7,R6,R5,R4);
+	
+	//print "open mein";
+	//if file is not data/root or max files opened
+	if(R0==-1 ||R0==-2)then
+		[retadd]=R0;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	
+	//R0 has open file table index
+	[pprt+2*counter]=0;
+	[pprt+2*counter+1]=R0;
+	
+	//retadd is the file desc,i.e, index in pprt
+	[retadd]=counter;
+	[proc_add + 9] = 0;
+	SP=userSP;
+endif;
+
+//close
+if(sysnum==3)then
+	[proc_add + 9] = 3;
+	alias filedesc R7;
+	filedesc=[ ([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	//invalid filedesc
+	if(filedesc<0 || filedesc>7)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	alias pprt R5;
+	pprt=[proc_add+11]*512 + 496;
+	
+	//reource ID=-1 or resource ID is not FILE
+	if([pprt+2*filedesc]!=0)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	//call to close funcn with index of open file table as arg
+	multipush(R10,R9,R8,R7,R6,R5);
+	R1=4;
+	R2=[pprt+2*filedesc+1];
+	call FILE_MANAGER;
+	multipop(R10,R9,R8,R7,R6,R5);
+	
+	//invalidate the entries in pprt
+	[pprt+2*filedesc]=-1;
+	[pprt+2*filedesc+1]=-1;
+	
+	[retadd]=0;
+	[proc_add + 9] = 0;
+	SP=userSP;
+endif;
+
+//seek
+if(sysnum==6)then
+	[proc_add + 9] = 6;
+	alias filedesc R7;
+	filedesc=[ ([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	
+	
+	//invalid filedesc
+	if(filedesc<0 || filedesc>7)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	alias pprt R5;
+	pprt=[proc_add+11]*512 + 496;
+	
+	//reource ID=-1 or resource ID is not FILE
+	if([pprt+2*filedesc]!=0)then
+		[retadd]=-1;
+		[proc_add + 9] = 0;
+		SP = userSP;
+	      	ireturn;
+	endif;
+	
+	alias openfilent R4;
+	openfilent=[pprt+2*filedesc+1];
+	openfilent=OPEN_FILE_TABLE+openfilent*4;
+	
+	//calling acquire inode
+	multipush(R10,R9,R8,R7,R6,R5,R4);
+	R1=4;
+	R2=[openfilent];
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R10,R9,R8,R7,R6,R5,R4);
+	
+	//if locking fails
+	if(R0==-1)then
+		[retadd]=-1;
+		[proc_add +9]=0;
+		SP=[proc_add +13];
+		ireturn;
+	endif;
+	
+	alias filesz R3;
+	if([INODE_TABLE+[openfilent]*16]==ROOT)then
+		filesz=480;
+	else
+		filesz=[INODE_TABLE+[openfilent]*16+2];
+	endif;
+	
+	alias offset R2;
+	offset=[ ([PTBR+ 2*((userSP-3)/512) ]*512) + ((userSP-3) % 512)];
+	if(([openfilent+2]+offset)<0)then
+		//calling release inode
+		multipush(R10,R9,R8,R7,R6,R5,R4,R3);
+		R1=5;
+		R2=[openfilent];
+		R3=[SYSTEM_STATUS_TABLE+1];
+		call RESOURCE_MANAGER;
+		multipop(R10,R9,R8,R7,R6,R5,R4,R3);
+		
+		[retadd]=-2;
+		[proc_add +9]=0;
+		SP=[proc_add +13];
+		ireturn;
+	endif;
+	
+	if(offset==0)then
+		[openfilent+2]=0;
+	else
+		if([openfilent+2]+offset>filesz)then
+			[openfilent+2]=filesz;
+		else
+			[openfilent+2]=[openfilent+2]+offset;
+		endif;
+	endif;
+	
+	//calling release inode
+	multipush(R10,R9,R8,R7,R6,R5,R4,R3);
+	R1=5;
+	R2=[openfilent];
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R10,R9,R8,R7,R6,R5,R4,R3);	
+	[retadd]=0;
+	[proc_add +9]=0;
+	SP=[proc_add +13];
+endif;
+	
+ireturn;
+	

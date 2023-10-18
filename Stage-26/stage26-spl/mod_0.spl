@@ -1,0 +1,185 @@
+alias func_num R1;
+alias currPID R2;
+
+//acquire buffer
+if(func_num==1)then
+	alias buffernum R2;
+	alias currPID R3;
+	//print "here";
+	while([BUFFER_TABLE+buffernum*4+2]!=-1)do
+		
+		[PROCESS_TABLE+currPID*16+4]=WAIT_BUFFER;
+		[PROCESS_TABLE+currPID*16+5]=buffernum;
+		multipush(R1,R2,R3);
+		call SCHEDULER;
+		multipop(R1,R2,R3);
+	endwhile;
+	
+	[BUFFER_TABLE+buffernum*4+2]=currPID;
+	R0=0;
+
+endif;
+
+//release buffer
+if(func_num==2)then
+	alias buffernum R2;
+	alias currPID R3;
+	
+	if([BUFFER_TABLE+buffernum*4+2]!=currPID)then
+		R0=-1;
+		return;
+	endif;
+	
+	//free the lock
+	[BUFFER_TABLE+buffernum*4+2]=-1;
+	
+	alias count R10;
+	count=0;
+	while(count<MAX_PROC_NUM)do
+		if([PROCESS_TABLE+count*16+4]==WAIT_BUFFER && [PROCESS_TABLE+count*16+5]==buffernum)then
+			[PROCESS_TABLE+count*16+4]=READY;
+		endif;
+		count=count+1;
+	endwhile;
+	R0=0;
+endif;
+
+//acquire disk
+if(func_num==3)then
+	while([DISK_STATUS_TABLE]==1)do
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 +4]=WAIT_DISK;
+		multipush(R1,R2,R3,R4);
+		call SCHEDULER;
+		multipop(R1,R2,R3,R4);
+	endwhile;
+	[DISK_STATUS_TABLE+0]=1;	
+	[DISK_STATUS_TABLE+4]=currPID;
+endif;
+	
+//acquire semaphore
+if(func_num==6)then
+	alias counter R10;
+	counter=0;
+	while(counter<32)do
+		if([SEMAPHORE_TABLE+counter*4 +1]==0)then
+			[SEMAPHORE_TABLE+counter*4 +0]=-1;
+			[SEMAPHORE_TABLE+counter*4 +1]=1;
+			R0=counter;
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	if(counter==32)then
+		R0=-1;
+	endif;
+endif;
+
+//acquire inode
+if(func_num==4)then
+	alias inodeindex R2;
+	alias currPID R3;
+	//print [FILE_STATUS_TABLE+inodeindex*4];
+	while([FILE_STATUS_TABLE+inodeindex*4]!=-1)do
+		[PROCESS_TABLE+currPID*16+4]=WAIT_FILE;
+		[PROCESS_TABLE+currPID*16+5]=inodeindex;
+		
+		multipush(R1,R2,R3);
+		call SCHEDULER;
+		multipop(R1,R2,R3);
+	endwhile;
+	
+	//print "acquired";
+	if([INODE_TABLE+inodeindex*16+1]==-1)then
+		R0=-1;
+		return;
+	endif;
+	
+	[FILE_STATUS_TABLE+inodeindex*4]=currPID;
+	R0=0;
+endif;
+	
+//release inode
+if(func_num==5)then
+	alias inodeindex R2;
+	alias currPID R3;
+	//print "released";
+	if(currPID!=[FILE_STATUS_TABLE+inodeindex*4])then
+		R0=-1;
+		return;
+	endif;
+	
+	//freeing the lock
+	[FILE_STATUS_TABLE+inodeindex*4]=-1;
+	
+	alias count R5;
+	count=0;
+	
+	while(count<16)do
+		if([PROCESS_TABLE+count*16+4]==WAIT_FILE && [PROCESS_TABLE+count*16+5]==inodeindex)then
+			[PROCESS_TABLE+count*16+4]=READY;
+		endif;
+		count=count+1;
+	endwhile;
+	
+	R0=0;
+endif;
+	
+//release semaphore
+if(func_num==7)then
+	//semaphore table index,PID
+	alias sem_ind R2;
+	alias PID R3;
+	if([SEMAPHORE_TABLE+sem_ind*4]==PID)then
+		[SEMAPHORE_TABLE+sem_ind*4]=-1;
+		alias count R9;
+		count=0;
+		while(count<16)do
+			if([PROCESS_TABLE+count*16+4]==WAIT_SEMAPHORE && [PROCESS_TABLE+count*16+5]==sem_ind)then
+				[PROCESS_TABLE+count*16+4]=READY;
+			endif;
+			count=count+1;
+		endwhile;
+		R0=0;
+	endif;
+	[SEMAPHORE_TABLE+sem_ind*4+1]=[SEMAPHORE_TABLE+sem_ind*4+1]-1;
+	//R0=-1;    //when to have -1???
+endif;
+	
+//acquire terminal
+if(func_num==8)then
+	while([TERMINAL_STATUS_TABLE]==1)do
+		[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 +4]=WAIT_TERMINAL;
+		multipush(R0,R1,R2,R3,R4);
+		call SCHEDULER;
+		multipop(R0,R1,R2,R3,R4);
+	endwhile;
+	[TERMINAL_STATUS_TABLE + 0]=1;
+	[TERMINAL_STATUS_TABLE + 1]=currPID;
+endif;
+
+//release terminal
+if(func_num==9)then
+	if(currPID!=[TERMINAL_STATUS_TABLE+1])then
+		R0=-1;
+	else
+		[TERMINAL_STATUS_TABLE +0]=0;
+		alias count R5;
+		count=0;
+		while(count<16)do
+			if([PROCESS_TABLE + count*16 +1]>0 && [PROCESS_TABLE + count*16 +4]==WAIT_TERMINAL)then
+				[PROCESS_TABLE + count*16 +4]=READY;
+			endif;
+			count=count+1;
+		endwhile;
+		R0=0;
+	endif;
+endif;
+
+
+return;
+			
+			
+			
+	
+	
+	

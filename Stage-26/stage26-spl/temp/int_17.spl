@@ -1,0 +1,73 @@
+alias currPid R1;
+currPid = [SYSTEM_STATUS_TABLE + 1];
+
+[PROCESS_TABLE + 16*currPid + 9] = INT_LOGIN;
+
+alias userSP R2;
+userSP = SP;
+
+[PROCESS_TABLE + 16*currPid + 13] = SP;
+SP = [PROCESS_TABLE + 16*currPid + 11]*512 - 1;
+
+alias ret_adr R3;
+ret_adr = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512;
+
+alias UserName R4;
+UserName = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+alias password R5;
+password = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512];
+
+encrypt password;
+
+if(currPid != 1) then
+    [ret_adr] = -2;
+    SP = userSP;
+    [PROCESS_TABLE + currPid * 16 + 9] = 0;
+    ireturn;
+endif;
+
+alias i R6;
+i = 0;
+
+while(i < MAX_USER_NUM) do
+    if(UserName == [USER_TABLE + 2*i]) then
+        break;
+    endif;
+    i = i + 1;
+endwhile;
+
+if(i == MAX_USER_NUM) then
+    [ret_adr] = -1;
+    SP = userSP;
+    [PROCESS_TABLE + 16*currPid + 9] = 0;
+    ireturn;
+endif;
+
+alias userID R7;
+userID = i;
+
+if([USER_TABLE + 2*i + 1] != password) then
+    [ret_adr] = -1;
+    SP = userSP;
+    [PROCESS_TABLE + 16*currPid + 9] = 0;
+    ireturn;
+endif;
+
+[PROCESS_TABLE + 2*16 + 4] = CREATED;
+[PROCESS_TABLE + 2*16 + 3] = userID;
+
+[PROCESS_TABLE + 1*16 + 4] = WAIT_PROCESS;
+[PROCESS_TABLE + 1*16 + 5] = 2;
+
+[SYSTEM_STATUS_TABLE] = userID;
+
+backup;
+call SCHEDULER;
+restore;
+
+[ret_adr] = 0;
+[PROCESS_TABLE + currPid*16 + 9] = 0;
+SP = userSP;
+
+ireturn;

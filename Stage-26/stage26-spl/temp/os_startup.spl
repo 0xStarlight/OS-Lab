@@ -1,0 +1,65 @@
+//IDLE
+loadi(69,11);
+// loadi(70,12); one is enough
+
+//BOOT MODULE
+loadi(54,67);
+loadi(55,68);
+
+// INODE USER TABLE
+loadi(59,3);
+loadi(60,4);
+
+// DISK FREE LIST
+loadi(61,2);
+
+// ROOT FILE
+loadi(62, 5);
+
+SP = 76*512-1;
+call BOOT_MODULE;
+
+// FOR PID = 0
+PTBR = PAGE_TABLE_BASE;
+PTLR = 10;
+
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+[PTBR+8] = 69;
+[PTBR+9] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+[PTBR+16] = 70;
+[PTBR+17] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
+
+[70*512] = [69*512+1];
+SP = 8*512;
+
+// PROCESS TABLE
+[PROCESS_TABLE] = 0;
+[PROCESS_TABLE+1] = 0;
+[PROCESS_TABLE+4] = RUNNING;
+[PROCESS_TABLE+11] = 76;
+[PROCESS_TABLE+13] = 8*512;
+[PROCESS_TABLE+12] = 0;
+[PROCESS_TABLE+14] = PAGE_TABLE_BASE;
+[PROCESS_TABLE+15] = 10;
+
+[SYSTEM_STATUS_TABLE + 1] = 0;
+
+ireturn;

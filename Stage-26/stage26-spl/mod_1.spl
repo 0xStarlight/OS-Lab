@@ -1,0 +1,209 @@
+alias func_num R1;
+alias currPID R2;
+
+//get_pcb
+if(func_num==1)then
+	alias count R9;
+	alias flag R10;
+	flag=0;
+	count=0;
+	while(count<16)do
+		if([PROCESS_TABLE+count*16+4]==TERMINATED)then
+			R0=count;
+			[PROCESS_TABLE+count*16+4]=ALLOCATED;
+			[PROCESS_TABLE+count*16+1]=R0;
+			[PROCESS_TABLE+count*16+15]=10;
+			[PROCESS_TABLE+count*16+14]=PAGE_TABLE_BASE+count*20;
+			flag=1;
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+	if(flag==0)then
+		R0=-1;
+	endif;
+endif;
+		
+//free_user_area_pg
+if(func_num==2)then
+	
+	multipush(R1,R2);
+	R1=2;
+	R2=[PROCESS_TABLE+currPID*16+11];
+	//breakpoint;
+	call MEMORY_MANAGER;
+	multipop(R1,R2);
+	alias pprt R8;
+	pprt=[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+11]*512 + 496;
+	alias counter R7;
+	counter=0;
+	while(counter<8)do
+		if([pprt+2*counter]==SEMAPHORE)then
+			multipush(R1,R2,R7,R8);
+			R1=7;
+			R2=[pprt+2*counter+1];
+			R3=[SYSTEM_STATUS_TABLE+1];
+			call RESOURCE_MANAGER;
+			multipop(R1,R2,R7,R8);
+		endif;
+		if([pprt+2*counter]==FILE)then
+			//call to close funcn with index of open file table as arg
+			multipush(R1,R2,R7,R8);
+			R1=4;
+			R2=[pprt+2*counter+1];
+			call FILE_MANAGER;
+			multipop(R1,R2,R7,R8);
+		endif;
+		counter=counter+1;
+	endwhile;
+endif;
+
+//exit_process
+if(func_num==3)then
+
+	if([PROCESS_TABLE+currPID*16+9]!=9)then
+		alias count R10;
+		count=0;
+		while(count<16)do
+			if([PROCESS_TABLE+count*16+4]==WAIT_PROCESS && [PROCESS_TABLE+count*16+5]==currPID)then
+				[PROCESS_TABLE+count*16+4]=READY;
+			endif;
+			if([PROCESS_TABLE+count*16+2]==currPID)then
+				[PROCESS_TABLE+count*16+2]=-1;
+			endif;
+			count=count+1;
+		endwhile;
+	endif;
+	
+			
+	multipush(R1,R2);
+	R1=2;
+	call PROCESS_MANAGER;
+	multipop(R1,R2);
+	
+	multipush(R1,R2);
+	R1=4;
+	call PROCESS_MANAGER;
+	multipop(R1,R2);
+	[PROCESS_TABLE+currPID*16+4]=TERMINATED;
+endif;
+
+//free_page_table
+if(func_num==4)then
+	//invalidate lib pages
+	alias proc_add R3;
+	proc_add=[PROCESS_TABLE+currPID*16+14];
+	[proc_add+0]=-1;
+	[proc_add+1]="0000";
+	[proc_add+2]=-1;
+	[proc_add+3]="0000";
+	
+	alias count R9;
+	count=2;
+	while(count<10)do
+		if([proc_add+2*count]!=-1)then
+			multipush(R1,R2,R9);
+			R1=2;
+			R2=[proc_add+2*count];
+			call MEMORY_MANAGER;
+			multipop(R1,R2,R9);
+			[proc_add+2*count]=-1;
+			[proc_add+2*count+1]="0000";
+		endif;
+		count=count+1;
+	endwhile;
+	
+	proc_add=DISK_MAP_TABLE+currPID*10;
+	if([proc_add+2]!=-1)then
+		//calling release block
+		multipush(R1,R2,R3,R9);
+		R1=4;
+		R3=R2;
+		R2=[proc_add+2];
+		call MEMORY_MANAGER;
+		multipop(R1,R2,R3,R9);
+	endif;
+	if([proc_add+3]!=-1)then
+		//calling release block
+		multipush(R1,R2,R3,R9);
+		R1=4;
+		R3=R2;
+		R2=[proc_add+3];
+		call MEMORY_MANAGER;
+		multipop(R1,R2,R3,R9);
+	endif;
+	if([proc_add+8]!=-1)then
+		//calling release block
+		multipush(R1,R2,R3,R9);
+		R1=4;
+		R3=R2;
+		R2=[proc_add+8];
+		call MEMORY_MANAGER;
+		multipop(R1,R2,R3,R9);
+	endif;
+	if([proc_add+9]!=-1)then
+		//calling release block
+		multipush(R1,R2,R3,R9);
+		R1=4;
+		R3=R2;
+		R2=[proc_add+9];
+		call MEMORY_MANAGER;
+		multipop(R1,R2,R3,R9);
+	endif;
+	alias cont R9;
+	cont=0;
+	while(cont<10)do
+		[proc_add+cont]=-1;
+		cont=cont+1;
+	endwhile;
+		
+endif;
+
+//kill all
+if(func_num==5)then
+	alias PID R2;
+	alias count R9;
+	count=0;
+	
+	while(count<MAX_FILE_NUM)do
+		if([INODE_TABLE+count*16+1]!=-1)then
+			//calling acquire inode
+			multipush(R1,R2,R9);
+			R1=4;
+			R3=PID;
+			R2=count;
+			call RESOURCE_MANAGER;
+			multipop(R1,R2,R9);
+		endif;
+		count=count+1;
+	endwhile;
+	
+	count=2;
+	while(count<MAX_PROC_NUM)do
+		if(count!=PID && [PROCESS_TABLE+count+16+4]!=TERMINATED)then
+			//calling exit
+			multipush(R1,R2,R9);
+			R1=3;
+			R2=count;
+			call PROCESS_MANAGER;
+			multipop(R1,R2,R9);
+		endif;
+		count=count+1;
+	endwhile;
+	//print "jello";
+	count=0;
+	while(count<MAX_FILE_NUM)do
+		if([INODE_TABLE+count*16+1]!=-1)then
+			//calling release inode
+			multipush(R1,R2,R9);
+			R1=5;
+			R3=PID;
+			R2=count;
+			call RESOURCE_MANAGER;
+			multipop(R1,R2,R9);
+		endif;
+		count=count+1;
+	endwhile;
+	//print "hello";
+endif;
+return;			

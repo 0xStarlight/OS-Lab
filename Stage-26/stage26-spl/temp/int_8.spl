@@ -1,0 +1,213 @@
+//----------------------------------------------------INT_8-------------------------------------------------//
+
+[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9] = 8;  	    //MODE_FLAG
+
+[PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+13] = SP;		    //UPTR
+SP = [PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+11]*512-1;	//SP point to kernal stack
+
+
+R1 = GET_PCB_ENTRY;
+call PROCESS_MANAGER;
+
+alias index R0;
+
+if(index == -1) then
+    alias userSP R2;
+    userSP = [PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 13];
+    [[PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
+
+    [PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9] = 0;  	//MODE_FLAG
+    SP = userSP;
+    ireturn;
+endif;
+
+// IF HEAP PAGES ARE NOT ALLOCATED
+
+if([PTBR + 4] == -1) then
+
+    multipush(R0,R1);
+    
+    R1 = GET_FREE_PAGE;
+    call MOD_2;
+    [PTBR + 4] = R0;
+    [PTBR + 5] = "0110";
+
+    multipop(R0,R1);
+
+    multipush(R0,R1);
+
+    R1 = GET_FREE_PAGE;
+    call MOD_2;
+    [PTBR + 6] = R0;
+    [PTBR + 7] = "0110";
+
+    multipop(R0,R1);
+endif;
+
+//--------------STACK PAGES FOR CHILD PROCESS----------------//
+
+alias child_ptbr R2;
+child_ptbr = PAGE_TABLE_BASE + 20*index;
+
+alias freepage R5;
+
+multipush(R0,R1,R2);
+
+R1 = GET_FREE_PAGE;
+call MOD_2;
+freepage = R0;
+
+multipop(R0,R1,R2);
+
+[child_ptbr + 2*8] = freepage;
+[child_ptbr + 2*8 + 1] = [PTBR + 2*8 + 1];          //AUXILARY INFO SAME AS PARENT
+
+multipush(R0,R1,R2);
+
+R1 = GET_FREE_PAGE;
+call MOD_2;
+freepage = R0;
+
+multipop(R0,R1,R2);
+
+[child_ptbr + 2*9] = freepage;
+[child_ptbr + 2*9 + 1] = [PTBR + 2*9 + 1];          //AUXILARY INFO SAME AS PARENT
+
+//------------------USER AREA PAGE FOR CHILD PROCESS-------------------//
+
+alias child_process_table R3;
+child_process_table = PROCESS_TABLE + 16*index;
+
+multipush(R0,R1,R2,R3);
+
+R1 = GET_FREE_PAGE;
+call MOD_2;
+freepage = R0;
+
+multipop(R0,R1,R2,R3);
+
+[child_process_table + 11] = freepage;        //USER_AREA_PAGE
+
+//------------------THINGS TO BE COPIED FROM PARENT PROCESS TABLE-------------//
+
+alias parent_process_table R4;
+parent_process_table = PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE + 1];
+
+[child_process_table + 3] = [parent_process_table + 3];     //USERID
+[child_process_table + 6] = [parent_process_table + 6];     //SWAP FLAG
+[child_process_table + 7] = [parent_process_table + 7];     //INODE INDEX
+[child_process_table + 10] = [parent_process_table + 10];   //USER AREA SWAP STATUS
+[child_process_table + 13] = [parent_process_table + 13];   //UPTR
+
+// SET THE MODE FLAG, KPTR, TICK FIELD OF CHILD TO 0
+
+[child_process_table + 0] = 0;      //TICK FIELD
+[child_process_table + 9] = 0;      //MODE_FLAG
+[child_process_table + 12] = 0;      //KPTR
+
+[child_process_table + 2] = [SYSTEM_STATUS_TABLE + 1];      //PPID
+[child_process_table + 4] = CREATED;                       //STATE
+
+//----------------------------COPYING THE PER PROCESS RESOURCE TABLE OF PARENT----------------------//	
+
+alias parent_resource_table R5;
+alias child_resource_table R6;
+parent_resource_table = [parent_process_table + 11]*512 + RESOURCE_TABLE_OFFSET;
+child_resource_table = [child_process_table + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+alias i R7;
+alias idx R8;
+i = 0;
+while(i < 8) do
+    [child_resource_table + 2*i] = [parent_resource_table + 2*i];
+    [child_resource_table + 2*i + 1] = [parent_resource_table + 2*i + 1];
+	
+	if([child_resource_table + 2*i] == SEMAPHORE) then
+		idx = [child_resource_table + 2*i + 1];
+		[SEMAPHORE_TABLE + 4*idx + 1] = [SEMAPHORE_TABLE + 4*idx + 1] + 1;          //PROC_COUNT
+	endif;
+
+    if([child_resource_table + 2*i] == FILE) then
+        idx = [child_resource_table + 2*i + 1];
+        [OPEN_FILE_TABLE + 4*idx + 1] = [OPEN_FILE_TABLE + 4*idx + 1] + 1;      //OPEN_INSTANCE_COUNT
+    endif;
+
+    i = i + 1;
+endwhile;
+
+//----------------------------COPYING THE DISK MAP TABLE OF PARENT----------------------------------
+
+alias parent_disk_map_table R8;
+alias child_disk_map_table R9;
+
+parent_disk_map_table = DISK_MAP_TABLE + 10*[SYSTEM_STATUS_TABLE + 1];
+child_disk_map_table = DISK_MAP_TABLE + 10*index;
+
+//STACK and USER_AREA_PAGE cannot be swapped out during fork syscall
+i = 2;
+
+while(i <= 7) do
+    [child_disk_map_table + i] = [parent_disk_map_table + i];
+    i = i + 1;
+endwhile;
+
+[child_disk_map_table + 8] = -1;
+[child_disk_map_table + 9] = -1;
+
+//------------------------------INITIALIZE PAGE TABLE FOR CHILD--------------------------------------//
+
+// STACK ALREADY INITIALIZED
+
+i = 0;
+while(i < 16) do
+
+    [child_ptbr + i] = [PTBR + i];
+    if(i%2 == 0) then
+        if([PTBR + i] != -1) then
+            [MEMORY_FREE_LIST + [PTBR + i]] = [MEMORY_FREE_LIST + [PTBR + i]] + 1;
+        endif;
+    endif;
+    i = i + 1;
+endwhile;
+
+//------------------------COPY CONTENTS OF PARENT USER STACK INTO CHILD USER STACK----------------------//
+
+alias child_user_stack_page R10;
+alias parent_user_stack_page R11;
+
+parent_user_stack_page = [PTBR + 16];
+child_user_stack_page = [child_ptbr + 16];
+
+
+i = 0;
+while(i < 512) do
+    [child_user_stack_page*512 + i] = [parent_user_stack_page*512 + i];
+    i = i + 1;
+endwhile;
+
+parent_user_stack_page = [PTBR + 18];
+child_user_stack_page = [child_ptbr + 18];
+
+i = 0;
+while(i < 512) do
+    [child_user_stack_page*512 + i] = [parent_user_stack_page*512 + i];
+    i = i + 1;
+endwhile;
+
+[[child_process_table + 11]*512] = BP;       //STORE BP ON TOP OF KERNAL STACK
+
+alias parent_userSP R12;
+alias child_userSP R13;
+
+parent_userSP = [parent_process_table + 13];
+child_userSP = [child_process_table + 13];
+
+[[PTBR + 2*((parent_userSP-1)/512)]*512 + (parent_userSP-1)%512] = index;     //RETURN IN PARENT USERSP
+[[child_ptbr + 2*((child_userSP-1)/512)] * 512 + (child_userSP-1)%512] = 0;     //RETURN IN CHILD USERSP
+
+SP = parent_userSP;
+
+[parent_process_table + 9] = 0;         //MODE_FLAG
+
+
+ireturn;

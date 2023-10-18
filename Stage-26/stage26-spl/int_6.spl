@@ -1,0 +1,148 @@
+//MODE=7(read sys call)
+[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=7;
+alias userSP R10;
+userSP=SP;
+//UPTR=SP
+[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16+13]=SP;
+
+//SP=userpgnum*512-1
+SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16+11]*512 -1;
+
+alias filedescp R9;
+filedescp = [([PTBR + 2 * ((userSP - 4)/512)] * 512) + (userSP - 4)%512];
+
+alias retadd R8;
+retadd=([PTBR + 2* ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+//userSP-4 is file descp
+if(filedescp!=-1)then
+	
+	//reading from a file
+	if(filedescp<0 || filedescp>7)then
+		[retadd]=-1;
+		[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+		SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+		ireturn;
+	endif;
+	
+	if([(SP+1)+496+2*filedescp]!=FILE)then
+		[retadd]=-1;
+		[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+		SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+		ireturn;
+	endif;
+	
+	alias openfilent R7;
+	openfilent=OPEN_FILE_TABLE+[(SP+1)+496+2*filedescp+1]*4;
+	
+	//print "inside int6";
+	//calling acquire inode
+	multipush(R10,R9,R8,R7);
+	R1=4;
+	R2=[openfilent];
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R10,R9,R8,R7);
+	
+	
+	//if locking fails
+	if(R0==-1)then
+		[retadd]=-1;
+		[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+		SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+		ireturn;
+	endif;
+	
+	//translating from logical to physical
+	alias word R6;
+	word=[([PTBR + 2 * ((userSP - 3)/512)] * 512) + (userSP - 3)%512];
+	word=([PTBR + 2 * (word/512)] * 512) + word%512;
+	
+	
+	if([openfilent+0]==INODE_ROOT)then
+		if([openfilent+2]==480)then
+			//filesize of root is 480=60*8
+			//release inode
+			multipush(R10,R9,R8,R7,R6);
+			R1=5;
+			R2=[openfilent];
+			R3=[SYSTEM_STATUS_TABLE+1];
+			call RESOURCE_MANAGER;
+			multipop(R10,R9,R8,R7,R6);
+			
+			[retadd]=-2;
+			[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+			SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+			ireturn;
+		endif;
+		
+		
+		[word]=[ROOT_FILE+[openfilent+2]];
+		[openfilent+2]=[openfilent+2]+1;
+	else
+		
+		if([openfilent+2]==[INODE_TABLE+[openfilent]*16+2])then
+			
+			//release inode
+			//as end of file is reached
+			multipush(R10,R9,R8,R7,R6);
+			R1=5;
+			R2=[openfilent];
+			R3=[SYSTEM_STATUS_TABLE+1];
+			call RESOURCE_MANAGER;
+			multipop(R10,R9,R8,R7,R6);
+			
+			//print "end";
+			[retadd]=-2;
+			[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+			SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+			ireturn;
+		endif;
+		
+		
+		//calling buffered read
+		multipush(R10,R9,R8,R7,R6);
+		R1=2;
+		//disk block num
+		R2=[INODE_TABLE+[openfilent]*16+8+([openfilent+2]/512)];
+		//offset
+		R3=[openfilent+2]%512;
+		//physical addr of word
+		R4=word;
+		call FILE_MANAGER;
+		multipop(R10,R9,R8,R7,R6);
+		//print "endrea";
+		//inc lseek
+		[openfilent+2]=[openfilent+2]+1;
+	endif;
+	
+	
+	//release inode
+	multipush(R10,R9,R8,R7,R6);
+	R1=5;
+	R2=[openfilent];
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R10,R9,R8,R7,R6);
+	
+	
+	[retadd]=0;
+else
+	alias word R7;
+	word=[([PTBR + 2* ((userSP - 3) / 512)] * 512) + ((userSP - 3) % 512)];
+	multipush(R10,R9,R8,R7);
+	//terminal read funcn_num
+	R1=4;
+	R2=[SYSTEM_STATUS_TABLE+1];
+	R3=word;
+	call DEVICE_MANAGER;
+	multipop(R10,R9,R8,R7);
+	//R0 is retval,indicating success
+	[retadd]=0;
+endif;
+
+//MODE=0
+[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +9]=0;
+
+SP=[PROCESS_TABLE +[SYSTEM_STATUS_TABLE+1]*16 +13];
+
+ireturn;
