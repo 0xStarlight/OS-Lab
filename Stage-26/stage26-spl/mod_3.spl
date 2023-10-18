@@ -1,0 +1,196 @@
+alias func_num R1;
+//buffered read and write
+if(func_num==2 || func_num==1)then
+	alias blocknum R2;
+	alias offset R3;
+	alias word R4;
+	//print "buff";
+	//acquire buffer
+	multipush(R1,R2,R3,R4);
+	R1=1;
+	//buffer num
+	R2=blocknum%4;
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R3,R4);
+	
+	//print "buff";
+	if([BUFFER_TABLE+(blocknum%4)*4]!=blocknum)then
+		//dirty bit is set
+		if([BUFFER_TABLE+(blocknum%4)*4+1]==1)then
+			//write back using disk store
+			multipush(R1,R2,R3,R4);
+			R1=1;
+			//pagenum
+			R3=BUFFER_BASE+(blocknum%4);
+			//blocknum
+			R4=[BUFFER_TABLE+(blocknum%4)*4];
+			R2=[SYSTEM_STATUS_TABLE+1];
+			call DEVICE_MANAGER;
+			multipop(R1,R2,R3,R4);
+			
+			//reset dirty bit
+			[BUFFER_TABLE+(blocknum%4)*4+1]=0;
+		endif;
+		
+		//call to disk load
+		multipush(R1,R2,R3,R4);
+		R1=2;
+		//pagenum
+		R3=BUFFER_BASE+(blocknum%4);
+		//blocknum
+		R4=blocknum;
+		R2=[SYSTEM_STATUS_TABLE+1];
+		call DEVICE_MANAGER;
+		multipop(R1,R2,R3,R4);
+		
+		[BUFFER_TABLE+(blocknum%4)*4]=blocknum;
+		[BUFFER_TABLE+(blocknum%4)*4+1]=0;
+	endif;
+	
+	if(func_num==2)then
+		[word]=[(BUFFER_BASE+(blocknum%4))*512+offset];
+	else
+		[(BUFFER_BASE+(blocknum%4))*512+offset]=word;
+		[BUFFER_TABLE+(blocknum%4)*4+1]=1;
+		
+	endif;
+	
+	
+	
+	//release buffer
+	multipush(R1,R2,R3,R4);
+	R1=2;
+	R2=(blocknum%4);
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R3,R4);
+	//print "buff released";
+endif;	
+
+//open funcn
+if(func_num==3)then
+	
+	alias filename R2;
+	alias counter R10;
+	counter=0;
+	while(counter<MAX_FILE_NUM)do
+		if([INODE_TABLE+counter*16+1]==filename)then
+			break;
+		endif;
+		counter=counter+1;
+	endwhile;
+	
+	//file not found
+	if(counter==MAX_FILE_NUM)then
+		R0=-1;
+		return;
+	endif;
+	
+	//acquire inode
+	multipush(R1,R2,R10);
+	R1=4;
+	R2=counter;
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R10);
+	//print "open func";
+	
+	if(R0==-1)then
+		return;
+	endif;
+	
+	//if file is exec cannot open
+	if([INODE_TABLE+counter*16]==EXEC)then
+		//release inode
+		multipush(R1,R2,R10);
+		R1=5;
+		R2=counter;
+		R3=[SYSTEM_STATUS_TABLE+1];
+		call RESOURCE_MANAGER;
+		multipop(R1,R2,R10);
+		
+		R0=-1;
+		return;
+	endif;
+	
+	//finding free open file table entry
+	alias count R9;
+	count=0;
+	while(count< MAX_OPENFILE_NUM)do
+		if([OPEN_FILE_TABLE+count*4]==-1)then
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+	
+	//open file table is full
+	if(count==MAX_OPENFILE_NUM)then
+		//release inode
+		multipush(R1,R2,R10);
+		R1=5;
+		R2=counter;
+		R3=[SYSTEM_STATUS_TABLE+1];
+		call RESOURCE_MANAGER;
+		multipop(R1,R2,R10);
+		R0=-2;
+		return;
+	endif;
+	
+	//if file is root
+	if(filename=="root")then
+		[OPEN_FILE_TABLE+count*4]=INODE_ROOT;
+	else
+		if([FILE_STATUS_TABLE+counter*4+1]==-1)then
+			[FILE_STATUS_TABLE+counter*4+1]=1;
+		else
+			[FILE_STATUS_TABLE+counter*4+1]=[FILE_STATUS_TABLE+counter*4+1]+1;
+		endif;
+		[OPEN_FILE_TABLE+count*4]=counter;
+	endif;
+	
+	//open inst count=1
+	[OPEN_FILE_TABLE+count*4+1]=1;
+	//LSEEK=0
+	[OPEN_FILE_TABLE+count*4+2]=0;
+		
+	
+	//release inode
+	multipush(R1,R2,R9,R10);
+	R1=5;
+	R2=counter;
+	R3=[SYSTEM_STATUS_TABLE+1];
+	call RESOURCE_MANAGER;
+	multipop(R1,R2,R9,R10);
+	
+	//return open file table index
+	R0=count;
+endif;
+	
+//close funcn
+if(func_num==4)then
+	alias openind R2;
+	alias inodeindex R3;
+	inodeindex=[OPEN_FILE_TABLE+openind*4];
+	
+	//decr share count
+	[OPEN_FILE_TABLE+openind*4+1]=[OPEN_FILE_TABLE+openind*4+1]-1;
+	
+	//if open inst cnt=0
+	if([OPEN_FILE_TABLE+openind*4+1]==0)then
+		[OPEN_FILE_TABLE+openind*4]=-1;
+		[OPEN_FILE_TABLE+openind*4+1]=-1;
+		[OPEN_FILE_TABLE+openind*4+2]=-1;
+		
+		if(inodeindex!=0)then
+			[FILE_STATUS_TABLE+inodeindex*4+1]=[FILE_STATUS_TABLE+inodeindex*4+1]-1;
+			if([FILE_STATUS_TABLE+inodeindex*4+1]==0)then
+				[FILE_STATUS_TABLE+inodeindex*4+1]=-1;
+			endif;
+		endif;
+	endif;
+	R0=0;
+endif;
+
+return;		
+	

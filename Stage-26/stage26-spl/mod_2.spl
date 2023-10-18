@@ -1,0 +1,119 @@
+alias func_num R1;
+alias currPID R2;
+
+//get_free_page
+if(func_num==1)then
+	//Do not increment the WAIT_MEM_COUNT in busy loop (an important step )
+	[SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+	while([SYSTEM_STATUS_TABLE+2]==0)do
+		[PROCESS_TABLE+[SYSTEM_STATUS_TABLE+1]*16+4]=WAIT_MEM;
+		call SCHEDULER;
+	endwhile;
+	[SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+	[SYSTEM_STATUS_TABLE+2]=[SYSTEM_STATUS_TABLE+2]-1;
+	
+	alias count R7;
+	count=76;
+	//mem pgs avaliable for user : 76-128
+	while(count<128)do
+		if([MEMORY_FREE_LIST+count]==0)then
+			R0=count;
+			[MEMORY_FREE_LIST + count] = 1;
+			breakpoint;
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+endif;
+
+//release page
+if(func_num==2)then
+	//here currPID is actually the page t be removed
+	[MEMORY_FREE_LIST+currPID]=[MEMORY_FREE_LIST+currPID]-1;
+	if([MEMORY_FREE_LIST+currPID]==0)then
+		//incr mem free count
+		[SYSTEM_STATUS_TABLE+2]=[SYSTEM_STATUS_TABLE+2]+1;
+	endif;
+	
+	alias count R7;
+	count=0;
+	while(count<16)do
+		if([PROCESS_TABLE + count*16+4]==WAIT_MEM)then
+			[PROCESS_TABLE + count*16+4]=READY;
+		endif;
+		count=count+1;
+	endwhile;
+endif;
+
+//get code page
+if(func_num==5)then
+	
+	alias count R7;
+	count=0;
+	alias flag R9;
+	flag=-1;
+	while(count<16)do
+		alias c R8;
+		c=0;
+		while(c<4)do
+			if([DISK_MAP_TABLE+count*10+4+c]==R2 && [[PROCESS_TABLE+count*16+14]+8+(2*c)]!=-1)then
+				flag=[[PROCESS_TABLE+count*16+14]+8+(2*c)];
+				break;
+			endif;
+			c=c+1;
+		endwhile;
+		if(flag!=-1)then
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+	
+	//if page is found in some other process
+	if(flag!=-1)then
+		R0=flag;
+		[MEMORY_FREE_LIST+R0]=[MEMORY_FREE_LIST+R0]+1;
+	else
+		multipush(R1,R2,R3,R4,R5,R7,R8,R9);
+		R1=1;
+		call MEMORY_MANAGER;
+		multipop(R1,R2,R3,R4,R5,R7,R8,R9);
+		//R0 has the page num don't use R0
+		R8=R0;
+		//storing in R8 because need to make call to disk_load
+		multipush(R1,R2,R3,R4,R5,R7,R8,R9);
+		R1 = 2;
+		R4=R2;
+		R2=[SYSTEM_STATUS_TABLE+1];
+		R3=R0;
+		call DEVICE_MANAGER;
+		multipop(R1,R2,R3,R4,R5,R7,R8,R9);
+		R0=R8;	
+	endif;
+	//breakpoint;
+endif;
+
+//release block
+if(func_num==4)then
+	[DISK_FREE_LIST+R2]=[DISK_FREE_LIST+R2]-1;
+endif;
+
+//get_free_block
+if(func_num==3)then
+	alias count R3;
+	count=DISK_FREE_AREA;
+	while(count<DISK_SWAP_AREA)do
+		if([DISK_FREE_LIST+count]==0)then
+			[DISK_FREE_LIST+count]=1;
+			R0=count;
+			break;
+		endif;
+		count=count+1;
+	endwhile;
+endif;
+		
+//breakpoint;
+return;
+		
+	
+	
+		
