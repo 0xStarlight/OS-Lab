@@ -1,0 +1,25 @@
+int main()
+{
+decl
+  int temp, permission;
+  str filename;
+enddecl
+
+begin
+
+  
+  write("filename");
+  read(filename);
+
+  write("permission");
+  read(permission);
+
+  temp = exposcall("Create", filename, permission);
+  
+  if(temp != 0) then
+    write("INODE_TABLE is not free");
+  endif;
+  temp = exposcall("Shutdown");
+  return 0;
+end
+}

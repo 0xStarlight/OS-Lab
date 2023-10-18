@@ -9,30 +9,6 @@
         "dimension": 48.569157392686805,
         "children": [
           {
-            "id": "775719f9a0ce69a0",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-21/1-Process-Synchronization.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "a515fa162a9f9478",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-20/1-Process-Creation-and-Termination.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "f163b1796bd65898",
             "type": "leaf",
             "state": {
@@ -50,8 +26,20 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-24/1-Stage24.md",
+                "file": "Stage-26/1-Stage26.md",
                 "mode": "preview",
+                "source": false
+              }
+            }
+          },
+          {
+            "id": "6b1a3ccc7c4e208e",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Stage-25/1-Stage25.md",
+                "mode": "source",
                 "source": false
               }
             }
@@ -69,7 +57,7 @@
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       },
       {
         "id": "c359674ae3410629",
@@ -162,18 +150,6 @@
                 }
               },
               {
-                "id": "6b1a3ccc7c4e208e",
-                "type": "leaf",
-                "state": {
-                  "type": "markdown",
-                  "state": {
-                    "file": "Stage-23/3-Memory-DS.md",
-                    "mode": "source",
-                    "source": false
-                  }
-                }
-              },
-              {
                 "id": "56667f85cac27428",
                 "type": "leaf",
                 "state": {
@@ -197,7 +173,8 @@
                   }
                 }
               }
-            ]
+            ],
+            "currentTab": 1
           }
         ],
         "direction": "horizontal"
@@ -229,7 +206,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "system status table",
+                "query": "pre process",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -250,8 +227,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5,
-    "collapsed": true
+    "width": 234.5
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -267,7 +243,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-24/1-Stage24.md",
+                "file": "Stage-26/1-Stage26.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -316,6 +292,22 @@
   },
   "active": "6a4f9879c5770215",
   "lastOpenFiles": [
+    "Stage-21/1-Process-Synchronization.md",
+    "Stage-26/stage26-spl.zip",
+    "Stage-26/stage26-spl.7z",
+    "Stage-26/stage26-spl/temp/timer.spl",
+    "Stage-26/stage26-spl/temp/mod_7.spl",
+    "Stage-26/stage26-spl/temp/os_startup.spl",
+    "Stage-26/stage26-spl/temp/osloader.spl",
+    "Stage-26/stage26-spl/temp/mod_4.spl",
+    "Stage-26/stage26-spl/temp/mod_5.spl",
+    "Stage-26/stage26-spl/temp/mod_3.spl",
+    "Stage-26/stage26-spl/temp/mod_2.spl",
+    "Stage-24/1-Stage24.md",
+    "Stage-25/1-Stage25.md",
+    "Stage-26/1-Stage26.md",
+    "Stage-23/3-Memory-DS.md",
+    "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20231016233632.png",
     "~Attachments/Pasted image 20231016195617.png",
     "~Attachments/Pasted image 20231016195459.png",
@@ -323,24 +315,10 @@
     "~Attachments/Pasted image 20231016194316.png",
     "~Attachments/Pasted image 20231016191332.png",
     "Stage-22/1-Semaphores.md",
-    "Stage-24/1-Stage24.md",
     "Stage-23/1-Stage23.md",
-    "Stage-24",
-    "Stage-23/stage23-spl/tmp/timer.spl",
-    "Stage-23/stage23-spl/tmp/os_startup.spl",
-    "Stage-23/stage23-spl/tmp/mod_7.spl",
-    "Stage-23/stage23-spl/tmp/mod_5.spl",
-    "Stage-23/stage23-spl/tmp/mod_2.spl",
-    "Stage-23/stage23-spl/tmp/mod_4.spl",
-    "Stage-23/stage23-spl/tmp/mod_1.spl",
-    "Stage-23/stage23-spl/tmp/mod_0.spl",
-    "Stage-23/stage23-spl/tmp/int_9.spl",
-    "Stage-21/1-Process-Synchronization.md",
     "Stage-20/1-Process-Creation-and-Termination.md",
     "Stage-13/2-Modules.md",
     "Stage-10/2-Process-Table.md",
-    "Stage-13/1-Boot-Module.md",
-    "Stage-23/3-Memory-DS.md",
     "Stage-22/2-Semaphore-Table.md",
     "Stage-23/2-File-System-Implementation.md",
     "Stage-23/4-Disk-DS.md",
@@ -357,10 +335,7 @@
     "Stage-15/1-Resource-Manager-Module.md",
     "Stage-11/Introduction-to-ExpL.md",
     "Stage-19/2-FastNotes.md",
-    "Stage-19/3-Disk-Map-Table.md",
-    "Stage-19/4-PER-PROCESS-RESOURCE-TABLE.md",
     "~Attachments/Pasted image 20230923201759.png",
-    "~Attachments/Pasted image 20230923201729.png",
-    "~Attachments/Pasted image 20230923201319.png"
+    "~Attachments/Pasted image 20230923201729.png"
   ]
 }

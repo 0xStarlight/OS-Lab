@@ -1,0 +1,27 @@
+decl
+	int fd;
+	string b,fname,lll;
+enddecl
+int main()
+{
+decl
+	int data,temp,x;
+	
+enddecl
+begin
+	temp=exposcall("Read",-1,fname);
+	
+	fd=exposcall("Open",fname);
+	temp=exposcall("Read",fd,b);
+	
+	while(temp != -2)do
+		
+		temp=exposcall("Write",-2,b);
+		temp=exposcall("Read",fd,b);
+		
+	endwhile;
+	
+	breakpoint;
+	return 0;
+end
+}

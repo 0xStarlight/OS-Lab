@@ -1,0 +1,36 @@
+decl
+	int fd;
+	string fname,lll;
+enddecl
+int main()
+{
+decl
+	int b,data,temp,x;
+	
+enddecl
+begin
+	temp=1;
+	fd=exposcall("Open","root");
+	//x=exposcall("Write",-2,fd);
+	x=1;
+	while(x<=60)do
+		temp=exposcall("Read",fd,b);
+		if(b==-1)then
+			temp=exposcall("Seek",fd,7);
+			x=x+1;
+			continue;
+			//break;
+		endif;	
+		temp=exposcall("Write",-2,b);
+		//x=exposcall("Write",-2,temp);
+		temp=exposcall("Read",fd,b);
+		//temp=exposcall("Write",-2,b);
+		temp=exposcall("Seek",fd,6);
+		x=x+1;
+		
+	endwhile;
+	
+	breakpoint;
+	return 0;
+end
+}

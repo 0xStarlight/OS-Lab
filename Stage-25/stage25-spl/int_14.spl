@@ -1,0 +1,125 @@
+alias userSP R10;
+alias currPID R9;
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+//Accessing physical fileDescriptor location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias sysCallNoPhysicalAddr R3;
+
+
+//Try to find sysCallNoPhysicalAddr and the sysCallNo
+
+physicalPageNum = [PTBR + 2 * ((userSP - 5)/ 512)];
+offset = (userSP - 5) % 512;
+sysCallNoPhysicalAddr = (physicalPageNum * 512) + offset;
+
+alias sysCallNo R4;
+sysCallNo=[sysCallNoPhysicalAddr];
+
+
+//temp: R1,R2,R3, imp : R4,R9,R10
+// print sysCallNo;
+
+[PROCESS_TABLE + currPID * 16 + 9] = sysCallNo;
+
+//SemLock Syscall
+if ( sysCallNo == 19 )then
+    alias semID R5;
+    alias resourceTableBase R6;
+    alias semaphoreIndex R7;
+
+    resourceTableBase = [PROCESS_TABLE + currPID * 16 + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+    offset = (userSP - 4) % 512;
+    semID = [(physicalPageNum * 512) + offset];
+
+    //Setting return to -1 if invalid SEMID
+    if (  semID < 0 || semID > 7 ||  [resourceTableBase + 2*semID] != 1)then
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = -1;
+    else
+
+        semaphoreIndex = [resourceTableBase + 2*semID + 1];
+
+        //Semaphore is not Free
+        while ( [SEMAPHORE_TABLE + 4*semaphoreIndex] != -1 )do
+            [PROCESS_TABLE + currPID * 16 + 4] = WAIT_SEMAPHORE;
+            [PROCESS_TABLE + currPID * 16 + 5] = semaphoreIndex;
+
+            multipush(R1,R2,R3,R4,R5,R6,R7,R9,R10);
+            call SCHEDULER;
+            multipop(R1,R2,R3,R4,R5,R6,R7,R9,R10);
+
+        endwhile;
+
+        //Semaphore is free
+        [SEMAPHORE_TABLE + 4*semaphoreIndex] = currPID;
+
+    endif;
+endif;
+
+//SemUnlock Syscall
+if ( sysCallNo == 20 )then
+    alias semID R5;
+    alias resourceTableBase R6;
+    alias semaphoreIndex R7;
+
+    resourceTableBase = [PROCESS_TABLE + currPID * 16 + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+    offset = (userSP - 4) % 512;
+    semID = [(physicalPageNum * 512) + offset];
+
+    //Setting return to -1 if invalid SEMID
+    if (  semID < 0 || semID > 7 ||  [resourceTableBase + 2*semID] != 1)then
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = -1;
+    else
+
+        semaphoreIndex = [resourceTableBase + 2*semID + 1];
+        if ( [SEMAPHORE_TABLE + 4*semaphoreIndex] != -1 )then
+            if ( [SEMAPHORE_TABLE + 4*semaphoreIndex] != currPID )then
+                physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+                offset = (userSP - 1) % 512;
+                [(physicalPageNum * 512) + offset] = -2;
+            else
+                //Unlocking semaphore
+                [SEMAPHORE_TABLE + 4*semaphoreIndex] = -1;
+
+                //Changing all process to READY which are waiting for the semaphore
+                alias i R8;
+                i=0;
+                while(i<16)do
+                    if ( [PROCESS_TABLE + i * 16 + 4] == WAIT_SEMAPHORE && [PROCESS_TABLE + i * 16 + 5] == semaphoreIndex )then
+                        [PROCESS_TABLE + i * 16 + 4] = READY;
+                    endif;
+                    i = i+1;
+                endwhile;
+                // breakpoint;
+            endif;
+        endif;
+
+    endif;
+
+endif;
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+//Reset User Stack
+SP = [PROCESS_TABLE +  currPID * 16 + 13];
+ireturn;

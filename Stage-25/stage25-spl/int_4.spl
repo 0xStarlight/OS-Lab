@@ -1,0 +1,230 @@
+// SYSTEM CALL NUMBER FOR CREATE : 1
+// SYSTEM CALL NUMBER FOR DELETE : 4
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] = SP;
+alias userSP R1;
+userSP = SP;
+
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]*512 - 1;
+
+alias syscall R2;
+syscall = [[PTBR + 2*((userSP-5))/512]*512 + (userSP-5)%512];
+
+alias process_table R3;
+process_table = PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1];
+
+alias retAddr R4;
+retAddr = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512;
+
+// Create
+
+if(syscall == 1) then
+
+
+    [process_table + 9] = 1;  
+
+    alias fileName R5;
+    alias permission R6;
+
+    fileName = [[PTBR+2*((userSP-4)/512)]*512 + (userSP-4)%512];
+    permission = [[PTBR+2*((userSP-3))/512]*512 + (userSP-3)%512];
+
+    alias i R7;
+
+    while(i < MAX_FILE_NUM) do
+
+        if([INODE_TABLE + i*16 + 1] == fileName) then
+            [process_table + 9] = 0;
+            [retAddr] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    // FILE NOT FOUND IN INODE_TABLE
+
+    i = 0;
+
+    while(i < MAX_FILE_NUM) do
+        if([INODE_TABLE + 16*i + 1] == -1) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if(i == MAX_FILE_NUM) then
+        [process_table + 9] = 0;
+        [retAddr] = -1;
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias free_entry R8;
+    free_entry = i;
+
+    //invalidate code pages in INODE_TABLE
+
+    i = 8;
+    while(i < 12)do
+        [INODE_TABLE + 16*free_entry + i] = -1;
+        i = i + 1;
+    endwhile;
+
+    // ENTRY IN INODE_TABLE
+
+    alias inode_table R9;
+    inode_table = INODE_TABLE + 16*free_entry;
+    
+    [inode_table + 0] = DATA;                   //FILE_TYPE
+    [inode_table + 1] = fileName;               //FILE_NAME
+    [inode_table + 2] = 0;                      //FILE_SIZE
+    [inode_table + 3] = [process_table + 3];    //USER_ID
+    [inode_table + 4] = permission;             //PERMISSION
+
+    // ENTRY IN ROOT FILE
+    
+    alias root_file R10;
+    root_file = ROOT_FILE + 8*free_entry;
+
+    [root_file + 0] = fileName;                                     //FILE_NAME
+    [root_file + 1] = 0;                                            //FILE_SIZE
+    [root_file + 2] = DATA;                                         //FILE_TYPE
+    [root_file + 3] = [USER_TABLE + [process_table + 3]*2 + 0];     //USERNAME
+    [root_file + 4] = permission;                                   //PERMISSION
+
+    [retAddr] = 0;
+    SP = userSP;
+
+    [process_table + 9] = 0;            //MODE_FLAG
+    ireturn;
+endif;
+
+// Delete
+
+if(syscall == 4) then
+
+    [process_table + 9] = 4;
+
+    alias fileName R5;
+    fileName = [[PTBR + 2*((userSP-4))/512]*512 + (userSP-4)%512];
+
+    alias i R6;
+    i = 0;
+
+    while(i < MAX_FILE_NUM) do
+        if([INODE_TABLE + 16*i + 1] == fileName) then
+            break;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    // FILE NOT FOUND
+    if(i == MAX_FILE_NUM) then
+        [retAddr] = 0;
+        SP = userSP;
+        [process_table + 9] = 0;
+        ireturn;
+    endif;
+
+    alias index R7;
+    index = i;
+
+    // FILE IS NOT DATA
+
+    alias inode_table R8;
+    inode_table = INODE_TABLE + 16*index;
+
+    if([inode_table + 0] != DATA) then
+        [retAddr] = -1;
+        SP = userSP;
+        [process_table + 9] = 0;
+        ireturn;
+    endif;
+
+    // EXCLUSIVE PERMISSION IS SET AND CURR USER IS NOT OWNER OF CURR FILE
+
+    if([inode_table + 4] == 0) then             //PERMISSION
+        if([process_table + 3] != ROOT && [inode_table + 3] != [process_table + 3]) then
+            [retAddr] = -1;
+            SP = userSP;
+            [process_table + 9] = 0;
+            ireturn;
+        endif;
+    endif;
+
+    backup;
+    R1 = ACQUIRE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = index;
+    call RESOURCE_MANAGER;
+    restore;
+
+	// FILE OPEN COUNT != -1 => file is open, can't delete
+
+    if([FILE_STATUS_TABLE + 4*index + 1] != -1) then            //FILE_OPEN_COUNT
+        backup;
+        R1 = RELEASE_INODE;
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        R3 = index;
+        call RESOURCE_MANAGER;
+        restore;
+
+        [process_table + 9] = 0;
+        [retAddr] = -2;             //File is open
+        SP = userSP;
+        ireturn;
+    endif;
+
+    alias block R9;
+
+    i = 8;
+    while(i < 12) do
+        block = [inode_table + i];
+
+        if(block != -1) then
+            if([BUFFER_TABLE + (block%4)*4 + 0] == block && [BUFFER_TABLE + (block%4)*4 + 1] == 1) then                     //IF DIRTY BIT IS SET
+                [BUFFER_TABLE + (block%4)*4 + 1] = 0;
+            endif;
+
+            backup;
+            R1 = RELEASE_BLOCK;
+            R2 = block;
+            R3 = [SYSTEM_STATUS_TABLE+1];
+            call MEMORY_MANAGER;
+            restore;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    //Invalidate INODE_TABLE entries
+
+    i = 0;
+    while(i < 16) do
+        [inode_table + i] = -1;
+        i = i + 1;
+    endwhile;
+
+    [inode_table + 3] = 0;              //USER_ID
+
+    //Invalidate ROOT_FILE entries
+
+    i = 0;
+    while(i < 8) do
+        [ROOT_FILE + index*8 + i] = -1;
+        i = i + 1;
+    endwhile;
+
+    backup;
+    R1 = RELEASE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE+1];
+    R3 = index;
+    call RESOURCE_MANAGER;
+    restore;
+
+    [retAddr] = 0;
+    SP = userSP;
+    [process_table + 9] = 0;
+
+    ireturn;
+endif;

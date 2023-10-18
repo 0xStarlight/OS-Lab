@@ -1,0 +1,77 @@
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 9] = INT_15;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13] = SP;
+
+alias userSP R1;
+userSP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 13];
+
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 11]*512 - 1;
+
+if([SYSTEM_STATUS_TABLE + 1] != 1 || [PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1]*16 + 3] != ROOT) then
+    [[PTBR+2*((userSP-1)/512)]*512 + (userSP-1)%512] = -1;
+    [PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+multipush(R0, R1, R2, R3, R4);
+R1 = KILL_ALL;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call PROCESS_MANAGER;
+multipop(R0, R1, R2, R3, R4);
+
+//storing buffers
+alias i R2;
+i = 0;
+
+while(i < 4) do
+    // if dirty bit = 1
+    if([BUFFER_TABLE + 4*i + 1] == 1) then
+        multipush(R0, R1, R2, R3, R4);
+        R1 = DISK_STORE;
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        R3 = (71 + i);
+        R4 = [BUFFER_TABLE + 4*i];
+        multipop(R0, R1, R2, R3, R4);
+    endif;
+    i = i + 1;
+endwhile;
+
+// Store inode table
+multipush(R0, R1, R2, R3, R4);
+R1 = DISK_STORE;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+R3 = 59;
+R4 = 3;
+call DEVICE_MANAGER;
+multipop(R0, R1, R2, R3, R4);
+
+multipush(R0, R1, R2, R3, R4);
+R1 = DISK_STORE;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+R3 = 60;
+R4 = 4;
+call DEVICE_MANAGER;
+multipop(R0, R1, R2, R3, R4);
+
+
+// Store disk free list
+multipush(R0, R1, R2, R3, R4);
+R1 = DISK_STORE;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+R3 = 61;
+R4 = 2;
+call DEVICE_MANAGER;
+multipop(R0, R1, R2, R3, R4);
+
+
+// Store root file
+multipush(R0, R1, R2, R3, R4);
+R1 = DISK_STORE;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+R3 = 62;
+R4 = 5;
+call DEVICE_MANAGER;
+multipop(R0, R1, R2, R3, R4);
+
+halt;

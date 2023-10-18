@@ -1,0 +1,26 @@
+decl
+    int i, semid, pid, data, temp, filedis, a;
+    string filename;
+enddecl
+
+int main()
+{
+begin
+
+    temp = exposcall("Write",-2,"Enterfilename");
+    temp = exposcall("Read",-1,filename);
+    filedis = exposcall("Open", filename);
+    a = 1;
+    data = -1;
+
+        while(1 == 1)  do
+            a = exposcall("Read",filedis,data);
+            if(a == -2) then
+                break;
+            endif;
+            temp = exposcall("Write",-2,data);
+        endwhile;
+
+    return 0;
+end
+}

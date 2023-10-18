@@ -1,0 +1,133 @@
+alias process_table R1;
+process_table = PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1];
+
+alias userSP R2;
+userSP = SP;
+
+[process_table + 9] = INT_READ;                      
+[process_table + 13] = SP;
+
+SP = [process_table + 11]*512 - 1;
+
+alias filedesc R3;
+filedesc = [[PTBR + 2*((userSP-4)/512)]*512 + (userSP-4)%512];
+
+alias ret_adr R4;
+alias read_adr R5;
+
+R4 = [PTBR + 2*((userSP-1)/512)]*512 + (userSP-1)%512;
+R5 = [[PTBR + 2*((userSP-3)/512)]*512 + (userSP-3)%512];
+
+if(filedesc == -1) then      
+    multipush(R1,R2,R3,R4,R5);
+    R1 = TERMINAL_READ;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = read_adr;
+    call DEVICE_MANAGER;
+    multipop(R1,R2,R3,R4,R5);
+else
+    if(filedesc < 0 || filedesc > 7) then
+        SP = userSP;
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        ireturn;
+    endif;
+
+    alias resource_table R6;
+    R6 = [process_table + 11]*512+RESOURCE_TABLE_OFFSET;
+
+    if([R6 + 2*filedesc] != FILE) then
+        SP = userSP;
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        ireturn;
+    endif;
+
+    alias open_file_entry R7;
+    open_file_entry = [resource_table + 2*filedesc + 1];
+
+    alias open_file_table R8;
+    open_file_table = OPEN_FILE_TABLE + 4*open_file_entry;
+
+    alias inode_idx R9;
+    inode_idx = [open_file_table + 0];
+
+    multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+    R1 = ACQUIRE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = inode_idx;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+
+    if(R0 == -1) then
+        SP = userSP;
+        [ret_adr] = -1;
+        [process_table + 9] = 0;
+        ireturn;
+    endif;
+
+    alias lseek R10;
+    lseek = [open_file_table + 2];    
+
+    alias physical_adr R11;
+    physical_adr = [PTBR+2*((read_adr)/512)]*512 + (read_adr)%512;
+    if(inode_idx == INODE_ROOT) then
+        if(lseek == 480) then
+            backup;
+            R1 = RELEASE_INODE;
+            R2 = [SYSTEM_STATUS_TABLE + 1];
+            R3 = inode_idx;
+            call RESOURCE_MANAGER;
+            restore;
+            [ret_adr] = -2;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+        [physical_adr] = [ROOT_FILE + lseek];        [open_file_table + 2] = [open_file_table + 2] + 1;
+    
+    else
+        if(lseek == [INODE_TABLE + inode_idx*16 + 2]) then 
+            backup;
+            R1 = RELEASE_INODE;
+            R2 = [SYSTEM_STATUS_TABLE + 1];
+            R3 = inode_idx;
+            call RESOURCE_MANAGER;
+            restore;
+
+            [ret_adr] = -2;
+            [process_table + 9] = 0;
+            SP = userSP;
+            ireturn;
+        endif;
+
+        alias block_num R12;
+        alias offset R13;
+
+        block_num = [INODE_TABLE + 16*inode_idx + 8 + (lseek/512)];
+        offset = lseek%512;
+
+        backup;
+        R1 = BUFFERED_READ;
+        R2 = block_num;
+        R3 = offset;
+        R4 = physical_adr;
+        call FILE_MANAGER;
+        restore;
+
+        [open_file_table+2] = [open_file_table+2] + 1;
+    endif;
+
+    backup;
+    R1 = RELEASE_INODE;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = inode_idx;
+    call RESOURCE_MANAGER;
+    restore;
+    
+endif;
+
+[ret_adr] = 0;
+[process_table + 9] = 0;
+SP = userSP;
+ireturn;

@@ -1,0 +1,57 @@
+//module 7 (BOOT_MODULE)
+loadi(54, 67);
+loadi(55, 68);
+
+SP = 82*512-1;
+call BOOT_MODULE;
+
+PTBR=PAGE_TABLE_BASE;
+PTLR=10;
+//library
+[PTBR+0]=63;
+[PTBR+1]="0100";
+[PTBR+2]=64;
+[PTBR+3]="0100";
+
+//heap
+[PTBR+4]=-1;
+[PTBR+5]="0000";
+[PTBR+6]=-1;
+[PTBR+7]="0000";
+
+//code
+[PTBR+8]=69;
+[PTBR+9]="0100";
+[PTBR+10]=70;
+[PTBR+11]="0100";
+[PTBR+12]=-1;
+[PTBR+13]="0000";
+[PTBR+14]=-1;
+[PTBR+15]="0000";
+//stack
+[PTBR+16]=81;
+[PTBR+17]="0110";
+[PTBR+18]=-1;
+[PTBR+19]="0000";
+
+//process table idle
+//idle
+alias idle_process_table R6;
+idle_process_table = PROCESS_TABLE;
+[idle_process_table + 0*16 + 1] = 0;
+[idle_process_table + 0*16 + 4] = RUNNING;
+[idle_process_table + 0*16 + 11] = 82;
+[idle_process_table + 0*16 + 12] = 0;
+[idle_process_table + 0*16 + 13] = 8*512;
+[idle_process_table + 0*16 + 14] = PTBR;
+[idle_process_table + 0*16 + 15] = PTLR;
+[81*512] =[69*512 + 1];
+
+[SYSTEM_STATUS_TABLE + 1]  = 0;
+PTBR=PAGE_TABLE_BASE;
+PTLR=10;
+SP=8*512;
+breakpoint;
+ireturn;
+//DISK
+//

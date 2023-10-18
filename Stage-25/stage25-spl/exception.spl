@@ -1,0 +1,100 @@
+breakpoint;
+
+[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9] = -1;  	//MODE_FLAG
+
+[PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+13] = SP;		//UPTR
+SP = [PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+11]*512-1;	//SP point to kernal stack
+backup;
+
+multipush(EIP);
+
+if(EC == 1)then
+    print("Illegal Ins");
+    R1 = EXIT_PROCESS;
+    call PROCESS_MANAGER;
+
+    call SCHEDULER;
+endif;
+
+if(EC == 2)then
+    print("Illegal Mem");
+    R1 = EXIT_PROCESS;
+    call PROCESS_MANAGER;
+
+    call SCHEDULER;
+endif;
+
+if(EC == 3)then
+    print("Arith Exep");
+    R1 = EXIT_PROCESS;
+    call PROCESS_MANAGER;
+
+    call SCHEDULER;
+endif;
+
+if([PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+13] == PTLR*512-1) then //userSP is full
+
+    print("UserSPfull");
+    R1 = EXIT_PROCESS;
+    call PROCESS_MANAGER;
+
+    call SCHEDULER;
+endif;
+
+if(EC==0) then
+
+    if(EPN==4 || EPN==5 || EPN==6 || EPN==7) then
+
+        multipush(EC,EIP,EPN,EMA);
+
+        R1 = GET_CODE_PAGE;
+        R2 = [DISK_MAP_TABLE + 10*[SYSTEM_STATUS_TABLE+1] + EPN];
+        call MEMORY_MANAGER;
+
+        multipop(EC,EIP,EPN,EMA);
+
+        [PTBR + 2*EPN] = R0;
+        [PTBR + 2*EPN +1] = "1100";
+    endif;
+
+    if(EPN==2 || EPN==3) then
+
+        //.....for Page1.....//
+
+        multipush(EC,EIP,EPN,EMA);
+
+        R1 = GET_FREE_PAGE;
+        call MEMORY_MANAGER;
+
+        multipop(EC,EIP,EPN,EMA);
+
+        [PTBR + 2*EPN] = R0;
+        [PTBR + 2*EPN +1] = "1110";
+
+
+        //.....for Page2.....//
+
+        multipush(EC,EIP,EPN,EMA);
+
+        R1 = GET_FREE_PAGE;
+        call MEMORY_MANAGER;
+
+        multipop(EC,EIP,EPN,EMA);
+
+        [PTBR + 2*EPN] = R0;
+        [PTBR + 2*EPN +1] = "1110";
+
+    endif;
+endif;
+
+multipop(EIP);
+
+restore;
+
+[PROCESS_TABLE + 16*[SYSTEM_STATUS_TABLE+1] + 9] = 0;  	//MODE_FLAG
+
+SP = [PROCESS_TABLE+16*[SYSTEM_STATUS_TABLE+1]+13];
+SP = SP + 1;
+
+[[PTBR + 2*(SP/512)]*512 + (SP%512)] = EIP;
+ireturn;

@@ -1,0 +1,20 @@
+int main()
+{
+decl
+    int temp,num,check;
+    str a;
+enddecl
+begin
+    num=1;
+    a = "odd";
+    while ( num <= 100 ) do
+    	 check = num%2;
+    	 if( check != 0) then
+            //write(a);
+	        write(num);
+         endif;
+         num = num + 1;
+    endwhile;
+    return 0;
+end
+}

@@ -1,0 +1,252 @@
+//BOOT MODULE
+
+
+//Exhandler
+loadi(2, 15);
+loadi(3, 16);
+//Timer
+loadi(4, 17);
+loadi(5, 18);
+//Disk Interrupt
+loadi(6, 19);
+loadi(7, 20);
+//Console Interrupt
+loadi(8, 21);
+loadi(9, 22);
+
+//INT 4
+loadi(10, 23);
+loadi(11, 24);
+//INT 5
+loadi(12,25);	
+loadi(13,26);
+//INT 6
+loadi(14,27);
+loadi(15,28);
+//INT 7
+loadi(16,29);
+loadi(17,30);
+//INT 8
+loadi(18,31);
+loadi(19,32);
+//INT 9
+loadi(20,33);
+loadi(21,34);
+//INT 10
+loadi(22,35);
+loadi(23,36);
+//INT 11
+loadi(24,37);
+loadi(25,38);
+//INT 13
+loadi(28,41);
+loadi(29,42);
+//INT 14
+loadi(30,43);
+loadi(31,44);
+//INT 15
+loadi(32,45);
+loadi(33,46);
+
+
+//MODULE 0 - RESOURCE_MANAGER MODULE
+loadi(40,53);
+loadi(41,54);
+//MODULE 1 - PROCESS_MANAGER MODULE
+loadi(42,55);
+loadi(43,56);
+//MODULE 2 - MEMORY_MANAGER MODULE
+loadi(44,57);
+loadi(45,58);
+//MODULE 3 - FILE MANAGER MODULE
+loadi(46,59);	
+loadi(47,60);
+//MODULE 4 - DISK DEVICE_MANAGER MODULE
+loadi(48,61);
+loadi(49,62);
+//MODULE 7 - SCHEDULER MODULE
+loadi(50,63);
+loadi(51,64);
+
+//InodeUser Table
+loadi(59,3);
+loadi(60,4);
+
+//Disk Free LIst
+loadi(61,2);
+
+//Root file
+loadi(62, 5);  
+
+
+//Library
+loadi(63,13);
+loadi(64,14);
+//Init Code 
+loadi(65, 7);
+loadi(66, 8);
+
+//TERMINAL_STATUS_TABLE
+
+[ TERMINAL_STATUS_TABLE + 0 ] = 0;
+
+//Disk Status Table
+
+[DISK_STATUS_TABLE + 0 ] = 0;
+
+
+//FOR INIT CODE
+PTBR = PAGE_TABLE_BASE+20;
+PTLR = 10;
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[PTBR+4] = 78;
+[PTBR+5] = "0110";
+[PTBR+6] = 79;
+[PTBR+7] = "0110";
+
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = 66;
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 76;
+[PTBR+17] = "0110";
+[PTBR+18] = 77;
+[PTBR+19] = "0110";
+
+
+//PROCESS TABLE
+//PID
+[PROCESS_TABLE + 16*1 + 1] = 1;
+//USER_ID
+[PROCESS_TABLE + 16 + 3] = ROOT;                        
+//STATE
+[PROCESS_TABLE + 16*1 + 4] = CREATED;
+//UAPage No
+[PROCESS_TABLE + 16*1 + 11] = 80;
+//KPTR
+[PROCESS_TABLE + 16*1 + 12] = 0; 
+//UPTR of INIT storing logical start of Stack 
+[PROCESS_TABLE + 16*1 + 13] = 8*512; 
+[PROCESS_TABLE + 16*1 + 14] = PTBR;
+[PROCESS_TABLE + 16*1 + 15] = PTLR;
+
+
+
+//First entry of Init Stack 
+[76 * 512] = [65 * 512 + 1];
+
+//Per Process Resource Table of Init
+
+alias perProcessResourceEntry R1;
+perProcessResourceEntry = 80*512 + RESOURCE_TABLE_OFFSET;
+while ( perProcessResourceEntry < 81*512 )do
+    [perProcessResourceEntry] = -1;
+    perProcessResourceEntry = perProcessResourceEntry + 2;
+endwhile;
+
+
+//Semaphore Table
+alias idx R1;
+idx = 0;
+
+while(idx < 32*4 )do
+    //Locking PID to -1 and Process Count to 0
+    [ SEMAPHORE_TABLE + idx ] = -1;
+    [ SEMAPHORE_TABLE + idx + 1] = 0;
+    idx = idx + 4;
+endwhile;
+
+
+
+
+//Setting rest to TERMINATED
+[PROCESS_TABLE + 16*2 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*3 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*4 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*5 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*6 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*7 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*8 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*9 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*10 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*11 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*12 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*13 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*14 + 4] = TERMINATED;
+[PROCESS_TABLE + 16*15 + 4] = TERMINATED;
+
+//MEMORY FREE LIST
+alias i R0;
+i=0;
+while(i!=128)do
+    if (i < 83) then
+        [MEMORY_FREE_LIST+i]=1;
+    else 
+        [MEMORY_FREE_LIST+i]=0;
+    endif;
+    i=i+1;
+endwhile;
+
+[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+
+// ASSIGNMENT STAGE 22 MOD
+[SYSTEM_STATUS_TABLE + 0] = 0; // Context Switches
+[SYSTEM_STATUS_TABLE + 6] = 0; // No of disk accesses
+[SYSTEM_STATUS_TABLE + 7] = 0; // max mem usage
+
+//FILE STATUS TABLE
+
+i = 0;
+
+while(i < MAX_FILE_NUM) do
+    [FILE_STATUS_TABLE + 4*i + 0] = -1;            
+    [FILE_STATUS_TABLE + 4*i + 1] = -1;     
+    i = i + 1;
+endwhile;
+
+//BUFFER TABLE
+i = 0;
+
+while(i < MAX_BUFFER) do
+    [BUFFER_TABLE + 4*i + 0] = -1;      
+    [BUFFER_TABLE + 4*i + 1] = 0;       
+    [BUFFER_TABLE + 4*i + 2] = -1;  
+    i = i + 1;
+endwhile;
+
+// OPEN FILE TABLE
+i = 0;
+
+while(i < MAX_OPENFILE_NUM) do
+    [OPEN_FILE_TABLE + 4*i] = -1;         
+    [OPEN_FILE_TABLE + 4*i + 1] = 0; 
+    i = i + 1;
+endwhile;
+
+//Disk Map Table for INIT Process
+[ DISK_MAP_TABLE + 10 + 0] = -1;
+[ DISK_MAP_TABLE + 10 + 1] = -1;
+[ DISK_MAP_TABLE + 10 + 2] = -1;
+[ DISK_MAP_TABLE + 10 + 3] = -1;
+[ DISK_MAP_TABLE + 10 + 4] = 7;
+[ DISK_MAP_TABLE + 10 + 5] = 8;
+[ DISK_MAP_TABLE + 10 + 6] = -1;
+[ DISK_MAP_TABLE + 10 + 7] = -1;
+[ DISK_MAP_TABLE + 10 + 8] = -1;
+[ DISK_MAP_TABLE + 10 + 9] = -1;
+
+return;

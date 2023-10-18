@@ -1,0 +1,117 @@
+alias userSP R10;
+alias currPID R9;
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+//Accessing physical fileDescriptor location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias sysCallNoPhysicalAddr R3;
+
+
+//Try to find sysCallNoPhysicalAddr and the sysCallNo
+
+physicalPageNum = [PTBR + 2 * ((userSP - 5)/ 512)];
+offset = (userSP - 5) % 512;
+sysCallNoPhysicalAddr = (physicalPageNum * 512) + offset;
+
+alias sysCallNo R4;
+sysCallNo=[sysCallNoPhysicalAddr];
+
+
+//temp: R1,R2,R3, imp : R4,R9,R10
+// print sysCallNo;
+
+[PROCESS_TABLE + currPID * 16 + 9] = sysCallNo;
+
+//Get PID
+if (sysCallNo == 11)then
+
+    alias physicalPageNum R1;
+    alias offset R2;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+    offset = (userSP - 1) % 512;
+    [(physicalPageNum * 512) + offset] = currPID;
+
+endif;
+
+//Get PPID
+if (sysCallNo == 12)then
+
+    alias physicalPageNum R1;
+    alias offset R2;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+    offset = (userSP - 1) % 512;
+    [(physicalPageNum * 512) + offset] = [PROCESS_TABLE + ( currPID * 16) + 2];
+    
+endif;
+
+//WAIT SysCall
+if (sysCallNo == 13)then
+
+    alias physicalPageNum R1;
+    alias offset R2;
+    alias argPIDaddr R3;
+    alias argPID R5;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+    offset = (userSP - 4 ) % 512;
+    argPIDaddr = (physicalPageNum * 512) + offset;
+
+    argPID = [argPIDaddr];
+
+    if (argPID == currPID || [PROCESS_TABLE + argPID * 16 + 4]==TERMINATED )then
+
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = -1;
+
+    else
+        //Setting process to Wait till Child signals or exits
+        [PROCESS_TABLE + currPID * 16 + 4] = WAIT_PROCESS;
+        [PROCESS_TABLE + currPID * 16 + 5] = argPID;
+
+        // breakpoint;
+        multipush(R0,R1,R2,R3,R4,R5,R9,R10);
+        call SCHEDULER;
+        multipop(R0,R1,R2,R3,R4,R5,R9,R10);
+
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = 0;
+    endif;
+
+
+endif;
+
+//SIGNAL SysCall
+if (sysCallNo == 14)then
+    alias ind R4;
+    ind = 0;
+    //Check for Waiting process and ready them
+    while (ind < MAX_PROC_NUM)do
+        if ( [PROCESS_TABLE + ( ind * 16) + 4]== WAIT_PROCESS )then
+            [PROCESS_TABLE + ( ind * 16) + 4] = READY;
+        endif;
+        ind = ind + 1;
+    endwhile;
+endif;
+
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+//Reset User Stack
+SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+ireturn;
