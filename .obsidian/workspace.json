@@ -57,7 +57,7 @@
             }
           }
         ],
-        "currentTab": 1
+        "currentTab": 3
       },
       {
         "id": "c359674ae3410629",
@@ -243,7 +243,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "Stage-19/1-Stage-19.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -290,22 +290,23 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "6a4f9879c5770215",
+  "active": "05ea8bf87765d2a4",
   "lastOpenFiles": [
+    "Stage-25/1-Stage25.md",
+    "README.md",
+    "Stage-26/stage26-spl/temp/os_startup.spl",
+    "Stage-26/stage26-spl/temp/timer.spl",
+    "Stage-26/stage26-spl/temp/osloader.spl",
+    "Stage-26/stage26-spl/temp/mod_5.spl",
+    "Stage-26/stage26-spl/temp/mod_7.spl",
+    "Stage-26/stage26-spl/temp/mod_3.spl",
+    "Stage-26/stage26-spl/temp/mod_4.spl",
+    "Stage-26/stage26-spl/temp/mod_2.spl",
+    "Stage-26/stage26-spl/temp/mod_0.spl",
+    "Stage-26/stage26-spl/temp/mod_1.spl",
     "Stage-26/1-Stage26.md",
     "Stage-21/1-Process-Synchronization.md",
-    "Stage-26/stage26-spl.zip",
-    "Stage-26/stage26-spl.7z",
-    "Stage-26/stage26-spl/temp/timer.spl",
-    "Stage-26/stage26-spl/temp/mod_7.spl",
-    "Stage-26/stage26-spl/temp/os_startup.spl",
-    "Stage-26/stage26-spl/temp/osloader.spl",
-    "Stage-26/stage26-spl/temp/mod_4.spl",
-    "Stage-26/stage26-spl/temp/mod_5.spl",
-    "Stage-26/stage26-spl/temp/mod_3.spl",
-    "Stage-26/stage26-spl/temp/mod_2.spl",
     "Stage-24/1-Stage24.md",
-    "Stage-25/1-Stage25.md",
     "Stage-23/3-Memory-DS.md",
     "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20231016233632.png",

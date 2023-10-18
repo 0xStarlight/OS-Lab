@@ -1,216 +1,212 @@
-alias userSP R10;
-userSP = SP;
+alias userSp R1;
+alias pte R2;
+alias currentPID R3;
+alias retAddr R4;
+alias syscallNum R5;
+alias currentUserID R6;
+alias username R7;
 
-[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16)+13]=SP;
-SP=[PROCESS_TABLE + ([SYSTEM_STATUS_TABLE+1]*16) + 11]*512-1;
+alias iter R9;
 
-//IP+2,ret val,arg 3,arg 2,arg 1,funcode/sysnum
+userSp = SP;
+pte = PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+retAddr = [[pte + 14] + 2*((userSp-1)/512)] * 512 + ((userSp - 1)%512);
+syscallNum = [[[pte + 14] + 2*((userSp-5)/512)] * 512 + ((userSp - 5)%512)];
+currentUserID = [pte+3];
+username = [[[pte + 14] + 2*((userSp-4)/512)] * 512 + ((userSp - 4)%512)];
 
-alias sysnum R9;
-sysnum=[ ([PTBR+ 2*((userSP-5)/512) ]*512) + ((userSP-5) % 512)];
+//setting mode flag and switching to kernel stack
+[pte + 9] = syscallNum;
+[pte + 13] = SP;
+SP = [pte + 11] * 512 - 1;
 
-alias proc_add R8;
-proc_add=PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16;
+//Newusr
+if(syscallNum == 22) then
 
-alias retadd R7;
-retadd=([PTBR+ 2*((userSP-1)/512) ]*512) + ((userSP-1) % 512);
-//newusr
-if(sysnum==22)then
-	[proc_add+ 9] =22;
+	alias pwd R8;
+	pwd = [[[pte + 14] + 2*((userSp-3)/512)] * 512 + ((userSp - 3)%512)];
 	
-	//if current user not root or current process not shell
-	if([SYSTEM_STATUS_TABLE]!=1 || [SYSTEM_STATUS_TABLE+1]!=2)then
-		[retadd]=-2;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	//if current user is not root or the current process is not shell
+	if(currentUserID != 1 || currentPID != 2) then
+		[retAddr] = -2;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	alias uname R6;
-	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
-	
-	alias pawd R5;
-	pawd=[([PTBR+ 2*((userSP-3)/512) ]*512) + ((userSP-3) % 512)];
-	
-	alias counter R4;
-	counter=0;
-	while(counter<MAX_USER_NUM)do
-		if([USER_TABLE+counter*2]==uname)then
-			[retadd]=-1;
-			[proc_add + 9] = 0;
-		       	SP = userSP;
-		       	ireturn;
-		endif;
-		counter=counter+1;
-	endwhile;
-	counter=0;
-	while(counter<MAX_USER_NUM)do
-		if([USER_TABLE+counter*2]==-1)then
+	//loop through user table to find free entry
+	iter = 0;
+	while(iter < MAX_USER_NUM) do
+		if([USER_TABLE + 2*iter] == -1) then
 			break;
 		endif;
-		counter=counter+1;
+		iter = iter + 1;
 	endwhile;
 	
-	//no free entry
-	if(counter==MAX_USER_NUM)then
-		[retadd]=-3;
-		[proc_add + 9] = 0;
-		SP = userSP;
-	      	ireturn;
+	if(iter == MAX_USER_NUM) then
+		[retAddr] = -3;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	encrypt pawd;
-	[USER_TABLE+counter*2]=uname;
-	[USER_TABLE+counter*2+1]=pawd;
-		
-	[retadd]=0;
-	[proc_add + 9] = 0;
-	SP = userSP;
+	encrypt pwd;
+	
+	[USER_TABLE + 2*iter] = username;
+	[USER_TABLE + 2*iter + 1] = pwd;
+	
+	[retAddr] = 0;
+	
 endif;
 
-//remusr
-if(sysnum==23)then
-	[proc_add+ 9] =23;
+//Remusr
+if(syscallNum == 23) then
 	
-	alias uname R6;
-	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
-	//if current user not root or current process not shell
-	if([SYSTEM_STATUS_TABLE]!=1 || [SYSTEM_STATUS_TABLE+1]!=2 || uname=="root" || uname=="kernel")then
-		[retadd]=-2;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	//if current user is not root or the current process is not shell
+	if(currentUserID != 1 || currentPID != 2) then
+		[retAddr] = -2;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	alias count R5;
-	count=0;
-	while(count<MAX_USER_NUM)do
-		if([USER_TABLE+count*2]==uname)then
+	//if user to be removed is root or kernel then return -2
+	if(username == "root" || username == "kernel") then
+		[retAddr] = -2;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
+	endif;
+	
+	//loop through user table to find corresponding entry
+	iter = 0;
+	while(iter < MAX_USER_NUM) do
+		if([USER_TABLE + 2*iter] == username) then
 			break;
 		endif;
-		count=count+1;
+		iter = iter + 1;
 	endwhile;
 	
-	if(count==MAX_USER_NUM)then
-		[retadd]=-1;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	if(iter == MAX_USER_NUM) then
+		[retAddr] = -1;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	alias counter R4;
-	counter=0;
-	while(counter<MAX_FILE_NUM)do
-		//if files exist of user then cannot remusr
-		if([ROOT_FILE+counter*8+3]==count)then
-			[retadd]=-3;
-			[proc_add + 9] = 0;
-		       	SP = userSP;
-		       	ireturn;
+	alias user_tb_entry R10;
+	user_tb_entry = USER_TABLE + 2*iter;
+	
+	//loop through root file and check if a file of the user to be deleted exists
+	iter = 0;
+	while(iter < MAX_FILE_NUM) do
+		if([ROOT_FILE + iter*8 + 3] == username && [ROOT_FILE + iter*8] !=-1) then
+			[retAddr] = -3;
+			SP = [pte + 13];
+			[pte + 9] = 0;
+			ireturn;
 		endif;
-		counter=counter+1;
+		iter = iter + 1;
 	endwhile;
 	
-	//invalidate the entries
-	[USER_TABLE+count*2]=-1;
-	[USER_TABLE+count*2+1]=-1;
+	[user_tb_entry] = -1;
+	[user_tb_entry + 1] = -1;
 	
-	[retadd]=0;
-	[proc_add + 9] = 0;
-	SP = userSP;
+	[retAddr] = 0;	
+	
 endif;
 
-//setpwd
-if(sysnum==24)then
-	[proc_add+ 9] =24;
+//Setpwd
+if(syscallNum == 24) then
+
+	alias pwd R8;
+	pwd = [[[pte + 14] + 2*((userSp-3)/512)] * 512 + ((userSp - 3)%512)];
 	
-	alias uname R6;
-	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
-	      
-	//if current process not shell
-	if([SYSTEM_STATUS_TABLE+1]!=2)then
-		[retadd]=-1;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	//if the current process is not shell
+	if(currentPID != 2) then
+		[retAddr] = -2;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	alias counter R5;
-	counter=0;
-	while(counter<MAX_USER_NUM)do
-		if([USER_TABLE+counter*2]==uname)then
+	//loop through user table to find corresponding entry
+	iter = 0;
+	while(iter < MAX_USER_NUM) do
+		if([USER_TABLE + 2*iter] == username) then
 			break;
 		endif;
-		counter=counter+1;
+		iter = iter + 1;
 	endwhile;
 	
-	if(counter==MAX_USER_NUM)then
-		[retadd]=-2;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	if(iter == MAX_USER_NUM) then
+		[retAddr] = -2;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	if([SYSTEM_STATUS_TABLE]!=counter && [SYSTEM_STATUS_TABLE]!=1)then
-		[retadd]=-1;
-		[proc_add + 9] = 0;
-	       	SP = userSP;
-	       	ireturn;
+	//if not root and not current user
+	if([pte + 3] != iter && [pte+3] != 1) then
+		[retAddr] = -1;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	alias pswd R4;
-	pswd=[([PTBR+ 2*((userSP-3)/512) ]*512) + ((userSP-3) % 512)];
-	encrypt pswd;
+	encrypt pwd;
+	[USER_TABLE + 2*iter + 1] = pwd;
 	
-	//set new passwd in user table
-	[USER_TABLE+counter*2+1]=pswd;
+	[retAddr] = 0;
 	
-	[retadd]=0;
-	[proc_add + 9] = 0;
-	SP = userSP;
 endif;
 
-//getuid
-if(sysnum==26)then
-	[proc_add+9]=26;
+//Getuname
+if(syscallNum == 25) then
 	
-	alias uname R6;
-	uname=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
+	alias userID R7;	
 	
-	alias counter R5;
-	counter=0;
-	while(counter<MAX_USER_NUM)do
-		if([USER_TABLE+counter*2]==uname)then
-			[retadd]=counter;
-			[proc_add + 9] = 0;
-	       		SP = userSP;
-	       		ireturn;
+	
+	if(userID < 0 || userID > 15) then
+		[retAddr] = -1;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
+	endif;
+	
+	if([USER_TABLE + userID*2] == -1) then
+		[retAddr] = -1;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
+	endif;
+	
+	[retAddr] = [USER_TABLE + userID*2];
+endif;
+
+//Getuid
+if(syscallNum == 26) then
+	
+	//loop through user table to find corresponding entry
+	iter = 0;
+	while(iter < MAX_USER_NUM) do
+		if([USER_TABLE + 2*iter] == username) then
+			[retAddr] = iter;
+			break;
 		endif;
-		counter=counter+1;
+		iter = iter + 1;
 	endwhile;
 	
-	[retadd]=-1;
-	[proc_add + 9] = 0;
-      	SP = userSP;
-endif;
-
-//getuname
-if(sysnum==25)then
-	[proc_add+9]=25;
-	
-	alias uid R6;
-	uid=[([PTBR+ 2*((userSP-4)/512) ]*512) + ((userSP-4) % 512)];
-	
-	if(uid<0 || uid>15)then
-		[retadd]=-1;
-		[proc_add + 9] = 0;
-	      	SP = userSP;
-	      	ireturn;
+	if(iter == MAX_USER_NUM) then
+		[retAddr] = -1;
+		SP = [pte + 13];
+		[pte + 9] = 0;
+		ireturn;
 	endif;
 	
-	[retadd]=[USER_TABLE+uid*2];
-	[proc_add + 9] = 0;
-	SP = userSP;
 endif;
 
+SP = [pte + 13];
+[pte + 9] = 0;
 ireturn;
