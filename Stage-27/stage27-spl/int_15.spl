@@ -1,0 +1,116 @@
+alias userSP R10;
+alias currPID R9;
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+//Accessing physical fileDescriptor location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias sysCallNoPhysicalAddr R3;
+
+
+//Try to find sysCallNoPhysicalAddr and the sysCallNo
+
+physicalPageNum = [PTBR + 2 * ((userSP - 5)/ 512)];
+offset = (userSP - 5) % 512;
+sysCallNoPhysicalAddr = (physicalPageNum * 512) + offset;
+
+alias sysCallNo R4;
+sysCallNo=[sysCallNoPhysicalAddr];
+
+//temp: R1,R2,R3, imp : R4,R9,R10
+// print sysCallNo;
+
+[PROCESS_TABLE + currPID * 16 + 9] = sysCallNo;
+
+if ( currPID != 2 || [PROCESS_TABLE + ( currPID * 16) + 3] != 1 )then
+    //Return -1
+    physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+    offset = (userSP - 1) % 512;
+    [(physicalPageNum * 512) + offset] = -1;
+
+    // Reset Mode Flag
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+    //Reset User Stack
+    SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+    ireturn;
+endif;
+
+//Calling Kill All
+multipush(R1,R2,R3,R4,R9,R10);
+R1 = 5;
+R2 = currPID;
+call PROCESS_MANAGER;
+multipop(R1,R2,R3,R4,R9,R10);
+
+
+//Disk Free List
+multipush(R1,R2,R3,R4,R9,R10);
+R1 = 1;
+R2 = currPID;
+R3 = 61;
+R4 = 2;
+call DEVICE_MANAGER;
+multipop(R1,R2,R3,R4,R9,R10);
+
+multipush(R1,R2,R3,R4,R9,R10);
+//Inode + User Table
+R1 = 1;
+R2 = currPID;
+R3 = 59;
+R4 = 3;
+call DEVICE_MANAGER;
+multipop(R1,R2,R3,R4,R9,R10);
+
+multipush(R1,R2,R3,R4,R9,R10);
+R1 = 1;
+R2 = currPID;
+R3 = 60;
+R4 = 4;
+call DEVICE_MANAGER;
+multipop(R1,R2,R3,R4,R9,R10);
+
+
+
+multipush(R1,R2,R3,R4,R9,R10);
+//Root File
+R1 = 1;
+R2 = currPID;
+R3 = 62;
+R4 = 5;
+call DEVICE_MANAGER;
+multipop(R1,R2,R3,R4,R9,R10);
+
+
+
+//Writing Back Buffers
+
+alias index R5 ;
+index = 0;
+
+//Check
+while( index < MAX_BUFFER )do
+    //IF buffer exists and dirty bit set
+    if ( [BUFFER_TABLE + 4*index ]!= -1 && [BUFFER_TABLE + 4*index + 1] == 1)then
+        multipush(R1,R2,R3,R5,R4,R9,R10);
+        R1 = 1;
+        R2 = currPID;
+        R3 = BUFFER_BASE + index;           //Page No
+        R4 = [BUFFER_TABLE + 4*index];      //Block No
+        call DEVICE_MANAGER;
+        multipop(R1,R2,R3,R5,R4,R9,R10);
+    endif;
+    index = index + 1;
+endwhile;
+
+// breakpoint;
+halt;

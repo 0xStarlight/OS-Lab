@@ -1,0 +1,187 @@
+alias userSP R10;
+userSP = SP;
+
+alias currPID R9;
+currPID = [SYSTEM_STATUS_TABLE + 1];
+
+//Set MODE Flag to 5
+[PROCESS_TABLE + currPID * 16 + 9] = 5;
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + ( currPID * 16 ) + 11] * 512 - 1;
+
+
+//Try to find the fileDescriptor
+
+alias fileDescriptor R4;
+fileDescriptor=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+alias physicalAddrRetVal R5;
+physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+    
+//Taking the word from the Stack
+alias word R6;
+word = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+//Checking File fileDescriptor and doing operations
+
+
+if (fileDescriptor == -2)then
+    //Console Case
+    
+    multipush(R0,R1,R2,R3,R4,R5,R6);
+    R1 = 3;
+    R2 = currPID;
+    R3 = word;
+    call DEVICE_MANAGER;
+    multipop(R0,R1,R2,R3,R4,R5,R6);
+
+    //Set Return value to 0
+    [physicalAddrRetVal] = 0;
+
+else
+    //Invalid File Descriptor
+    if (fileDescriptor<0 || fileDescriptor>=8 )then
+        [physicalAddrRetVal] = -1;
+        // Reset Mode Flag
+        [PROCESS_TABLE + currPID* 16 + 9] = 0;
+
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    alias pprtBase R7;
+    alias OFTIndex R8;
+    alias inodeIndex R11;
+    
+    pprtBase = [PROCESS_TABLE + (currPID * 16) + 11] * 512 + RESOURCE_TABLE_OFFSET;
+
+    //Not a file 
+    if ( [pprtBase + 2*fileDescriptor ] != FILE )then
+        [physicalAddrRetVal] = -1;
+
+        [PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    OFTIndex = [pprtBase + 2*fileDescriptor + 1];
+
+    inodeIndex = [ OPEN_FILE_TABLE + 4*OFTIndex ];
+
+    //If Exclusive File then check if Owner or Root. If not return -3.
+    if ( [INODE_TABLE + 16*inodeIndex + 4] == EXCLUSIVE )then
+        if ( [PROCESS_TABLE + (currPID * 16) + 3]!=ROOT  && [PROCESS_TABLE + (currPID * 16) + 3] != [INODE_TABLE + 16*inodeIndex + 3] )then
+            [physicalAddrRetVal] = -3;
+            [PROCESS_TABLE + currPID * 16 + 9] = 0;
+            SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+            ireturn;
+        endif;
+    endif;
+
+    //Calling Acquire Inode
+    multipush(R4,R5,R6,R7,R8,R9,R10,R11);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R4,R5,R6,R7,R8,R9,R10,R11);
+
+
+    //If Acquire Inode Fails
+    if (R0 == -1)then
+        [physicalAddrRetVal] = -1;
+        [PROCESS_TABLE + currPID * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    alias lSeekAddr R12;
+    lSeekAddr = OPEN_FILE_TABLE + 4*OFTIndex + 2;
+
+
+    //If lSeek has reached its end of file
+    if ( [lSeekAddr] == MAX_FILE_SIZE )then
+        multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+        R1 = 5;
+        R2 = inodeIndex;
+        R3 = currPID;
+        call RESOURCE_MANAGER;
+        multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+        [physicalAddrRetVal] = -2;
+        [PROCESS_TABLE + currPID * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    //If next block not allocated
+    if (  [lSeekAddr] % 512 == 0 && [lSeekAddr] == [INODE_TABLE + 16*inodeIndex + 2])then
+        multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+        R1 = 3;
+        call MEMORY_MANAGER;
+        multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+        
+
+        //No free disk blocks
+        if ( R0 == -1 )then
+            multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+            R1 = 5;
+            R2 = inodeIndex;
+            R3 = currPID;
+            call RESOURCE_MANAGER;
+            multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+            [physicalAddrRetVal] = -2;
+            [PROCESS_TABLE + currPID * 16 + 9] = 0;
+            SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+            ireturn;
+        endif;
+
+        [INODE_TABLE + 16*inodeIndex + 8 + ([lSeekAddr] / 512)] = R0;
+
+    endif;
+
+
+    //Calling Buffered Write
+    multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+    R1 = 1;
+    R2 = [INODE_TABLE + 16*inodeIndex + 8 + ([lSeekAddr]/512) ];   // Disk Block No.
+    R3 = [lSeekAddr] % 512;                                        // Offset
+    R4 = word;                                                     // Word Address for input
+    call FILE_MANAGER;
+    multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+    //Incrementing File Size if needed
+    if ([lSeekAddr] == [INODE_TABLE + 16*inodeIndex + 2])then
+        [INODE_TABLE + 16*inodeIndex + 2] = [INODE_TABLE + 16*inodeIndex + 2] + 1;
+        [ROOT_FILE + 8*inodeIndex + 1 ] = [ROOT_FILE + 8*inodeIndex + 1 ] + 1;
+    endif;
+
+    //Incrementing lSeek
+    [lSeekAddr] = [lSeekAddr] + 1;
+
+    multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+    //Set Return value to 0   
+    [physicalAddrRetVal] = 0;
+    
+endif;
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + currPID* 16 + 9] = 0;
+
+SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+ireturn;

@@ -1,0 +1,17 @@
+//Mode Flag set
+alias currPID R0;
+currPID = [SYSTEM_STATUS_TABLE+1];
+[PROCESS_TABLE + currPID * 16 + 9] = 10;
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+
+multipush(R0,R1,R2);
+
+R1 = 3; 
+R2 = currPID;
+call PROCESS_MANAGER;
+
+multipush(R0,R1,R2);
+// breakpoint;
+
+call SCHEDULER;

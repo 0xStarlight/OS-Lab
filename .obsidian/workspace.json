@@ -50,14 +50,14 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Stage-19/1-Stage-19.md",
+                "file": "Stage-27/1-Stage27.md",
                 "mode": "preview",
                 "source": false
               }
             }
           }
         ],
-        "currentTab": 3
+        "currentTab": 1
       },
       {
         "id": "c359674ae3410629",
@@ -173,8 +173,7 @@
                   }
                 }
               }
-            ],
-            "currentTab": 1
+            ]
           }
         ],
         "direction": "horizontal"
@@ -243,7 +242,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "Stage-19/1-Stage-19.md",
+                "file": "README.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -290,53 +289,52 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "05ea8bf87765d2a4",
+  "active": "6a4f9879c5770215",
   "lastOpenFiles": [
-    "Stage-25/1-Stage25.md",
+    "Stage-20/1-Process-Creation-and-Termination.md",
+    "Stage-27/1-Stage27.md",
+    "Stage-27/stage27-expl/test1.dat",
+    "Stage-27/stage27-expl/sub.xsm",
+    "Stage-27/stage27-expl/sub.expl",
+    "Stage-27/stage27-expl/sort.xsm",
+    "Stage-27/stage27-expl/sort.expl",
+    "Stage-27/stage27-expl/shell.xsm",
+    "Stage-27/stage27-expl/shell.expl",
+    "Stage-27/stage27-expl/sample.dat",
+    "Stage-27/stage27-expl/s27a4.xsm",
+    "Stage-27/stage27-expl/s27a4.expl",
     "README.md",
-    "Stage-26/stage26-spl/temp/os_startup.spl",
-    "Stage-26/stage26-spl/temp/timer.spl",
-    "Stage-26/stage26-spl/temp/osloader.spl",
-    "Stage-26/stage26-spl/temp/mod_5.spl",
-    "Stage-26/stage26-spl/temp/mod_7.spl",
-    "Stage-26/stage26-spl/temp/mod_3.spl",
-    "Stage-26/stage26-spl/temp/mod_4.spl",
-    "Stage-26/stage26-spl/temp/mod_2.spl",
-    "Stage-26/stage26-spl/temp/mod_0.spl",
-    "Stage-26/stage26-spl/temp/mod_1.spl",
+    "Stage-13/2-Modules.md",
+    "~Attachments/Pasted image 20231022220106.png",
+    "~Attachments/Pasted image 20231022214711.png",
+    "~Attachments/Pasted image 20231022214709.png",
+    "Stage-22/1-Semaphores.md",
+    "~Attachments/Pasted image 20231022211036.png",
+    "Stage-24/1-Stage24.md",
+    "Stage-23/1-Stage23.md",
+    "Stage-23/4-Disk-DS.md",
+    "Stage-23/2-File-System-Implementation.md",
+    "Stage-10/2-Process-Table.md",
+    "Stage-13/1-Boot-Module.md",
+    "Stage-19/1-Stage-19.md",
+    "Stage-25/1-Stage25.md",
     "Stage-26/1-Stage26.md",
     "Stage-21/1-Process-Synchronization.md",
-    "Stage-24/1-Stage24.md",
     "Stage-23/3-Memory-DS.md",
-    "Stage-13/1-Boot-Module.md",
     "~Attachments/Pasted image 20231016233632.png",
     "~Attachments/Pasted image 20231016195617.png",
     "~Attachments/Pasted image 20231016195459.png",
     "~Attachments/Pasted image 20231016195335.png",
     "~Attachments/Pasted image 20231016194316.png",
     "~Attachments/Pasted image 20231016191332.png",
-    "Stage-22/1-Semaphores.md",
-    "Stage-23/1-Stage23.md",
-    "Stage-20/1-Process-Creation-and-Termination.md",
-    "Stage-13/2-Modules.md",
-    "Stage-10/2-Process-Table.md",
     "Stage-22/2-Semaphore-Table.md",
-    "Stage-23/2-File-System-Implementation.md",
-    "Stage-23/4-Disk-DS.md",
-    "Stage-19/1-Stage-19.md",
     "Stage-18/1-Disk-Interrupt-Handler.md",
-    "~Attachments/Pasted image 20231011110342.png",
     "Stage-02/1-Understanding-the-Filesystem.md",
     "Stage-01/1-Basics.md",
     "Stage-23/5-Process-State-Transitions.md",
     "Stage-15/2-Terminal-Status-Table.md",
-    "~Attachments/Pasted image 20231007125949.png",
     "Stage-12/Introduction-to-Multiprogramming.md",
     "Stage-10/3-Status-Table.md",
-    "Stage-15/1-Resource-Manager-Module.md",
-    "Stage-11/Introduction-to-ExpL.md",
-    "Stage-19/2-FastNotes.md",
-    "~Attachments/Pasted image 20230923201759.png",
-    "~Attachments/Pasted image 20230923201729.png"
+    "Stage-15/1-Resource-Manager-Module.md"
   ]
 }

@@ -1,0 +1,81 @@
+//SCHEDULER MODULE 
+
+//INFO of OLD PROCESS STORED IN PROCESS TABLE
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table_entry R1;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+
+multipush(BP);
+
+//KPTR
+[process_table_entry + 12] = SP % 512;
+
+//Check PCB in expos DOC for more info
+[process_table_entry + 14] = PTBR;
+[process_table_entry + 15] = PTLR;
+
+//Stage 27 modifications
+
+alias newPID R3;
+
+if ( [SYSTEM_STATUS_TABLE + 5] != 0 )then
+    if ( [PROCESS_TABLE + 16*15 + 4] == WAIT_DISK )then
+        newPID = 0;
+        //idle scheduled as paging is ongoing and swapper is blocked
+    else
+        newPID = 15;
+        //paging needed so swapper scheduled
+    endif;
+else
+    alias ind R2;
+    ind = ((currentPID + 1) % 15);
+
+    while( 1==1 )do
+        if ( ([PROCESS_TABLE + ind* 16 + 6] == 0) && ([PROCESS_TABLE + ind* 16 + 4]==CREATED ||  [PROCESS_TABLE + ind* 16 + 4]==READY) )then
+            break;
+        endif;
+        ind = ((ind + 1) % 15);
+    endwhile;
+
+    newPID = ind;
+endif;
+
+
+
+
+
+
+
+alias new_process_table R4;
+new_process_table = PROCESS_TABLE + newPID * 16;
+
+//Set back Kernel SP, PTBR , PTLR
+SP =  [new_process_table + 11] * 512 + [new_process_table + 12] ;
+PTBR = [new_process_table + 14];
+PTLR = [new_process_table + 15];
+
+//Current executing PID
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+
+
+if([new_process_table + 4] == CREATED) then
+    //STATE
+    [new_process_table + 4] = RUNNING;
+    //MODE FLAG
+    [new_process_table + 9] = 0;
+
+    //In case of error try multipop BP
+    BP = [[new_process_table + 11] * 512 ];
+    //UPTR restored to Stack Pointer
+    SP = [new_process_table + 13];
+    
+    ireturn;
+endif;
+
+[new_process_table + 4] = RUNNING;
+
+multipop(BP);
+
+return;

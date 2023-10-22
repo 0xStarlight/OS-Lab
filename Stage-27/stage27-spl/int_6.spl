@@ -1,0 +1,170 @@
+
+
+alias userSP R10;
+userSP=SP;
+
+alias currPID R9;
+currPID = [SYSTEM_STATUS_TABLE + 1];
+
+//Set MODE Flag to 7
+[PROCESS_TABLE + currPID * 16 + 9] = 7;
+
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+
+//Try to find the fileDescriptor
+
+alias fileDescriptor R4;
+fileDescriptor=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+//Take word address from stack  
+alias wordaddr R5;
+wordaddr = [[PTBR + 2 * ((userSP - 3) / 512)] * 512 + ((userSP - 3) % 512)];
+
+alias physicalAddrRetVal R6;
+physicalAddrRetVal = ([PTBR + 2 * (userSP - 1)/ 512] * 512) + ((userSP - 1) % 512);
+
+//Registers Used : Imp: R4,R5,R6,R9,R10
+
+//Checking File fileDescriptor and doing operations
+
+//Console Case
+if (fileDescriptor == -1)then
+
+    //call DEVICE MANAGER terminal Write
+    multipush(R4,R5,R6,R9,R10);
+    R1 = 4;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = wordaddr;
+    call DEVICE_MANAGER;
+    multipop(R4,R5,R6,R9,R10);
+
+    //Set Return value to 0
+    [physicalAddrRetVal] = 0;
+else
+//File Case
+    //Invalid File Descriptor
+    if (fileDescriptor<0 || fileDescriptor>=8 )then
+        [physicalAddrRetVal] = -1;
+        // Reset Mode Flag
+        [PROCESS_TABLE + currPID* 16 + 9] = 0;
+
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+
+    alias pprtBase R7;
+    alias OFTIndex R8;
+    alias inodeIndex R11;
+    
+    pprtBase = [PROCESS_TABLE + (currPID * 16) + 11] * 512 + RESOURCE_TABLE_OFFSET;
+
+    //Not a file 
+    if ( [pprtBase + 2*fileDescriptor ] != FILE )then
+        [physicalAddrRetVal] = -1;
+
+        [PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    OFTIndex = [pprtBase + 2*fileDescriptor + 1];
+
+    inodeIndex = [ OPEN_FILE_TABLE + 4*OFTIndex ];
+
+    
+    //Calling Acquire Inode
+    multipush(R4,R5,R6,R7,R8,R9,R10,R11);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R4,R5,R6,R7,R8,R9,R10,R11);
+
+
+    //If Acquire Inode Fails
+    if (R0 == -1)then
+        [physicalAddrRetVal] = -1;
+        [PROCESS_TABLE + currPID * 16 + 9] = 0;
+        SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+        ireturn;
+    endif;
+
+    alias lSeekAddr R12;
+    lSeekAddr = OPEN_FILE_TABLE + 4*OFTIndex + 2;
+
+    //Root File Case
+    if (inodeIndex == INODE_ROOT )then
+    
+        //If end of root file is reached
+        if ([lSeekAddr] == 480)then
+            multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+            R1 = 5;
+            R2 = inodeIndex;
+            R3 = currPID;
+            call RESOURCE_MANAGER;
+            multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+            [physicalAddrRetVal] = -2;
+            [PROCESS_TABLE + currPID * 16 + 9] = 0;
+            SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+            ireturn;
+        endif;
+
+        [([PTBR + 2 * (wordaddr)/ 512] * 512) + ((wordaddr) % 512)] = [ROOT_FILE + [lSeekAddr]] ;
+
+    else
+    //Not a root file
+        //If reached end of file
+        if ([lSeekAddr] == [INODE_TABLE + 16*inodeIndex + 2])then
+            multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+            R1 = 5;
+            R2 = inodeIndex;
+            R3 = currPID;
+            call RESOURCE_MANAGER;
+            multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+            [physicalAddrRetVal] = -2;
+            [PROCESS_TABLE + currPID * 16 + 9] = 0;
+            SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+            ireturn;
+        endif;
+
+        //Calling Buffered Read
+        multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+        R1 = 2;
+        R2 = [INODE_TABLE + 16*inodeIndex + 8 + ([lSeekAddr]/512) ]; // Disk Block No.
+        R3 = [lSeekAddr]%512;                                        // Offset
+        R4 = wordaddr;                                               // Word Address for input
+        
+        call FILE_MANAGER;
+        multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+    endif;
+
+    //Incrementing Seek
+    [lSeekAddr] = [lSeekAddr] + 1;
+
+    //Calling release inode
+    multipush(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R4,R5,R6,R7,R8,R9,R10,R11,R12);
+
+endif;
+
+[physicalAddrRetVal] = 0;
+
+// Reset Mode Flag
+[PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+ireturn;

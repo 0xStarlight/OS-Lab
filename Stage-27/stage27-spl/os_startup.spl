@@ -1,0 +1,132 @@
+//Idle Code
+loadi(69,11);
+//MODULE 7 - BOOT MODULE
+loadi(54,67);
+loadi(55,68);
+
+
+//Stack Ptr set to supposed physical address of kernel IDLE stack 
+SP = 76*512;
+call BOOT_MODULE;
+
+
+
+//FOR IDLE CODE
+PTBR = PAGE_TABLE_BASE;  //as PID of idle process is 0
+PTLR = 10;
+
+//Library
+[PTBR+0] = -1;
+[PTBR+1] = "0000";
+[PTBR+2] = -1;
+[PTBR+3] = "0000";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+//Code
+[PTBR+8] = 69;
+[PTBR+9] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 70;
+[PTBR+17] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
+
+
+//PROCESS TABLE
+
+//PID
+[PROCESS_TABLE + 1] = 0;	
+//STATE
+[PROCESS_TABLE + 4] = RUNNING;
+//UAPAGENO
+[PROCESS_TABLE + 11] = 76;
+//KPTR
+[PROCESS_TABLE + 12] = 0; 
+//UPTR
+[PROCESS_TABLE + 13] = 8*512; 
+
+[PROCESS_TABLE + 14] = PTBR;
+[PROCESS_TABLE + 15] = PTLR;
+
+//First entry of Idle Stack
+[70 * 512] = [69 * 512 + 1];
+SP = 8*512;
+
+
+
+
+//FOR SWAPPER DAEMON
+PTBR = PAGE_TABLE_BASE + 15 * 20 ;  //as PID of idle process is 0
+PTLR = 10;
+
+//Library
+[PTBR+0] = -1;
+[PTBR+1] = "0000";
+[PTBR+2] = -1;
+[PTBR+3] = "0000";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+//Code
+[PTBR+8] = 69;
+[PTBR+9] = "0100";
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 81;
+[PTBR+17] = "0110";
+[PTBR+18] = -1;
+[PTBR+19] = "0000";
+
+//PROCESS TABLE
+
+//Tick
+[PROCESS_TABLE + 16 * 15    ] = 0;
+//PID
+[PROCESS_TABLE + 16 * 15 + 1] = 15;	
+//UserID
+[PROCESS_TABLE + 16 * 15 + 3] = 0;
+//STATE
+[PROCESS_TABLE + 16 * 15 + 4] = CREATED;
+//UAPAGENO
+[PROCESS_TABLE + 16 * 15 + 11] = 82;
+//KPTR
+[PROCESS_TABLE + 16 * 15 + 12] = 0; 
+//UPTR
+[PROCESS_TABLE + 16 * 15 + 13] = 8*512; 
+
+[PROCESS_TABLE + 16 * 15 + 14] = PTBR;
+[PROCESS_TABLE + 16 * 15 + 15] = PTLR;
+
+[81*512] = [69*512 +1];
+
+
+
+//Currently executing process
+[SYSTEM_STATUS_TABLE + 1] = 0;
+
+
+PTBR = PAGE_TABLE_BASE;  
+PTLR = 10;
+ireturn;

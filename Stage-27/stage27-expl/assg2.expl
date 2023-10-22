@@ -1,0 +1,42 @@
+int main()
+{
+	decl
+		int tmp,i,fileDesc, permission;
+		str fileName, mystr, word;
+	enddecl
+
+	begin
+		write("fileName");
+		read(fileName);
+
+		fileDesc = exposcall("Open",fileName);
+
+		tmp = exposcall("Seek",fileDesc,1100);
+
+		i = 2000;
+		while(i<=2513) do
+			tmp = exposcall("Write",fileDesc,i);
+			i = i + 1;
+		endwhile;
+
+		tmp = exposcall("Seek",fileDesc,-1);
+		while(1 == 1) do
+			tmp = exposcall("Read",fileDesc,word);
+
+			if(tmp == -2) then
+				break;
+			endif;
+
+			tmp = exposcall("Write",-2,word);
+
+			tmp = exposcall("Seek",fileDesc,-2);
+			if(tmp == -2) then
+				break;
+			endif;			
+		endwhile;
+
+		tmp = exposcall("Close",fileDesc);
+
+		return 0;
+	end
+}

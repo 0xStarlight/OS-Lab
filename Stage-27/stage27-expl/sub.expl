@@ -1,0 +1,13 @@
+int main(){
+    decl
+      int  r, q;
+      str i;
+    enddecl
+    begin
+      i="Exec worked";
+      r = exposcall("Write", -2,i);
+      breakpoint;
+      r = exposcall("Exec", "sub.xsm");
+    return 0;
+    end
+  }

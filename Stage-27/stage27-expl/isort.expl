@@ -1,0 +1,45 @@
+decl
+	int n,temp,i,j,b,key;
+	int a[500];
+enddecl
+
+int main()
+{
+begin
+	temp = exposcall ( "Write" , -2, "Size: ");
+	temp = exposcall ( "Read" , -1, n );
+
+	temp = exposcall ( "Write" , -2, "Numbers: ");
+	i=0;
+	while(i < n)	do
+	    temp = exposcall ( "Read" , -1, b );
+	    a[i] = b;
+	    i = i+1;
+	endwhile;
+	
+	i = 1;
+
+	while(i < n) do
+		key = a[i];
+		j = i - 1;
+		
+		while((j >= 0) AND (a[j] > key)) do
+			a[j + 1] = a[j];
+			j = j - 1;
+		endwhile;
+		a[j + 1] = key;
+	
+		i = i + 1;
+	endwhile;
+	
+	temp = exposcall ( "Write" , -2, "InsertionSort:");
+	i = 0;
+	while(i < n) do
+		b = a[i];
+		temp = exposcall ( "Write" , -2, b );
+		i = i+1;
+	endwhile;
+	
+	return 0;
+end
+}

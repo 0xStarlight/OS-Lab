@@ -1,0 +1,267 @@
+//BOOT MODULE
+
+
+//Loading Interrupts
+alias i R1;
+i = 0;
+while ( i <= 35)do
+    loadi(2+i,15+i);
+    i=i+1;
+endwhile;
+
+
+//MODULE 0 - RESOURCE_MANAGER MODULE
+loadi(40,53);
+loadi(41,54);
+//MODULE 1 - PROCESS_MANAGER MODULE
+loadi(42,55);
+loadi(43,56);
+//MODULE 2 - MEMORY_MANAGER MODULE
+loadi(44,57);
+loadi(45,58);
+//MODULE 3 - FILE_MANAGER MODULE
+loadi(46,59);
+loadi(47,60);
+//MODULE 4 - DISK DEVICE_MANAGER MODULE
+loadi(48,61);
+loadi(49,62);
+//MODULE 5 - SCHEDULER MODULE
+loadi(50,63);
+loadi(51,64);
+//MODULE 6 - PAGER MODULE
+loadi(52,65);
+loadi(53,66);
+
+
+//InodeUser Table
+loadi(59,3);
+loadi(60,4);
+
+//Disk Free LIst
+loadi(61,2);
+
+//Root File
+loadi(62,5);
+
+//Library
+loadi(63,13);
+loadi(64,14);
+//Init Code 
+loadi(65, 7);
+//Shell Code 
+loadi(67, 9);
+loadi(68, 10);
+
+//TERMINAL_STATUS_TABLE
+
+[ TERMINAL_STATUS_TABLE ] = 0;
+
+//Disk Status Table
+
+[DISK_STATUS_TABLE ] = 0;
+
+
+//FOR INIT CODE
+PTBR = PAGE_TABLE_BASE+20;
+PTLR = 10;
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+//Code
+[PTBR+8] = 65;
+[PTBR+9] = "0100";
+[PTBR+10] = -1; 
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 66; 
+[PTBR+17] = "0110";
+[PTBR+18] = -1; 
+[PTBR+19] = "0000";
+
+
+//PROCESS TABLE
+//PID
+[PROCESS_TABLE + 16*1 + 1] = 1;
+//USERID
+[PROCESS_TABLE + 16*1 + 3] = 1;
+//STATE
+[PROCESS_TABLE + 16*1 + 4] = CREATED;
+//UAPage No
+[PROCESS_TABLE + 16*1 + 11] = 77; 
+//KPTR
+[PROCESS_TABLE + 16*1 + 12] = 0; 
+//UPTR of INIT storing logical start of Stack 
+[PROCESS_TABLE + 16*1 + 13] = 8*512; 
+[PROCESS_TABLE + 16*1 + 14] = PTBR;
+[PROCESS_TABLE + 16*1 + 15] = PTLR;
+
+
+
+//First entry of Init Stack 
+[66 * 512] = [65 * 512 + 1];
+
+
+//Per Process Resource Table of Init
+
+alias perProcessResourceEntry R1;
+perProcessResourceEntry = 77*512 + RESOURCE_TABLE_OFFSET;
+while ( perProcessResourceEntry < 78*512 )do
+    [perProcessResourceEntry] = -1;
+    perProcessResourceEntry = perProcessResourceEntry + 2;
+endwhile;
+
+
+
+
+//FOR SHELL CODE
+PTBR = PAGE_TABLE_BASE + 40;
+PTLR = 10;
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+//Code
+[PTBR+8]  = 67;
+[PTBR+9]  = "0100";
+[PTBR+10] = 68; 
+[PTBR+11] = "0100";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+[PTBR+16] = 78; 
+[PTBR+17] = "0110";
+[PTBR+18] = 79; 
+[PTBR+19] = "0110";
+
+
+//PROCESS TABLE
+//PID
+[PROCESS_TABLE + 16*2 + 1] = 2;
+//PPID
+[PROCESS_TABLE + 16*2 + 2] = 1;
+//STATE
+[PROCESS_TABLE + 16*2 + 4] = TERMINATED;
+//UAPage No
+[PROCESS_TABLE + 16*2 + 11] = 80; 
+//KPTR
+[PROCESS_TABLE + 16*2 + 12] = 0; 
+//UPTR of Shell storing logical start of Stack 
+[PROCESS_TABLE + 16*2 + 13] = 8*512; 
+[PROCESS_TABLE + 16*2 + 14] = PTBR;
+[PROCESS_TABLE + 16*2 + 15] = PTLR;
+
+
+
+//First entry of Shell Stack 
+[78 * 512] = [67 * 512 + 1];
+
+
+//Disk Map Table for Shell Process
+alias index R1;
+index = 0;
+while(index<10)do
+    [ DISK_MAP_TABLE + 20 + index] = -1;
+    index=index+1;
+endwhile;
+
+[ DISK_MAP_TABLE + 20 + 4] = 67;
+[ DISK_MAP_TABLE + 20 + 5] = 68;
+
+
+//Semaphore Table
+alias idx R1;
+idx = 0;
+
+while(idx < 32*4 )do
+    //Locking PID to -1 and Process Count to 0
+    [ SEMAPHORE_TABLE + idx ] = -1;
+    [ SEMAPHORE_TABLE + idx + 1] = 0;
+    idx = idx + 4;
+endwhile;
+
+
+//File Status Table
+idx = 0;
+while(idx < MAX_FILE_NUM)do
+    [FILE_STATUS_TABLE + 4*idx ] = -1;
+    [FILE_STATUS_TABLE + 4*idx + 1 ] = -1;
+    idx = idx + 1;
+endwhile;
+
+//Buffer Table
+idx = 0;
+while(idx < MAX_BUFFER)do
+    [BUFFER_TABLE + 4*idx ] = -1;
+    [BUFFER_TABLE + 4*idx + 1 ] = 0;
+    [BUFFER_TABLE + 4*idx + 2 ] = -1;
+    idx = idx + 1;
+endwhile;
+
+//Open File Table
+idx = 0;
+while(idx < MAX_OPENFILE_NUM)do
+    [OPEN_FILE_TABLE + 4*idx ] = -1;
+    [OPEN_FILE_TABLE + 4*idx + 1] = 0;
+    idx = idx + 1;
+endwhile;
+
+//Setting rest of the processes to TERMINATED
+idx = 3;
+while(idx<16)do
+    [PROCESS_TABLE + 16*idx + 4] = TERMINATED;
+    idx = idx + 1;
+endwhile;
+
+//Setting Tick to zero
+idx = 0;
+while(idx<16)do
+    [PROCESS_TABLE + 16*idx] = 0;
+    idx = idx + 1;
+endwhile;
+
+//MEMORY FREE LIST
+alias i R0;
+i=0;
+while(i!=128)do
+    if (i < 82) then
+        [MEMORY_FREE_LIST+i]=1;
+    else 
+        [MEMORY_FREE_LIST+i]=0;
+    endif;
+    i=i+1;
+endwhile;
+
+[SYSTEM_STATUS_TABLE ] = 0;
+[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+[SYSTEM_STATUS_TABLE + 4] = 0;
+[SYSTEM_STATUS_TABLE + 5] = 0;
+
+
+
+return;

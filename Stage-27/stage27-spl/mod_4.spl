@@ -1,0 +1,114 @@
+//DEVICE_MANAGER MODULE
+
+alias functionNum R1;
+
+//DISK STORE
+if (functionNum == 1)then
+    alias currentPID R2;
+    alias PageNo R3;
+    alias BlockNo R4;
+
+    multipush(R1,R2,R3,R4);
+    functionNum = 3;
+    R2 = currentPID;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+    //Store Bit
+    [DISK_STATUS_TABLE + 1] = 1;
+    //PageNo
+    [DISK_STATUS_TABLE + 2] = PageNo;
+    //BlockNo
+    [DISK_STATUS_TABLE + 3] = BlockNo;
+
+    store(PageNo,BlockNo);
+
+    [PROCESS_TABLE + ( currentPID* 16) + 4] = WAIT_DISK;
+
+
+    multipush(R1,R2,R3,R4);
+    call SCHEDULER;
+    multipop(R1,R2,R3,R4);
+
+endif;
+
+
+//DISK LOAD
+if (functionNum == 2)then
+
+    alias currentPID R2;
+    alias PageNo R3;
+    alias BlockNo R4;
+
+    multipush(R1,R2,R3,R4);
+    functionNum = 3;
+    R2 = currentPID;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+    //DISK STATUS TABLE
+    //Load/Store Bit
+    [DISK_STATUS_TABLE + 1] = 0;
+    //PageNo
+    [DISK_STATUS_TABLE + 2] = PageNo;
+    //BlockNo
+    [DISK_STATUS_TABLE + 3] = BlockNo;
+
+    load(PageNo,BlockNo);
+
+    [PROCESS_TABLE + ( currentPID* 16) + 4] = WAIT_DISK;
+
+    multipush(R1,R2,R3,R4);
+    call SCHEDULER;
+    multipop(R1,R2,R3,R4);
+
+endif;
+
+
+//TERMINAL WRITE
+if ( functionNum == 3 )then 
+    alias word R3;
+
+    multipush(R1,R2,R3,R4);
+    functionNum = 8;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+    print word;
+
+    multipush(R1,R2,R3,R4);
+    functionNum = 9;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+endif;
+
+
+
+// TERMINAL READ
+if ( functionNum == 4 )then 
+
+    alias currentPID R2;
+    alias word R3;
+    alias physicalwordaddr R4;
+
+    multipush(R1,R2,R3,R4);
+    functionNum = 8;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+    // breakpoint;
+    read;
+    // breakpoint;
+    [PROCESS_TABLE + ( currentPID* 16) + 4] = WAIT_TERMINAL;
+
+    multipush(R1,R2,R3,R4);
+    call SCHEDULER;
+    multipop(R1,R2,R3,R4);
+
+    physicalwordaddr = ([PTBR + 2 * (word)/ 512] * 512) + ((word) % 512);
+    [physicalwordaddr] = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 8];
+
+endif;
+
+
+return;

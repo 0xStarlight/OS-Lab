@@ -1,0 +1,201 @@
+//FILE MANAGER MODULE
+
+alias functionNum R1;
+
+
+//Buffered Read and Write
+if (functionNum==1 || functionNum==2)then
+    alias DiskBlockNo R2;
+    alias offset R3;
+    alias wordaddr R4;
+    alias BufferNo R5;
+
+    BufferNo = (DiskBlockNo % 4);
+
+
+    //Calling Acquire Buffer
+    multipush(R1,R2,R3,R4,R5);
+    R1 = 1;
+    R2 = BufferNo;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5);
+
+
+
+    //Putting Block into Buffer
+    if ( [BUFFER_TABLE + 4*BufferNo] != DiskBlockNo )then
+    
+        //If Buffer has a dirty block
+        if ( [BUFFER_TABLE + 4*BufferNo + 1] == 1 )then
+            multipush(R1,R2,R3,R4,R5);
+            R3 = 71 + BufferNo;
+            R4 = [BUFFER_TABLE + 4*BufferNo];
+            R1 = 1;
+            R2 = [SYSTEM_STATUS_TABLE+1];
+            call DEVICE_MANAGER;
+            multipop(R1,R2,R3,R4,R5);
+        endif;
+
+    
+        //Load New Disk block into Buffer
+        multipush(R1,R2,R3,R4,R5);
+        R3 = 71 + BufferNo;
+        R4 = DiskBlockNo;
+        R1 = 2;
+        R2 = [SYSTEM_STATUS_TABLE+1];
+        call DEVICE_MANAGER;
+        multipop(R1,R2,R3,R4,R5);
+
+        //Updating Buffer Table
+        [BUFFER_TABLE + 4*BufferNo] = DiskBlockNo;
+        [BUFFER_TABLE + 4*BufferNo + 1] = 0;
+
+    endif;
+
+    if (functionNum == 1)then
+        [ (71 + BufferNo)*512 + offset ] = wordaddr; //actually word here not addr
+        [BUFFER_TABLE + 4*BufferNo + 1] = 1;  //Marking Dirty Bit
+    endif;
+
+
+    if (functionNum == 2)then
+        //Storing in physical word address
+        [([PTBR + 2 * (wordaddr)/ 512] * 512) + ((wordaddr) % 512)] = [ (71 + BufferNo)*512 + offset ];
+    endif;
+
+    //Calling Release Buffer
+    multipush(R1,R2,R3,R4,R5);
+    R1 = 2;
+    R2 = BufferNo;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5);
+
+    return;
+endif;
+
+
+//Open SysCall
+if (functionNum==3)then
+    alias fileName R2;
+    alias inodeIndex R3;
+    alias OFTIndex R4;
+
+
+    //Finding fileName in Inode Table
+    inodeIndex = 0;
+    while( inodeIndex < MAX_FILE_NUM && [INODE_TABLE + 16 * inodeIndex + 1] != fileName )do
+        inodeIndex = inodeIndex + 1;
+    endwhile;
+
+    //File Not Found
+    if (inodeIndex == MAX_FILE_NUM)then
+        R0 = -1;
+        return;
+    endif;
+
+    //Calling Acquire Inode
+    multipush(R1,R2,R3);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3);
+
+    //Acquire Inode Failed
+    if (R0 == -1)then
+        R0 = -1;
+        return;
+    endif;
+
+    //File of type Exec cannot be opened
+    if ([INODE_TABLE + 16 * inodeIndex] == EXEC )then
+        multipush(R1,R2,R3);
+        R1 = 5;
+        R2 = inodeIndex;
+        R3 = [SYSTEM_STATUS_TABLE+1];
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3);
+        R0 = -1;
+    endif;
+
+    OFTIndex = 0;
+    while (OFTIndex < MAX_OPENFILE_NUM && [OPEN_FILE_TABLE + 4 * OFTIndex] != -1 )do
+        OFTIndex = OFTIndex + 1;
+    endwhile;
+
+
+    //No free entry in Open File Table
+    if ( OFTIndex == MAX_OPENFILE_NUM )then
+        multipush(R1,R2,R3,R4);
+        R1 = 5;
+        R2 = inodeIndex;
+        R3 = [SYSTEM_STATUS_TABLE+1];
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3,R4);
+        R0 = -2;
+    endif;
+
+    //Setting up the Open File Table and File Status Table
+    if ( fileName == "root" )then
+        [OPEN_FILE_TABLE + 4 * OFTIndex] = INODE_ROOT;
+    else
+        if ([FILE_STATUS_TABLE + 4*inodeIndex + 1] == -1)then
+            [FILE_STATUS_TABLE + 4*inodeIndex + 1] = 1;
+        else
+            [FILE_STATUS_TABLE + 4*inodeIndex + 1] = [FILE_STATUS_TABLE + 4*inodeIndex + 1] + 1;
+        endif;
+        [OPEN_FILE_TABLE + 4 * OFTIndex] = inodeIndex;
+    endif;
+
+    //Open File Instance Count
+    [OPEN_FILE_TABLE + 4 * OFTIndex + 1] = 1;
+    //Seek ptr
+    [OPEN_FILE_TABLE + 4 * OFTIndex + 2] = 0;
+
+    //Calling Release Inode
+    multipush(R1,R2,R3,R4);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = [SYSTEM_STATUS_TABLE+1];
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4);
+
+
+    R0 = OFTIndex;
+    return;
+endif;
+
+//Close SysCall
+if (functionNum==4)then
+    alias OFTIndex R2;
+    alias inodeIndex R3;
+    // alias fileName R4;
+
+    inodeIndex = [OPEN_FILE_TABLE + 4 * OFTIndex];
+
+    //Decrementing Open Instance Count
+    [OPEN_FILE_TABLE + 4 * OFTIndex + 1] = [OPEN_FILE_TABLE + 4 * OFTIndex + 1] - 1;
+
+    if ([OPEN_FILE_TABLE + 4 * OFTIndex + 1] == 0)then
+
+        //Decrementing File Open Count if not ROOT file
+        if ( [OPEN_FILE_TABLE + 4 * OFTIndex] != INODE_ROOT )then
+            [FILE_STATUS_TABLE + 4*inodeIndex + 1] = [FILE_STATUS_TABLE + 4*inodeIndex + 1] - 1;
+        endif;
+
+        if ( [FILE_STATUS_TABLE + 4*inodeIndex + 1] == 0 )then
+            [FILE_STATUS_TABLE + 4*inodeIndex + 1] = -1;
+        endif;
+
+        //invalidating the Open File Table
+        [OPEN_FILE_TABLE + 4 * OFTIndex    ] = -1;
+        [OPEN_FILE_TABLE + 4 * OFTIndex + 1] = -1;
+
+        
+    endif;
+
+    return;
+
+endif;

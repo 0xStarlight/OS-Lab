@@ -1,0 +1,234 @@
+//Set MODE Flag to 8
+
+alias currPID R9;
+
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+[PROCESS_TABLE + currPID * 16 + 9] = 8;
+
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+alias ChildIndex R1;
+alias ChildUAPage R3;
+alias ChildPageTableBase R8;
+
+multipush(R1,R9);
+//Getting new PID
+R1 = 1;
+call PROCESS_MANAGER;
+multipop(R1,R9);
+
+ChildIndex = R0;
+
+if ( ChildIndex == -1 )then
+    
+    //Set Return value to -1    
+    alias physicalAddrRetVal R2;
+    physicalAddrRetVal = ([PTBR + 2 * (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) / 512)] * 512) + (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) % 512);
+    [physicalAddrRetVal] = -1;
+
+    // Reset Mode Flag
+    [PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+    SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+
+    ireturn;
+
+endif;
+
+//Allocating Heap if not yet
+if ( [PTBR + 4] == -1 )then
+    multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
+    R1 = 1;
+    call MEMORY_MANAGER;
+    [PTBR + 4]  = R0;
+    [PTBR + 5]  = "1110";
+
+    R1 = 1;
+    call MEMORY_MANAGER;
+    [PTBR + 6]  = R0;
+    [PTBR + 7]  = "1110";
+    multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9);
+endif;
+
+
+ChildPageTableBase = PAGE_TABLE_BASE + 20*ChildIndex;
+
+
+//Stack
+multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+R1 = 1;
+call MEMORY_MANAGER;
+multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+
+[ ChildPageTableBase + 16 ] = R0;
+[ ChildPageTableBase + 17 ] = "0110";
+
+multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+R1 = 1;
+call MEMORY_MANAGER;
+multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+
+[ ChildPageTableBase + 18 ] = R0;
+[ ChildPageTableBase + 19 ] = "0110";
+
+
+//UAPage no. 
+multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+R1 = 1;
+call MEMORY_MANAGER;
+multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9);
+
+
+alias childProcessTableBase R11;
+R11 = PROCESS_TABLE + 16*ChildIndex ;
+
+alias UAPage R0;
+//UAPage No.
+[childProcessTableBase + 11] = UAPage;
+
+
+
+
+//Copying UserID, Swap Flag, Inode Index, UASwapStatus, UPTR from Parent to Child
+[childProcessTableBase + 3]  = [PROCESS_TABLE + 16*currPID + 3]; 
+[childProcessTableBase + 6]  = [PROCESS_TABLE + 16*currPID + 6]; 
+[childProcessTableBase + 7]  = [PROCESS_TABLE + 16*currPID + 7]; 
+[childProcessTableBase + 10] = [PROCESS_TABLE + 16*currPID + 10]; 
+[childProcessTableBase + 13] = [PROCESS_TABLE + 16*currPID + 13]; 
+
+//Setting MODE Flag, KPTR, TICK to 0 
+
+[childProcessTableBase + 0]  = 0;
+[childProcessTableBase + 9]  = 0;
+[childProcessTableBase + 12] = 0;
+
+//Storing Parent PID
+[childProcessTableBase + 2] = currPID;
+//State
+[childProcessTableBase + 4] = CREATED;
+
+
+//Per Process Resource Table
+alias index R4;
+alias ParentUAPageNo R5 ;
+alias semaphoreIndex R6;
+alias processCount R7;
+
+ParentUAPageNo = [PROCESS_TABLE + 16*currPID + 11] * 512;
+index = 496;
+while( index < 512 )do
+    [UAPage*512 + index] = [ParentUAPageNo + index];
+    [UAPage*512 + index + 1] = [ParentUAPageNo + index + 1];
+
+    //Incrementing Process_Count if current process using some semaphore
+    if ( [ParentUAPageNo + index] == SEMAPHORE )then
+        semaphoreIndex = [ParentUAPageNo + index + 1];
+        processCount = SEMAPHORE_TABLE + 4*semaphoreIndex + 1;
+        [processCount] = [processCount] + 1;
+    endif;
+
+    alias OFTIndex R6;
+    if ( [ParentUAPageNo + index] == FILE )then
+        OFTIndex = OPEN_FILE_TABLE + 4 * [ParentUAPageNo + index + 1] + 1;
+        [OFTIndex] = [OFTIndex] + 1;
+    endif;
+
+    index = index + 2;
+endwhile;
+
+
+//Disk Map Table
+index=0;
+while(index < 10)do
+    [DISK_MAP_TABLE+ChildIndex*10+index]=[DISK_MAP_TABLE + currPID*10 +index];
+    index = index + 1;
+endwhile;
+
+
+//Page Table of Child Process
+//Library
+index = 0;
+
+while (index<16)do
+    [ ChildPageTableBase + index ]  = [PTBR + index];
+    index = index + 1;
+endwhile;
+
+//Updating MEMORY_FREE_LIST of Lib Stack Heap and Code
+index = 0;
+while (index<15)do
+    if (index < 7 || [PTBR+index]!=-1)then
+        [MEMORY_FREE_LIST + [PTBR + index] ] = [MEMORY_FREE_LIST + [PTBR + index] ] + 1;
+    endif;
+    index = index + 2;
+endwhile;
+
+
+
+//MEMORY_FREE_LIST of Code Pages
+// index = 8;
+// while (index<15)do
+//     if ([PTBR+index]!=-1)then
+//         [MEMORY_FREE_LIST + [PTBR + index] ] = [MEMORY_FREE_LIST + [PTBR + index] ] + 1;  
+//     endif;
+//     index = index + 2;
+// endwhile;
+
+
+
+
+
+
+//Copying Parent Stack to Child Stack 
+
+alias ParentStack R5;
+alias ChildStack R6;
+alias w R7;
+alias temp R2;
+
+temp = 16;
+
+while( temp < 19)do
+        ParentStack = [PTBR + temp] * 512;
+        ChildStack =  [ ChildPageTableBase + temp ] * 512;
+        w=0;
+        while( w < 512 )do
+            [ChildStack + w ] = [ParentStack + w ];
+            w = w + 1;
+        endwhile;
+    temp=temp+2;
+endwhile;
+
+
+
+
+
+// Set Return value to ChildPID for Parent   
+alias physicalAddrRetVal R2;
+physicalAddrRetVal = ([PTBR + 2 * (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) / 512)] * 512) + (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) % 512);
+[physicalAddrRetVal] = ChildIndex;
+
+//Set Return value to 0 for Child  
+physicalAddrRetVal = ([PAGE_TABLE_BASE  + 20*ChildIndex  + 2 * (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) / 512)] * 512) + (([PROCESS_TABLE + ( currPID * 16) + 13] - 1) % 512);
+[physicalAddrRetVal] = 0;
+
+
+
+
+//Base Pointer
+[[PROCESS_TABLE + 16*ChildIndex + 11] * 512 ] = BP;
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+// breakpoint;
+SP = [PROCESS_TABLE + ( currPID * 16) + 13];
+ireturn;

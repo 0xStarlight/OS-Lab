@@ -1,0 +1,27 @@
+int main()
+{
+decl
+  int x;
+  str username, password;
+enddecl
+
+begin
+  while (1 == 1) do
+    write("username");
+    read(username);
+
+    write("password");
+    read(password);
+    
+    x = exposcall("Login", username, password);
+
+    if (x == -1) then
+      write("Invalid details");
+    endif;
+    if (x == -2) then
+      write("Permisson denied");
+    endif;
+  endwhile;
+  return 0;
+end
+}

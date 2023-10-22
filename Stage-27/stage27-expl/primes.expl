@@ -1,0 +1,48 @@
+decl
+	int isPrime(int n);
+enddecl
+
+int isPrime(int n)
+{
+	decl
+		int temp,res;
+	enddecl
+	begin
+		res = 1;
+		if(n == 2) then
+			res = 1;
+		else
+			temp = n%2;
+			if((temp==0) OR (n==1)) then
+				res = 0;
+			else
+				temp = 3;
+				while((temp * temp) <= n) do
+					if((n % temp) == 0) then
+						res = 0;
+						break;
+					endif;
+					temp = temp + 2;
+				endwhile;
+			endif;
+		endif;
+		return res;
+	end
+}
+
+int main()
+{
+	decl
+		int temp,ret;
+	enddecl
+	begin
+		temp = 2;
+		while(temp <= 100) do
+			if(isPrime(temp) == 1) then
+				ret = exposcall("Write",-2,temp);
+			endif;
+			temp = temp + 1;
+		endwhile;
+		return 0;
+	end
+}
