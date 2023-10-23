@@ -1,0 +1,130 @@
+alias currPID R9;
+alias userSP R10;
+
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table R12;
+process_table = PROCESS_TABLE + (currPID * 16);
+
+//Work
+//UPTR set to Stack Ptr
+[process_table + 13] = SP;
+
+//UA Page No.
+SP = [process_table + 11] * 512 - 1;
+
+//Accessing physical sysCallNo location
+
+//To find sysCallNo 
+alias sysCallNo R2;
+sysCallNo=[([PTBR + 2 * ((userSP - 5)/ 512)] * 512) + (userSP - 5) % 512];
+
+//To find username 
+alias username R3;
+username=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+//To find password 
+alias password R4;
+password=[([PTBR + 2 * ((userSP - 3)/ 512)] * 512) + (userSP - 3) % 512];
+
+//Return address
+alias return_addr R11;
+return_addr = ([PTBR + 2 * ((userSP - 1)/ 512)] * 512) + (userSP - 1) % 512;
+
+
+// print sysCallNo;
+
+//Setting Mode Flag
+[process_table + 9] = sysCallNo;
+//temp: R1, imp : R2,R3,R4,R9,R10,R11,R12
+
+//Login
+if ( sysCallNo == 27 )then
+
+    //If current PID is not Login Process
+    if ( currPID != 1 )then
+        //Return -2
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    alias userID R5;
+
+    userID = 0;
+    while( userID < MAX_USER_NUM && [ USER_TABLE + 2*userID ] != username )do
+        userID = userID + 1;
+    endwhile;
+
+    //Username doesnt exist
+    if (userID == MAX_USER_NUM)then
+        //Return -1
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    encrypt password;
+
+    //If password doesnt match
+    if ( [ USER_TABLE + 2*userID + 1] != password )then
+        //Return -1
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //Process table for Shell
+    //State
+    [ PROCESS_TABLE + 2 * 16 + + 4] = CREATED;
+    //UserID
+    [ PROCESS_TABLE + 2 * 16 + + 3] = userID;
+
+    //Login process set to wait for Shell
+    [process_table + 4] = WAIT_PROCESS;
+    [process_table + 5] = 2;
+
+    [SYSTEM_STATUS_TABLE] = userID;
+
+    multipush(R2,R3,R4,R5,R9,R10,R11,R12);
+    call SCHEDULER;
+    multipop(R2,R3,R4,R5,R9,R10,R11,R12);
+
+
+    //Return 0
+    [return_addr] = 0;
+
+    // Reset Mode Flag
+    [process_table + 9] = 0;
+
+    //Reset User Stack
+    SP = [process_table + 13];
+    ireturn;
+
+endif;
+
+//Return 0
+[return_addr] = 0;
+
+// Reset Mode Flag
+[process_table + 9] = 0;
+
+//Reset User Stack
+SP = [process_table + 13];
+ireturn;

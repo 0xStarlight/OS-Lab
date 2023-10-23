@@ -1,0 +1,101 @@
+
+// breakpoint;
+
+//Set MODE Flag to -1
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = -1;
+
+
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+backup;
+
+alias userSP R0;
+userSP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+
+PTBR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 14];
+PTLR = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 15];
+
+
+
+multipush(EIP);
+
+if ( EC != 0 || userSP == ((PTLR * 512) - 1) )then
+    if ( userSP == ((PTLR * 512) - 1) )then
+        print "UsrStack";
+    endif; 
+    if ( EC == 1 )then
+        print "II";
+    endif;
+    if ( EC == 2 )then
+        print "IMA";
+    endif;
+    if ( EC == 3 )then
+        print "ArithExc";
+    endif;
+    print "Error";
+    
+    
+    multipush(R0,R1,R2,SP,PTBR,PTLR);
+    R1 = 3;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call PROCESS_MANAGER;
+    multipop(R0,R1,R2,SP,PTBR,PTLR);
+
+    // breakpoint;
+    multipush(R0,R1,R2,SP,PTBR,PTLR);
+    call SCHEDULER;
+    multipop(R0,R1,R2,SP,PTBR,PTLR);
+endif;
+
+if ( EC == 0 ) then 
+    if ( EPN == 4 || EPN == 5 || EPN == 6 || EPN == 7)then
+        multipush(R0,R1,R2,EPN);
+        R1 = 5;
+        R2 = [ DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1]*10 + EPN];
+        // R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MEMORY_MANAGER;
+        R15 = R0;
+        multipop(R0,R1,R2,EPN);
+        [PTBR + EPN*2]  = R15;
+        [PTBR + EPN*2 + 1] = "1100";
+    else
+        // breakpoint;
+        
+        multipush(R0,R1,R2,R3);
+        R1 = 1;
+        call MEMORY_MANAGER;
+        if (R0 == 118)then
+            print "YES";
+        endif;
+        [PTBR + 4]  = R0;
+        [PTBR + 5]  = "1110";
+
+        R1 = 1;
+        call MEMORY_MANAGER;
+        [PTBR + 6]  = R0;
+        [PTBR + 7]  = "1110";
+        multipop(R0,R1,R2,R3);
+    endif;
+endif;
+
+multipop(EIP);
+
+restore;
+
+//Set MODE Flag to 0
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+//Change back to User Stack
+// breakpoint;
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+SP = SP + 1;
+
+
+[[PTBR + 2*(SP/512)]*512 + SP%512] = EIP;
+
+// breakpoint;
+ireturn;

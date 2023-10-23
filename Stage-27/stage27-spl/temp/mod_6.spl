@@ -1,0 +1,254 @@
+//PAGER MANAGER MODULE
+
+alias functionNum R1;
+
+//Swap Out
+if ( functionNum == 1 )then
+
+    print "swapout";
+    //Choosing a process to swap Out
+    alias pidIndex R2;
+
+    //Non Swapped Process in WAIT_PROCESS
+    pidIndex = 3;
+    while ( pidIndex < MAX_PROC_NUM - 1)do
+        if ( [PROCESS_TABLE + 16*pidIndex + 6] == 0 &&  [PROCESS_TABLE + 16*pidIndex + 4] == WAIT_PROCESS)then
+            break;
+        endif;
+        pidIndex = pidIndex + 1;
+    endwhile;
+
+    //If no such process found
+    if (pidIndex == MAX_PROC_NUM - 1)then
+        //Non Swapped Process in WAIT_SEMAPHORE
+        pidIndex = 3;
+        while ( pidIndex < MAX_PROC_NUM - 1)do
+            if ( [PROCESS_TABLE + 16*pidIndex + 6] == 0 &&  [PROCESS_TABLE + 16*pidIndex + 4] == WAIT_SEMAPHORE)then
+                break;
+            endif;
+            pidIndex = pidIndex + 1;
+        endwhile;
+    endif;
+
+    alias maxtickval R3;
+    alias maxtickPID R4;
+    alias state R5;
+
+    maxtickval = -1;
+    maxtickPID = -1;
+    //If no such process found
+    if (pidIndex == MAX_PROC_NUM - 1)then
+        //Non Swapped Process with MAX TICK taken
+        pidIndex = 3;
+        while ( pidIndex < MAX_PROC_NUM - 1 )do
+            state = [PROCESS_TABLE + 16*pidIndex + 4];
+            if ( ([PROCESS_TABLE + 16*pidIndex + 6] == 0) && ([PROCESS_TABLE + 16*pidIndex] > maxtickval) &&  ( state != ALLOCATED && state != RUNNING && state != TERMINATED ))then
+                maxtickval = [PROCESS_TABLE + 16*pidIndex];
+                maxtickPID = pidIndex;
+            endif;
+            pidIndex = pidIndex + 1;
+        endwhile;
+    endif;
+
+
+    //If no such process found
+    if (pidIndex == MAX_PROC_NUM - 1 && maxtickPID == -1)then
+        //Paging Status Reset
+        [ SYSTEM_STATUS_TABLE + 5 ] = 0;
+        R0 = -1;
+        return;
+    else
+        if (pidIndex == MAX_PROC_NUM - 1)then
+            pidIndex = maxtickPID;
+        endif;
+    endif;
+
+
+    print pidIndex;
+    //Set tick field to 0
+    [PROCESS_TABLE + 16*pidIndex] = 0;
+
+
+    // CODE pages by calling release Page
+    alias logicalPageNo R3;
+    alias pageTableBase R4;
+    alias pageNo R5;
+    pageTableBase = [PROCESS_TABLE + pidIndex*16 + 14];
+
+    logicalPageNo = 8;
+    while(logicalPageNo<15)do
+        pageNo = [ pageTableBase + logicalPageNo ];
+        if (  pageNo != -1)then
+
+            //Release Page
+            multipush(R1,R2,R3,R4,R5);
+            R1 = 2;
+            R2 = pageNo;
+            call MEMORY_MANAGER;
+            multipop(R1,R2,R3,R4,R5);
+
+            //Invalidate
+            [ pageTableBase + logicalPageNo ] = -1;
+            [ pageTableBase + logicalPageNo + 1] = "0000";
+        endif;
+        logicalPageNo = logicalPageNo + 2;
+    endwhile;
+
+    //HEAP and STACK
+    logicalPageNo = 4;
+    while(logicalPageNo<20)do
+        pageNo = [ pageTableBase + logicalPageNo ];
+        if ( logicalPageNo<7 || logicalPageNo >=16 )then
+            if ( pageNo != -1 && [MEMORY_FREE_LIST + pageNo ] == 1 )then
+                //Get Swap Block
+                multipush(R1,R2,R3,R4,R5);
+                R1 = 6;
+                call MEMORY_MANAGER;
+                multipop(R1,R2,R3,R4,R5);
+
+                alias Swap_Disk_No R0;
+                [DISK_MAP_TABLE + 10*pidIndex + logicalPageNo/2 ] = Swap_Disk_No;
+
+
+                //Disk Store
+                multipush(R1,R2,R3,R4,R5);
+                R1 = 1;
+                R2 = SWAPPER_DAEMON;
+                R3 = pageNo;
+                R4 = Swap_Disk_No;
+                call DEVICE_MANAGER;
+                multipop(R1,R2,R3,R4,R5);
+
+                
+
+
+                //Release Page
+                multipush(R1,R2,R3,R4,R5);
+                R1 = 2;
+                R2 = pageNo;
+                call MEMORY_MANAGER;
+                multipop(R1,R2,R3,R4,R5);
+
+                //Invalidate
+                [ pageTableBase + logicalPageNo ] = -1;
+                [ pageTableBase + logicalPageNo + 1] = "0000";
+            endif;
+        endif;
+        logicalPageNo = logicalPageNo + 2;
+    endwhile;
+
+
+    //Swap Flag
+    [PROCESS_TABLE + 16*pidIndex + 6] = 1;
+    //Swap Count
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] + 1;
+    //Paging Status
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+
+    R0 = 0 ;
+    return;
+endif; 
+
+//Swap in
+if ( functionNum == 2 )then
+
+    print "swap in";
+    //Choosing a process to swap Out
+    alias i R2;
+    alias maxTick R3;
+    alias pidIndex R4;
+    alias pageTableBase R5;
+
+    //Swapped Process in READY with Highest Tick
+    pidIndex = -1;
+    maxTick = 0;
+    i = 3;
+    while ( i < MAX_PROC_NUM - 1  )do
+        if ( [PROCESS_TABLE + 16*i + 6] == 1 &&  [PROCESS_TABLE + 16*i + 4] == READY)then
+            if ( maxTick < [PROCESS_TABLE + 16*i] )then
+                maxTick = [PROCESS_TABLE + 16*i];
+                pidIndex = i;
+            endif;
+        endif;
+        i = i + 1;
+    endwhile;
+
+    if ( pidIndex == -1 )then
+        [SYSTEM_STATUS_TABLE + 5] = 0;
+        R0 = -1;
+        return;
+    endif;
+
+    pageTableBase = [PROCESS_TABLE + pidIndex*16 + 14];
+
+    //Resetting Tick Field
+    [ PROCESS_TABLE + 16*pidIndex] = 0;
+
+    alias pageNo R2;
+    alias BlockNo R7;
+
+    
+
+    //HEAP and STACK
+    pageNo = 2;
+    while ( pageNo < 10 )do
+        BlockNo = [DISK_MAP_TABLE + 10*pidIndex + pageNo];
+        if ( ( pageNo < 4||pageNo >=8) &&  (BlockNo != -1) )then
+            alias newPage R6;
+            
+            
+
+            //Get Free Page
+            multipush(R1,R2,R3,R4,R5,R6,R7);
+            R1 = 1;
+            call MEMORY_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6,R7);
+            newPage = R0;
+
+            //Set up Page Table
+            [ pageTableBase + 2*pageNo ] = newPage;
+            [ pageTableBase + 2*pageNo + 1] = "0110";
+
+            //Disk Load
+            multipush(R1,R2,R3,R4,R5,R6,R7);
+            R1 = 2;
+            R2 = SWAPPER_DAEMON;
+            R3 = newPage;
+            R4 = BlockNo;
+            call DEVICE_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6,R7);
+
+            //Release Block
+            multipush(R1,R2,R3,R4,R5,R6,R7);
+            R1 = 4;
+            R2 = BlockNo;
+            R3 = SWAPPER_DAEMON;
+            call MEMORY_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6,R7);
+
+            
+            //Invalidate Disk Map Table
+            [DISK_MAP_TABLE + 10*pidIndex + pageNo] = -1;
+        endif;
+        pageNo = pageNo + 1;
+    endwhile; 
+
+
+    //Swap Flag
+    [PROCESS_TABLE + 16*pidIndex + 6] = 0;
+    //Swap Count
+    [SYSTEM_STATUS_TABLE + 4] = [SYSTEM_STATUS_TABLE + 4] - 1;
+    //Paging Status
+    [SYSTEM_STATUS_TABLE + 5] = 0;
+
+    R0 = 0 ;
+    return;
+
+
+endif; 
+
+
+
+return;
+
+

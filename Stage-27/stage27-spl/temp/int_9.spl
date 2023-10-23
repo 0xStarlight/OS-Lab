@@ -1,0 +1,180 @@
+
+alias userSP R0;
+userSP=SP;
+alias currentPID R10;
+R10 = [SYSTEM_STATUS_TABLE + 1];
+
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currentPID * 16) + 13] = SP;
+
+//Stack Pointer set to bottom UA Page No.
+SP = [PROCESS_TABLE + (currentPID * 16) + 11] * 512 - 1;
+
+//Set MODE Flag to 9
+[PROCESS_TABLE + currentPID * 16 + 9] = 9;
+
+//Accessing physical File Name location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias fileNamePhysicalAddr R3;
+
+//Try to find fileNamePhysicalAddr and the fileName
+
+physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+offset = (userSP - 4) % 512;
+fileNamePhysicalAddr = (physicalPageNum * 512) + offset;
+alias fileName R4;
+fileName=[fileNamePhysicalAddr];
+
+
+
+//Checking if FileName present in Inode Table
+
+alias fileInodeIndex R5;
+fileInodeIndex = 0;
+
+while(fileInodeIndex < MAX_FILE_NUM )do
+    if ( [ INODE_TABLE + ( fileInodeIndex * 16 ) + 1 ] == fileName )then
+        break;
+    endif;
+    fileInodeIndex = fileInodeIndex + 1;
+endwhile;
+
+
+//If no such file exists or XEXE format is not applicable
+if ( fileInodeIndex == MAX_FILE_NUM || [ INODE_TABLE + ( fileInodeIndex * 16 ) + 0 ] != EXEC )then
+    alias physicalAddrRetVal R6;
+    physicalAddrRetVal = ([PTBR + 2 * ((userSP - 1) / 512)] * 512) + ((userSP - 1) % 512);
+    [physicalAddrRetVal] = -1;
+
+    // Reset Mode Flag
+    [PROCESS_TABLE + currentPID * 16 + 9] = 0;
+
+    //Reset Stack pointer
+    SP = [PROCESS_TABLE + ( currentPID * 16) + 13];
+    ireturn;
+endif;
+
+
+
+//Calling the exit process with func no. = 3 
+
+multipush(R0,R1,R2,R3,R4,R5,R6,R10,PTBR,PTLR);
+
+R1 = 3;
+R2 = currentPID;
+call PROCESS_MANAGER;
+
+multipop(R0,R1,R2,R3,R4,R5,R6,R10,PTBR,PTLR);
+
+
+
+
+//Reclaiming UAPage
+alias UAPage R7;
+UAPage = [PROCESS_TABLE + (currentPID * 16) + 11];
+[MEMORY_FREE_LIST + UAPage] = [MEMORY_FREE_LIST + UAPage] + 1;
+[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+
+//New Kernel Stack initialised
+SP = [PROCESS_TABLE + (currentPID * 16) + 11] * 512 - 1;
+
+//Per Process Resource Table initialised
+
+alias perProcessResourceEntry R8 ;
+perProcessResourceEntry = (UAPage*512) + RESOURCE_TABLE_OFFSET;
+while ( perProcessResourceEntry < (UAPage+1)*512 )do
+    [perProcessResourceEntry] = -1;
+    perProcessResourceEntry = perProcessResourceEntry + 2;
+endwhile;
+
+
+
+//STATE field set
+[PROCESS_TABLE + (currentPID * 16) + 4] = RUNNING;
+
+//Inode index field of Process Table updated with new process for exec() needs it to load it from the disk
+[PROCESS_TABLE + (currentPID * 16) + 7] = fileInodeIndex;
+
+
+//Allocating new pages
+
+PTBR = [PROCESS_TABLE + (currentPID * 16) + 14];
+PTLR = [PROCESS_TABLE + (currentPID * 16) + 15];
+
+//Library
+[PTBR+0] = 63;
+[PTBR+1] = "0100";
+[PTBR+2] = 64;
+[PTBR+3] = "0100";
+
+//Heap
+[PTBR+4] = -1;
+[PTBR+5] = "0000";
+[PTBR+6] = -1;
+[PTBR+7] = "0000";
+
+
+
+//Code
+//Get Code Page (Assigning First Code Block a memory page)
+multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+R1 = 5;
+R2 = [ INODE_TABLE + ( fileInodeIndex * 16 ) + 8 ];
+R3 = currentPID;
+call MEMORY_MANAGER;
+
+
+[ PTBR + 8 ] = R0;
+[ PTBR + 9 ] = "0100";
+
+multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+
+
+
+[PTBR+10] = -1;
+[PTBR+11] = "0000";
+[PTBR+12] = -1;
+[PTBR+13] = "0000";
+[PTBR+14] = -1;
+[PTBR+15] = "0000";
+
+//Stack
+multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+R1 = 1;
+call MEMORY_MANAGER;
+[PTBR + 16 ] = R0;
+multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+[PTBR + 17 ] = "0110";
+
+multipush(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+R1 = 1;
+call MEMORY_MANAGER;
+[PTBR + 18 ] = R0;
+multipop(R0,R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,PTBR,PTLR);
+[PTBR + 19 ] = "0110";
+
+//Initialising Disk Map Table
+
+alias index R9;
+index=0;
+while(index < 10)do
+    [ DISK_MAP_TABLE + currentPID*10 + index] = - 1;
+    index = index + 1;
+endwhile;
+
+[ DISK_MAP_TABLE + currentPID*10 + 4] =  [ INODE_TABLE + ( fileInodeIndex * 16 ) + 8 ];
+[ DISK_MAP_TABLE + currentPID*10 + 5] =  [ INODE_TABLE + ( fileInodeIndex * 16 ) + 9 ];
+[ DISK_MAP_TABLE + currentPID*10 + 6] =  [ INODE_TABLE + ( fileInodeIndex * 16 ) + 10 ];
+[ DISK_MAP_TABLE + currentPID*10 + 7] =  [ INODE_TABLE + ( fileInodeIndex * 16 ) + 11 ];
+
+
+[[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + currentPID * 16 + 9] = 0;
+
+SP = 8 * 512;
+ireturn;

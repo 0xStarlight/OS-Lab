@@ -1,0 +1,285 @@
+alias currPID R9;
+alias userSP R10;
+alias return_addr R12;
+alias process_table R13;
+
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+process_table = PROCESS_TABLE + (currPID * 16);
+
+//Work
+//UPTR set to Stack Ptr
+[process_table + 13] = SP;
+
+//UA Page No.
+SP = [process_table + 11] * 512 - 1;
+
+//Accessing physical sysCallNo location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias sysCallNoPhysicalAddr R3;
+
+
+//Try to find sysCallNoPhysicalAddr and the sysCallNo
+alias sysCallNo R4;
+sysCallNo=[([PTBR + 2 * ((userSP - 5)/ 512)] * 512) + (userSP - 5) % 512];
+
+physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+offset = (userSP - 1) % 512;
+
+return_addr = (physicalPageNum * 512) + offset;
+
+
+//temp: R1,R2,R3, imp : R4,R9,R10,R12,R13
+// print sysCallNo;
+
+//Setting Mode Flag
+[process_table + 9] = sysCallNo;
+
+//Create Syscall
+if (sysCallNo==1)then
+
+    alias fileName R5;
+    alias inodeIndex R6;
+    alias permission R7;
+    alias userID R8;
+
+
+    //temp: R1,R2,R3, imp : R4,R5,R6,R7,R8,R9,R10,R12,R13
+
+    userID = [process_table + 3];
+
+    //Retrieving fileName
+    fileName = [([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //Retrieving permission
+    permission = [([PTBR + 2 * ((userSP - 3)/ 512)] * 512) + (userSP - 3) % 512];
+
+    // print permission;
+
+    inodeIndex = 0;
+    while(inodeIndex < MAX_FILE_NUM )do
+        //Checking if Name already present
+        if ( [INODE_TABLE + 16 * inodeIndex + 1 ] == fileName)then
+
+            //Present already so returning
+            [return_addr] = 0;
+
+            // Reset Mode Flag
+            [process_table + 9] = 0;
+
+            //Reset User Stack
+            SP = [process_table + 13];
+            ireturn;
+
+        endif;
+        inodeIndex = inodeIndex + 1;
+    endwhile;
+
+    inodeIndex = 0;
+    while(inodeIndex < MAX_FILE_NUM && [INODE_TABLE + 16 * inodeIndex]!=-1 )do
+        inodeIndex = inodeIndex + 1;
+    endwhile;
+
+
+    if (inodeIndex == MAX_FILE_NUM) then
+        //Max Files reached
+        [return_addr] = -1;
+    else
+        alias inodeBase R1;
+        inodeBase = INODE_TABLE + 16 * inodeIndex;
+        // print inodeBase;
+        // print INODE_TABLE;
+
+        //Setting Inode Table
+        [inodeBase] = DATA;
+        [inodeBase + 1] = fileName;
+        [inodeBase + 2] = 0;
+        [inodeBase + 3] = userID;
+        [inodeBase + 4] = permission;
+        [inodeBase + 8] = -1;
+        [inodeBase + 9] = -1;
+        [inodeBase + 10] = -1;
+        [inodeBase + 11] = -1;
+
+        //Setting up Root File
+        alias rootBase R1;
+        rootBase = ROOT_FILE + 8 * inodeIndex ;
+        [rootBase] = fileName;
+        [rootBase + 1] = 0;
+        [rootBase + 2] = DATA;
+        [rootBase + 3] = [USER_TABLE + 2*userID];
+        [rootBase + 4] = permission;
+
+        [return_addr] = 0;
+    endif;
+
+endif;
+
+
+
+
+
+
+//temp: R1,R2,R3, imp : R4,R9,R10,R12,R13
+//Delete SysCall
+if (sysCallNo == 4)then
+    alias fileName R5;
+    alias inodeIndex R6;
+    alias userID R7;
+    alias inodeBase R8;
+
+    
+    
+    //temp: R1,R2,R3, imp : R4,R5,R6,R7,R8,R9,R10,R12,R13
+
+    userID = [process_table + 3];
+
+    //Retrieving fileName
+    physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+    offset = (userSP - 4) % 512;
+    fileName = [(physicalPageNum * 512) + offset];
+
+    // print fileName;
+
+    inodeIndex = 0;
+    while ( inodeIndex < MAX_FILE_NUM && [INODE_TABLE + 16 * inodeIndex + 1]!=fileName )do
+        inodeIndex = inodeIndex + 1;
+    endwhile;
+
+    //Not Present or Deleted already so returning
+    if (inodeIndex == MAX_FILE_NUM)then
+        [return_addr] = 0;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn; 
+    endif;
+
+
+    inodeBase = INODE_TABLE + 16 * inodeIndex;
+
+
+    //If file is not DATA file
+    if ([inodeBase] != DATA)then
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn; 
+    endif;
+
+    //userid is not same as owner of file 
+    if ([inodeBase + 4] == 0)then
+        //User id isnt root or owner
+        if ([process_table + 3] != ROOT && [inodeBase + 3] != userID )then
+            [return_addr] = -1;
+
+            // Reset Mode Flag
+            [process_table + 9] = 0;
+
+            //Reset User Stack
+            SP = [process_table + 13];
+            ireturn; 
+        endif;
+    endif;
+
+    //Acquire INODE
+    multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R12,R13);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R12,R13);
+
+
+    // if file is opened somewhere - *Cannot check yet*
+    if ( [FILE_STATUS_TABLE + 4*inodeIndex + 1] != -1 )then
+        
+        multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R12,R13);
+        R1 = 5;
+        R2 = inodeIndex;
+        R3 = currPID;
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R12,R13);
+
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn; 
+    endif;
+
+    //temp: R1,R2,R3, imp : R4,R5,R6,R7,R8,R9,R10,R12,R13
+
+    alias block R11;
+    alias i R2;
+
+    //temp: R1,R2,R3, imp : R4,R5,R6,R7,R8,R9,R10,R11,R12,R13
+
+
+    //Removing File from Buffer if present and resetting dirty bit  - *Cannot check yet*
+    block = 8;
+    while ( block < 12 )do
+        if ([inodeBase + block] != -1)then
+            if ( [BUFFER_TABLE + 4*( [inodeBase + block] % MAX_BUFFER)] ==  [inodeBase + block])then
+                [BUFFER_TABLE + 4*( [inodeBase + block] % MAX_BUFFER) + 1] = 0;
+            endif;
+
+            multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+            R1 = 4;
+            R2 = [inodeBase + block];
+            R3 = currPID;
+            call MEMORY_MANAGER;
+            multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+
+        endif;
+        block = block + 1;
+    endwhile;
+
+    //Updating Inode Table
+    alias ind R2;
+    ind = 0 ;
+    while(ind<16)do
+        [inodeBase + ind] = -1;
+        ind = ind + 1;
+    endwhile;
+
+    //Updating Root File
+    ind = 0 ;
+    while(ind<8)do
+        [ROOT_FILE + 8 * inodeIndex + ind] = -1;
+        ind = ind + 1;
+    endwhile;
+
+
+    //Release INODE 
+    multipush(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R1,R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+
+    //Success return value
+    [return_addr] = 0;
+
+endif;
+
+
+// Reset Mode Flag
+[process_table + 9] = 0;
+
+//Reset User Stack
+SP = [process_table + 13];
+ireturn;

@@ -9,36 +9,12 @@
         "dimension": 48.569157392686805,
         "children": [
           {
-            "id": "f163b1796bd65898",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-22/1-Semaphores.md",
-                "mode": "preview",
-                "source": false
-              }
-            }
-          },
-          {
             "id": "6a4f9879c5770215",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
                 "file": "README.md",
-                "mode": "source",
-                "source": false
-              }
-            }
-          },
-          {
-            "id": "6b1a3ccc7c4e208e",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
-                "file": "Stage-25/1-Stage25.md",
                 "mode": "source",
                 "source": false
               }
@@ -226,7 +202,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 234.5
+    "width": 234.5,
+    "collapsed": true
   },
   "right": {
     "id": "afd71aab01540dc3",
@@ -242,7 +219,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "README.md",
+                "file": "Stage-27/1-Stage27.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -289,8 +266,9 @@
       "table-editor-obsidian:Advanced Tables Toolbar": false
     }
   },
-  "active": "6a4f9879c5770215",
+  "active": "05ea8bf87765d2a4",
   "lastOpenFiles": [
+    "README.md",
     "Stage-20/1-Process-Creation-and-Termination.md",
     "Stage-27/1-Stage27.md",
     "Stage-27/stage27-expl/test1.dat",
@@ -303,7 +281,6 @@
     "Stage-27/stage27-expl/sample.dat",
     "Stage-27/stage27-expl/s27a4.xsm",
     "Stage-27/stage27-expl/s27a4.expl",
-    "README.md",
     "Stage-13/2-Modules.md",
     "~Attachments/Pasted image 20231022220106.png",
     "~Attachments/Pasted image 20231022214711.png",

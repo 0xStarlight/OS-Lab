@@ -1,0 +1,77 @@
+//Storing SP in UPTR
+[PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
+
+//Setting Stack Pointer to UArea Page number * (512 - 1)
+SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 11] * 512 - 1;
+
+
+backup;
+
+
+//Swapping Stage 27
+//Swapping initiated
+if ( [ SYSTEM_STATUS_TABLE + 5 ] != 0 )then
+    if ( [SYSTEM_STATUS_TABLE + 1] == SWAPPER_DAEMON && [ SYSTEM_STATUS_TABLE + 5 ] == SWAP_OUT )then
+        //Calling Swap Out
+        R1 = 1;
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        call PAGER_MODULE;
+    else
+        if ( [SYSTEM_STATUS_TABLE + 1] == SWAPPER_DAEMON && [ SYSTEM_STATUS_TABLE + 5 ] == SWAP_IN )then
+            //Calling Swap in
+            R1 = 2;
+            R2 = [SYSTEM_STATUS_TABLE + 1];
+            call PAGER_MODULE;
+        endif;
+        //If Current Process is idle
+
+    endif;
+else
+    //Number of Free Pages are Less
+    if ( [ SYSTEM_STATUS_TABLE + 2 ] < MEM_LOW )then
+        [ SYSTEM_STATUS_TABLE + 5 ] = SWAP_OUT;
+    else
+
+        // If there are swapped processes
+        if ( [SYSTEM_STATUS_TABLE + 4] > 0 )then
+        
+            //Checking if Any process has reached max ticks or if free mem pages > mem_high
+            alias i R1;
+            i=3;
+            while(i < MAX_PROC_NUM-1)do
+                if ( ([PROCESS_TABLE + 16*i + 6 ] == 1 && [PROCESS_TABLE + 16*i] > MAX_TICK ) || [ SYSTEM_STATUS_TABLE + 2 ] > MEM_HIGH )then
+                    [ SYSTEM_STATUS_TABLE + 5 ] = SWAP_IN;
+                    break;
+                endif;
+                i=i+1;
+            endwhile;
+
+        endif;
+    endif;
+
+endif;
+
+
+//STATE
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE+1] * 16 + 4] = READY;
+
+//Incrementing all non terminated process tick fields
+alias ind R1;
+ind = 0;
+while ( ind < MAX_PROC_NUM )do
+    if ([PROCESS_TABLE + ind*16 + 4] != TERMINATED)then
+        [PROCESS_TABLE + ind*16]  = [PROCESS_TABLE + ind*16] + 1;
+    endif;
+    ind = ind + 1;
+endwhile;
+
+
+call SCHEDULER;
+
+restore;
+
+SP = [PROCESS_TABLE + ( [SYSTEM_STATUS_TABLE + 1] * 16) + 13];
+
+//breakpoint;
+
+ireturn;

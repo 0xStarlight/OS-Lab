@@ -1,0 +1,256 @@
+alias currPID R9;
+alias userSP R10;
+
+
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table R12;
+process_table = PROCESS_TABLE + (currPID * 16);
+
+//Work
+//UPTR set to Stack Ptr
+[process_table + 13] = SP;
+
+//UA Page No.
+SP = [process_table + 11] * 512 - 1;
+
+//Accessing physical sysCallNo location
+
+//To find sysCallNo 
+alias sysCallNo R4;
+sysCallNo=[([PTBR + 2 * ((userSP - 5)/ 512)] * 512) + (userSP - 5) % 512];
+
+alias return_addr R11;
+return_addr = ([PTBR + 2 * ((userSP - 1)/ 512)] * 512) + (userSP - 1) % 512;
+
+
+// print sysCallNo;
+
+//Setting Mode Flag
+[process_table + 9] = sysCallNo;
+//temp: R1,R2,R3, imp : R4,R9,R10,R11,R12
+
+
+//Open SysCall
+
+if (sysCallNo==2)then 
+    alias pprtBase R5;
+    alias pprtIndex R6;
+    
+    //Finding free entry in PPRT
+    pprtBase = [process_table + 11] * 512 + RESOURCE_TABLE_OFFSET;
+    pprtIndex = 0;
+    while (pprtIndex<8 && [pprtBase + 2*pprtIndex]!=-1)do
+        pprtIndex = pprtIndex + 1;
+    endwhile;
+
+    //No free entries
+    if (pprtIndex == 8)then
+        //Present already so returning
+        [return_addr] = -3;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    alias fileName R2;
+    //Retrieving fileName
+    fileName = [([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //Calling Open SysCall
+    multipush(R4,R5,R6,R9,R10,R11,R12);
+    R1 = 3;
+    R2 = fileName;
+    call FILE_MANAGER;
+    multipop(R4,R5,R6,R9,R10,R11,R12);
+
+    //If Open SysCall Fails
+    if ( R0 < 0 )then
+        //Present already so returning
+        [return_addr] = R0;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //Updating PPRT
+    [pprtBase + 2*pprtIndex] = FILE;
+    [pprtBase + 2*pprtIndex + 1] = R0;
+
+
+    //Returning File Descriptor
+    [return_addr] = pprtIndex;
+
+    // Reset Mode Flag
+    [process_table + 9] = 0;
+
+    //Reset User Stack
+    SP = [process_table + 13];
+    ireturn;
+
+endif;
+
+//Close SysCall
+if (sysCallNo==3)then 
+    alias fileDescriptor R5;
+    alias pprtBase R6;
+    alias indexOFT R7;
+    
+    pprtBase = [process_table + 11] * 512 + RESOURCE_TABLE_OFFSET;
+
+    //Retrieving fileDescriptor
+    fileDescriptor = [([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    if (fileDescriptor<0 || fileDescriptor>=8 || [pprtBase + 2*fileDescriptor]!=FILE )then
+        //Return Value
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    indexOFT = [pprtBase + 2*fileDescriptor + 1];
+
+    //Calling Close SysCall
+    multipush(R4,R5,R6,R7,R9,R10,R11,R12);
+    R1 = 4;
+    R2 = indexOFT;
+    call FILE_MANAGER;
+    multipop(R4,R5,R6,R7,R9,R10,R11,R12);
+    
+
+    [pprtBase + 2*fileDescriptor] = -1;
+
+    //Returning File Descriptor
+    [return_addr] = 0;
+
+    // Reset Mode Flag
+    [process_table + 9] = 0;
+
+    //Reset User Stack
+    SP = [process_table + 13];
+
+    ireturn;
+
+endif;
+
+
+//Seek SysCall
+if (sysCallNo == 6)then
+    alias fileDescriptor R5;
+    alias pprtBase R6;
+    alias OFTIndex R7;
+    alias inodeIndex R2;
+    
+    pprtBase = [process_table + 11] * 512 + RESOURCE_TABLE_OFFSET;
+
+    //Retrieving fileDescriptor
+    fileDescriptor = [([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //File Descriptor Invalid
+    if (fileDescriptor<0 || fileDescriptor>=8 || [pprtBase + 2*fileDescriptor]!=FILE  )then
+        //Return Value
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    OFTIndex = [pprtBase + 2*fileDescriptor + 1];
+
+    inodeIndex = [ OPEN_FILE_TABLE + 4*OFTIndex ];
+
+    //Calling Acquire Inode
+    multipush(R2,R4,R5,R6,R7,R9,R10,R11,R12);
+    R1 = 4;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R2,R4,R5,R6,R7,R9,R10,R11,R12);
+
+
+    //If Acquire Inode Fails
+    if (R0 == -1)then
+        [return_addr] = -1;
+        [process_table + 9] = 0;
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    alias lSeekAddr R8;
+    lSeekAddr = OPEN_FILE_TABLE + 4*OFTIndex + 2;
+
+    alias Offset R13;
+    //Retrieving Offset
+    Offset = [([PTBR + 2 * ((userSP - 3)/ 512)] * 512) + (userSP - 3) % 512];
+
+    alias fileSize R3;
+    if (inodeIndex == INODE_ROOT)then
+        fileSize = 480;
+    else
+        fileSize=[INODE_TABLE + 16*inodeIndex + 2];
+    endif;
+
+    // If seek goes to negative 
+    if ( [lSeekAddr] + Offset < 0 )then
+
+        multipush(R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+        R1 = 5;
+        R2 = inodeIndex;
+        R3 = currPID;
+        call RESOURCE_MANAGER;
+        multipop(R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+
+        [return_addr] = -2;
+        [process_table + 9] = 0;
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    // Reset lSeek if Offset is 0
+    if ( Offset == 0 )then
+        [lSeekAddr] = 0;
+    else 
+
+    // If lSeek is greater than file size than set to file size
+        if ( [lSeekAddr] + Offset > fileSize )then
+            [lSeekAddr] = fileSize;
+        else
+
+    //Otherwise
+            [lSeekAddr] = [lSeekAddr] + Offset;
+        endif;
+    endif;
+
+    multipush(R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+    R1 = 5;
+    R2 = inodeIndex;
+    R3 = currPID;
+    call RESOURCE_MANAGER;
+    multipop(R2,R3,R4,R5,R6,R7,R8,R9,R10,R11,R12,R13);
+
+    [return_addr] = 0;
+    [process_table + 9] = 0;
+    SP = [process_table + 13];
+    ireturn;
+
+
+
+endif;

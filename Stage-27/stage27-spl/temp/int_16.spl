@@ -1,0 +1,320 @@
+alias currPID R9;
+alias userSP R10;
+
+
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+alias process_table R12;
+process_table = PROCESS_TABLE + (currPID * 16);
+
+//Work
+//UPTR set to Stack Ptr
+[process_table + 13] = SP;
+
+//UA Page No.
+SP = [process_table + 11] * 512 - 1;
+
+//Accessing physical sysCallNo location
+
+//To find sysCallNo 
+alias sysCallNo R4;
+sysCallNo=[([PTBR + 2 * ((userSP - 5)/ 512)] * 512) + (userSP - 5) % 512];
+
+//Return address
+alias return_addr R11;
+return_addr = ([PTBR + 2 * ((userSP - 1)/ 512)] * 512) + (userSP - 1) % 512;
+
+
+// print sysCallNo;
+
+//Setting Mode Flag
+[process_table + 9] = sysCallNo;
+
+
+//temp: R1, imp : R4,R9,R10,R11,R12
+
+//NewUsr SysCall
+if ( sysCallNo == 22 )then
+    //Current user is not root or current process not shell
+    if ( [process_table+3] != ROOT || currPID != 2  )then
+
+        //Return -2
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //To find username 
+    alias username R5;
+    username=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //To find password 
+    alias password R6;
+    password=[([PTBR + 2 * ((userSP - 3)/ 512)] * 512) + (userSP - 3) % 512];
+
+    //imp : R4,R5,R6,R9,R10,R11,R12
+
+    //If username already exists
+    alias tempUserID R2;
+    tempUserID = 0;
+    while(tempUserID < MAX_USER_NUM)do
+        if ( [USER_TABLE + 2*tempUserID] == username )then
+
+            //Return -1
+            [return_addr] = -1;
+            // Reset Mode Flag
+            [process_table + 9] = 0;
+            //Reset User Stack
+            SP = [process_table + 13];
+            ireturn;
+
+        endif;
+        tempUserID = tempUserID + 1;
+    endwhile;
+    
+    //Finding Free entry in usertable
+    alias userID R2;
+    userID = 0;
+    while ( userID < MAX_USER_NUM && [USER_TABLE + 2*userID] != -1 )do
+        userID = userID + 1;
+    endwhile;
+
+    //No free entry in User table
+    if (userID == MAX_USER_NUM) then
+        //Return -3
+        [return_addr] = -3;
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    encrypt password;
+
+    //Setting User Table
+    [USER_TABLE + 2*userID] = username;
+    [USER_TABLE + 2*userID + 1] = password;
+
+endif;
+
+//RemUsr Syscall
+if ( sysCallNo == 23 )then
+
+    //To find username 
+    alias username R5;
+    username=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //Current user is not root or current process not shell
+    if ( [SYSTEM_STATUS_TABLE] != ROOT || currPID != 2  )then
+        //Return -2
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    if (username == "root" || username == "kernel")then
+        //Return -2
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //Finding Entry in usertable
+    alias userID R2;
+    userID = 0;
+    while ( userID < MAX_USER_NUM && [USER_TABLE + 2*userID] != username )do
+        userID = userID + 1;
+    endwhile;
+
+    //Username not found
+    if (userID == MAX_USER_NUM)then
+        //Return -1
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //User has some files open
+    alias rootIndex R3;
+    rootIndex = 0;
+    while(rootIndex<MAX_FILE_NUM)do
+        // print [ROOT_FILE + 8*rootIndex + 3];
+        if ( [ROOT_FILE + 8*rootIndex + 3] == username )then
+            //Return -3
+            [return_addr] = -3;
+
+            // Reset Mode Flag
+            [process_table + 9] = 0;
+
+            //Reset User Stack
+            SP = [process_table + 13];
+            ireturn;
+        endif;
+        rootIndex = rootIndex + 1;
+    endwhile;
+
+    //Delete User
+    [USER_TABLE + 2*userID ]    = -1;
+    [USER_TABLE + 2*userID + 1] = -1;
+    
+endif;
+
+//SetPwd SysCall
+if ( sysCallNo == 24 )then
+
+    //To find username 
+    alias username R5;
+    username=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //To find newPassword 
+    alias newPassword R6;
+    newPassword = [([PTBR + 2 * ((userSP - 3)/ 512)] * 512) + (userSP - 3) % 512];
+
+
+    //Current process not shell
+    if ( currPID != 2  )then
+        //Return -1
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //Finding Entry in usertable
+    alias userID R2;
+    userID = 0;
+    while ( userID < MAX_USER_NUM && [USER_TABLE + 2*userID] != username )do
+        userID = userID + 1;
+    endwhile;
+    
+    //Username not found
+    if (userID == MAX_USER_NUM)then
+        //Return -2
+        [return_addr] = -2;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //User id not their own and not root user
+    if ( userID != [process_table + 3] && [process_table + 3] != ROOT )then
+        //Return -1
+        [return_addr] = -1;
+
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    encrypt newPassword;
+
+    [USER_TABLE + 2*userID + 1] = newPassword;
+
+
+endif;
+
+//GetUname SysCall
+if ( sysCallNo == 25 )then
+    
+    //To find userID 
+    alias userID R5;
+    userID=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    if (userID < 0 || userID > 15 || [USER_TABLE + 2*userID] == -1 )then
+        //Return -1
+        [return_addr] = -1;
+        // Reset Mode Flag
+        [process_table + 9] = 0;
+        //Reset User Stack
+        SP = [process_table + 13];
+        ireturn;
+    endif;
+
+    //Return userid
+    [return_addr] = [USER_TABLE + 2*userID];
+    // Reset Mode Flag
+    [process_table + 9] = 0;
+    //Reset User Stack
+    SP = [process_table + 13];
+    ireturn;
+endif;
+
+
+//GetUID
+if ( sysCallNo == 26 )then
+    //To find username 
+    alias username R5;
+    username=[([PTBR + 2 * ((userSP - 4)/ 512)] * 512) + (userSP - 4) % 512];
+
+    //Finding Entry in usertable
+    alias userID R2;
+    userID = 0;
+    while ( userID < MAX_USER_NUM )do
+        if ([USER_TABLE + 2*userID] == username)then
+            //Return UserID
+            [return_addr] = userID;
+            // Reset Mode Flag
+            [process_table + 9] = 0;
+            //Reset User Stack
+            SP = [process_table + 13];
+            ireturn;
+        endif;
+        userID = userID + 1;
+    endwhile;
+    
+    //Username not found
+    //Return -1
+    [return_addr] = -1;
+
+    // Reset Mode Flag
+    [process_table + 9] = 0;
+
+    //Reset User Stack
+    SP = [process_table + 13];
+    ireturn;
+
+endif;
+
+
+//Return 0
+[return_addr] = 0;
+
+// Reset Mode Flag
+[process_table + 9] = 0;
+
+//Reset User Stack
+SP = [process_table + 13];
+ireturn;

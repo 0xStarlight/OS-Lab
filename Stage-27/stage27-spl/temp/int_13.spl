@@ -1,0 +1,130 @@
+alias userSP R10;
+alias currPID R9;
+userSP = SP;
+currPID = [SYSTEM_STATUS_TABLE+1];
+
+//Work
+//UPTR set to Stack Ptr
+[PROCESS_TABLE + ( currPID * 16) + 13] = SP;
+
+//UA Page No.
+SP = [PROCESS_TABLE + (currPID * 16) + 11] * 512 - 1;
+
+//Accessing sysCall location
+
+alias physicalPageNum R1;
+alias offset R2;
+alias sysCallNoPhysicalAddr R3;
+
+
+//Try to find sysCallNoPhysicalAddr and the sysCallNo
+
+physicalPageNum = [PTBR + 2 * ((userSP - 5)/ 512)];
+offset = (userSP - 5) % 512;
+sysCallNoPhysicalAddr = (physicalPageNum * 512) + offset;
+
+alias sysCallNo R4;
+sysCallNo=[sysCallNoPhysicalAddr];
+
+
+//temp: R1,R2,R3, imp : R4,R9,R10
+// print sysCallNo;
+
+[PROCESS_TABLE + currPID * 16 + 9] = sysCallNo;
+
+
+//SemGet SysCall
+if (sysCallNo == 17)then
+    //resourceTableIndex is the SEMID
+    alias resourceTableIndex R5;
+    alias resourceTableBase R6;
+    alias semIndex R7;
+
+    resourceTableIndex = 0;
+    resourceTableBase = [PROCESS_TABLE + currPID * 16 + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+    //Finding Empty Resource Table Entry
+    while(resourceTableIndex < 8 && [resourceTableBase + 2*resourceTableIndex ] != -1 )do
+        resourceTableIndex = resourceTableIndex + 1;
+    endwhile;
+
+    // breakpoint;
+
+    if (resourceTableIndex == 8)then
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = -1;
+    else
+        //To indicate Semaphore
+        [resourceTableBase + 2*resourceTableIndex ] = 1;
+
+        //Calling Acquire Semaphore from RESOURCE_MANAGER
+        multipush(R1,R2,R3,R4,R5,R6,R9,R10);
+        R1 = 6;
+        R2 = currPID;
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R9,R10);
+        semIndex = R0;
+
+        //Checking if Semaphore is available
+        if ( semIndex == -1 )then
+            physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+            offset = (userSP - 1) % 512;
+            [(physicalPageNum * 512) + offset] = -2;
+
+        else
+        //Set the second entry of PerProcessResourceTable and return index of resource table
+            [resourceTableBase + 2*resourceTableIndex + 1 ] = semIndex;
+            physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+            offset = (userSP - 1) % 512;
+            [(physicalPageNum * 512) + offset] = resourceTableIndex;
+        endif;
+
+
+
+    endif;
+
+endif;
+
+
+//SemRelease SysCall
+if (sysCallNo == 18 )then
+    alias resourceTableBase R5;
+    alias semID R6;
+    resourceTableBase = [PROCESS_TABLE + currPID * 16 + 11]*512 + RESOURCE_TABLE_OFFSET;
+
+    physicalPageNum = [PTBR + 2 * ((userSP - 4)/ 512)];
+    offset = (userSP - 4) % 512;
+    semID = [(physicalPageNum * 512) + offset];
+
+    //If invalid Semaphore ID given ( Out of range or not semaphore )
+    if (semID < 0 || semID >7 || [resourceTableBase + 2*semID] != 1 )then
+        physicalPageNum = [PTBR + 2 * ((userSP - 1)/ 512)];
+        offset = (userSP - 1) % 512;
+        [(physicalPageNum * 512) + offset] = -1;
+        
+    else
+        //Calling Release Semaphore
+        multipush(R1,R2,R3,R4,R5,R6,R9,R10);
+        R1 = 7;
+        R2 = [resourceTableBase + 2*semID + 1];
+        R3 = currPID;
+        call RESOURCE_MANAGER;
+        multipop(R1,R2,R3,R4,R5,R6,R9,R10);
+
+        //Invalidating Semaphore in PerProcessResourceTable
+        [resourceTableBase + 2*semID] = -1;
+
+        // print semID;
+
+    endif;
+
+endif;
+
+
+// Reset Mode Flag
+[PROCESS_TABLE + currPID * 16 + 9] = 0;
+
+//Reset User Stack
+SP = [PROCESS_TABLE +  currPID * 16 + 13];
+ireturn;
