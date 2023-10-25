@@ -1,0 +1,13 @@
+int main()
+{
+decl
+    int temp,num,check;
+enddecl
+begin
+    num=1;
+    while ( num == 1 ) do
+         check = num%2;
+    endwhile;
+    return 0;
+end
+}

@@ -1,0 +1,25 @@
+int main()
+{
+decl
+  int temp;
+  str filename;
+enddecl
+
+begin
+
+  write("filename");
+  read(filename);
+
+  temp = exposcall("Delete", filename);
+  
+  if(temp == -1) then
+    write("Cannot be delete");
+  endif;
+
+  if(temp == -2) then
+    write("In use");
+  endif;
+
+  return 0;
+end
+}
